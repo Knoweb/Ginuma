@@ -32,7 +32,9 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
                         // 1. CORS OPTIONS
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -42,14 +44,35 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/companies/register",
                                 "/api/countries",
-                                "/api/currencies"
+                                "/api/countries/**",
+                                "/api/currencies",
+                                "/api/currencies/**"
                         ).permitAll()
 
                        .requestMatchers("/api/companies/**")
                         .hasAnyAuthority("COMPANY", "ROLE_COMPANY", "SUPER_ADMIN", "ROLE_SUPER_ADMIN")
 
                         .requestMatchers("/api/employees/**", "/api/suppliers/**")
-                        .hasAnyAuthority("EMPLOYEE", "ROLE_EMPLOYEE", "COMPANY", "ROLE_COMPANY", "SUPER_ADMIN", "ROLE_SUPER_ADMIN")
+                        .hasAnyAuthority(
+                                "EMPLOYEE",
+                                "ROLE_EMPLOYEE",
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
+
+                        .requestMatchers("/api/customers/**")
+                        .hasAnyAuthority(
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "EMPLOYEE",
+                                "ROLE_EMPLOYEE",
+                                "APP_USER",
+                                "ROLE_APP_USER",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
 
                         .anyRequest().authenticated()
                 )
@@ -64,7 +87,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config
+    ) throws Exception {
         return config.getAuthenticationManager();
     }
 
@@ -78,7 +103,9 @@ public class SecurityConfig {
 
         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", config);
         return source;
     }

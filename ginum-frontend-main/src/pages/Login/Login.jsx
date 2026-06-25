@@ -26,6 +26,7 @@ const Login = () => {
 
       // axios වලදී actual data එක තියෙන්නේ res.data කියන එක ඇතුළෙයි
       const response = res.data; 
+      console.log("Login response:", response);
 
       if (!response.token || !response.role) {
         throw new Error("Missing token or role in response");
