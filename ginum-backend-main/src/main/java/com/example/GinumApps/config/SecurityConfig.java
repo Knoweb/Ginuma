@@ -32,25 +32,50 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
-                        // 1. පූර්ව පරීක්ෂණ (CORS OPTIONS) සඳහා සෑමවිටම ඉඩ දෙන්න
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 2. Public endpoints (Login / Register)
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/companies/register",
                                 "/api/countries",
-                                "/api/currencies"
+                                "/api/countries/**",
+                                "/api/currencies",
+                                "/api/currencies/**"
                         ).permitAll()
 
-                        // 3. Protected endpoints (hasAnyAuthority භාවිතයෙන්)
                         .requestMatchers("/api/companies/**")
-                        .hasAnyAuthority("COMPANY", "ROLE_COMPANY", "SUPER_ADMIN", "ROLE_SUPER_ADMIN")
+                        .hasAnyAuthority(
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
 
                         .requestMatchers("/api/employees/**", "/api/suppliers/**")
-                        .hasAnyAuthority("EMPLOYEE", "ROLE_EMPLOYEE", "COMPANY", "ROLE_COMPANY", "SUPER_ADMIN", "ROLE_SUPER_ADMIN")
+                        .hasAnyAuthority(
+                                "EMPLOYEE",
+                                "ROLE_EMPLOYEE",
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
+
+                        .requestMatchers("/api/customers/**")
+                        .hasAnyAuthority(
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "EMPLOYEE",
+                                "ROLE_EMPLOYEE",
+                                "APP_USER",
+                                "ROLE_APP_USER",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
 
                         .anyRequest().authenticated()
                 )
@@ -65,20 +90,28 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config
+    ) throws Exception {
         return config.getAuthenticationManager();
     }
 
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        // Header එකට Authorization අනිවාර්යයෙන්ම allow කරන්න ඕනේ
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+
+        config.setAllowedOriginPatterns(List.of("http://localhost:5173"));
+        config.setAllowedMethods(
+                Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+        );
+        config.setAllowedHeaders(
+                Arrays.asList("Authorization", "Content-Type", "Accept")
+        );
         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", config);
         return source;
     }
