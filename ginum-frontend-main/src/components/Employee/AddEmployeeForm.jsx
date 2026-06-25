@@ -24,6 +24,14 @@ const AddEmployeeForm = () => {
   // Get company ID and token from session storage
   const companyId = sessionStorage.getItem("companyId");
   const token = sessionStorage.getItem("auth_token");
+
+  console.log("DEBUG - Token:", token);
+console.log("DEBUG - CompanyID:", companyId); 
+
+if (!companyId || companyId === "undefined" || companyId.length > 50) {
+    Alert.error("Company ID missing or invalid. Please re-login.");
+    return;
+}
   console.log("Company ID:", token, companyId);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [departments, setDepartments] = useState([]);
@@ -194,6 +202,10 @@ const AddEmployeeForm = () => {
       newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
     if (!formData.gender) newErrors.gender = "Gender is required";
+    if (!formData.nic.trim()) {
+      newErrors.nic = "NIC No. is required";
+    }
+
     if (!formData.dob || isNaN(new Date(formData.dob).getTime())) {
       newErrors.dob = "Invalid date of birth";
     }
@@ -426,7 +438,9 @@ const AddEmployeeForm = () => {
 
             {/* NIC No. */}
             <div className="w-full md:w-1/2 px-2">
-              <label className="block text-gray-700">NIC No.</label>
+              <label className="block text-gray-700">
+                 NIC No. <span className="text-red-500">*</span> 
+              </label>
               <input
                 type="text"
                 name="nic"
@@ -434,6 +448,9 @@ const AddEmployeeForm = () => {
                 value={formData.nic}
                 onChange={handleChange}
               />
+              {errors.nic && (
+                <p className="text-red-500 text-sm">{errors.nic}</p>
+              )}
             </div>
 
             {/* Mobile No. */}

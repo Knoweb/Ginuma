@@ -42,7 +42,6 @@ const Login = () => {
           window.location.href = "/super-admin/dashboard";
         }, 1500);
       } else if (response.role === "ROLE_COMPANY" || response.role === "COMPANY") {
-        // සමහරවිට Backend එකෙන් එන්නේ "COMPANY" කියලා විතරක් වෙන්න පුළුවන් නිසා "COMPANY" එකත් මෙතනට check කරන්න දැම්මා.
         sessionStorage.setItem("auth_token", response.token);
         sessionStorage.setItem("role", response.role);
         sessionStorage.setItem("companyId", response.companyId ?? ""); 

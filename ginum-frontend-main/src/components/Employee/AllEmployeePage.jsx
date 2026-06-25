@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   FiEdit, 
   FiTrash2, 
@@ -16,6 +17,7 @@ import {apiUrl} from "../../utils/api";
 
 
 const AllEmployeePage = () => {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -119,9 +121,12 @@ const AllEmployeePage = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors">
-            <FiPlus /> Add Employee
-          </button>
+          <button 
+  onClick={() => navigate("/employee/new")} // path එක නිවැරදි කළා
+  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+>
+  <FiPlus /> Add Employee
+</button>
         </div>
       </div>
 
@@ -130,9 +135,12 @@ const AllEmployeePage = () => {
           <p className="text-gray-600 text-lg">
             {employees.length === 0 ? "No employees found." : "No matching employees found."}
           </p>
-          <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2 transition-colors">
-            <FiPlus /> Add New Employee
-          </button>
+          <button 
+  onClick={() => navigate("/employee/new")} // path එක නිවැරදි කළා
+  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
+>
+  <FiPlus /> Add New Employee
+</button>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">

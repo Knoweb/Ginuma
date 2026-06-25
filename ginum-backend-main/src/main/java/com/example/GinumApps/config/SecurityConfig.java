@@ -4,6 +4,7 @@ import com.example.GinumApps.filter.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,7 +34,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - මෙතන හරියටම URL ටික තියෙනවාද බලන්න
+                        // 1. පූර්ව පරීක්ෂණ (CORS OPTIONS) සඳහා සෑමවිටම ඉඩ දෙන්න
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // 2. Public endpoints (Login / Register)
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/companies/register",
@@ -41,9 +45,13 @@ public class SecurityConfig {
                                 "/api/currencies"
                         ).permitAll()
 
-                        // Protected endpoints
-                        .requestMatchers("/api/companies/**").hasAnyRole("COMPANY", "SUPER_ADMIN")
-                        .requestMatchers("/api/employees/**", "/api/suppliers/**").hasAnyRole("EMPLOYEE", "COMPANY", "SUPER_ADMIN")
+                        // 3. Protected endpoints (hasAnyAuthority භාවිතයෙන්)
+                        .requestMatchers("/api/companies/**")
+                        .hasAnyAuthority("COMPANY", "ROLE_COMPANY", "SUPER_ADMIN", "ROLE_SUPER_ADMIN")
+
+                        .requestMatchers("/api/employees/**", "/api/suppliers/**")
+                        .hasAnyAuthority("EMPLOYEE", "ROLE_EMPLOYEE", "COMPANY", "ROLE_COMPANY", "SUPER_ADMIN", "ROLE_SUPER_ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -64,9 +72,10 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*")); // සියලුම origins වලට ඉඩ දීම
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of("*"));
+        // Header එකට Authorization අනිවාර්යයෙන්ම allow කරන්න ඕනේ
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
