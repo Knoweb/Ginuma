@@ -34,10 +34,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 1. පූර්ව පරීක්ෂණ (CORS OPTIONS) සඳහා සෑමවිටම ඉඩ දෙන්න
+                        // 1. CORS OPTIONS
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 2. Public endpoints (Login / Register)
+                        // 2. Public endpoints
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/companies/register",
@@ -45,8 +45,7 @@ public class SecurityConfig {
                                 "/api/currencies"
                         ).permitAll()
 
-                        // 3. Protected endpoints (hasAnyAuthority භාවිතයෙන්)
-                        .requestMatchers("/api/companies/**")
+                       .requestMatchers("/api/companies/**")
                         .hasAnyAuthority("COMPANY", "ROLE_COMPANY", "SUPER_ADMIN", "ROLE_SUPER_ADMIN")
 
                         .requestMatchers("/api/employees/**", "/api/suppliers/**")
@@ -74,8 +73,9 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        // Header එකට Authorization අනිවාර්යයෙන්ම allow කරන්න ඕනේ
+
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
