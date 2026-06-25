@@ -1,0 +1,139 @@
+/* 
+.main_colors{
+#09BBFA light blue 
+#1754BF blue
+#1D305D dark blue
+} */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* font-family: "Poppins", sans-serif; */
+  font-family: sans-serif;
+  font-weight: 200;
+  font-style: normal;
+}
+
+body {
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+}
+
+.table_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 20px;
+  background-color: rgb(233, 237, 240);
+}
+
+.table_header p {
+  color: black;
+}
+
+button {
+  outline: none;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  padding: 4px;
+  color: #ffffff !important;
+}
+
+td button:nth-child(1) {
+  background-color: rgb(247, 224, 21);
+}
+
+td button:nth-child(2) {
+  background-color: #3c91e6;
+}
+
+td button:nth-child(3) {
+  background-color: rgb(240, 50, 37);
+}
+
+input {
+  padding: 10px 20px;
+  margin: 0 10px;
+  outline: none;
+  border: 1px solid #3c91e6;
+  border-radius: 6px;
+  color: #3c91e6;
+}
+
+.table_section {
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;
+  min-width: 900px;
+}
+
+table th {
+  position: sticky;
+  top: 0;
+  background-color: aliceblue;
+  font-size: 15px;
+}
+
+td,
+th {
+  border-bottom: 1px solid #f5eded;
+  padding: 10px 20px;
+  word-break: break-all;
+  text-align: center;
+}
+
+tr:hover td {
+  color: #3c91e6;
+  cursor: pointer;
+  background-color: #eef1f7;
+}
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 10px 20px;
+  background: rgb(233, 237, 240);
+}
+
+.pagination div {
+  padding: 10px;
+  border: 2px solid #ffffff;
+  height: 40px;
+  width: 40px;
+  border-radius: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #3c91e6;
+  color: white;
+  box-shadow: 0px 0px 4px 0 #0c0c0c;
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+::placeholder {
+  color: #3c91e6;
+}
+
+::-webkit-scrollbar {
+  height: 5px;
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px #0c0c0c;
+}
+
+::-webkit-scrollbar-thumb {
+  box-shadow: inset 0 0 6px #0c0c0c;
+}

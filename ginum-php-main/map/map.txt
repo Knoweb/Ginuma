@@ -1,0 +1,26 @@
+login - company_tbl
+register - company_tbl, company_currency_tbl, country_tbl, currency_tbl
+Employee details - company_tbl, employee_tbl, department_tbl, designation_tbl
+department - company_tbl, department_tbl, designation_tbl, employee_tbl
+supplier details - supplier_tbl, company_tbl, item_category_tbl
+customer details - customer_tbl, company_tbl
+payroll - company_tbl, employee_tbl, payroll_tbl, account_tbl, sub_account_tbl, company_sub_account_balance, expense_tbl
+sales receipts - company_tbl, sales_receipt_tbl, transaction_log_tbl
+sales - income_tbl, company_tbl, sub_account_tbl, company_sub_account_tbl, account_tbl, transaction_log_tbl
+expenses - account_tbl, sub_account_tbl, company_sub_account_balance, expense_tbl, company_tbl
+orders - company_tbl, project_tbl, task_tbl, department_tbl, customer_tbl, expense_tbl
+items - item_tbl, item_category_tbl, company_tbl, inventory_tbl
+transactions - company_tbl, sub_account_tbl, company_sub_account_tbl, account_tbl, transaction_log_tbl
+reports - company_tbl, account_tbl, sub_account_tbl, company_sub_account_balance, expense_tbl, transaction_log_tbl, income_tbl, expense_tbl
+quotations - quotation_tbl, quotation_iem_tbl, company_tbl
+depreciation - depreciation_tbl, company_tbl, sub_account_tbl, company_sub_account_tbl, account_tbl, transaction_log_tbl
+bank - bank_account_tbl, bank_details_tbl, bank_statement_tbl
+accounts - account_tbl, sub_account_tbl, company_sub_account_balance, company_tbl
+users - sub_logins_tbl,
+opening balances - company_tbl, sub_account_tbl, company_sub_account_tbl, account_tbl, transaction_log_tbl
+pending requests - edit_request, employee_tbl, sub_login_tbl
+profile - company_tbl, company_currency_tbl, country_tbl, currency_tbl
+Settings -
+	Company Info - company_tbl, company_currency_tbl, country_tbl, currency_tbl
+	deductions - taxes_tbl, extended_tbl_tbl, company_tbl
+	advanced - company_tbl
