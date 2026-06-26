@@ -1,63 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  FiEdit,
-  FiTrash2,
   FiPlus,
   FiSearch,
-  FiUser,
-  FiPhone,
-  FiMail,
-  FiHome,
-  FiTag,
+  FiEdit,
+  FiTrash2,
   FiRefreshCw,
+  FiCreditCard,
+  FiDollarSign,
+  FiTag,
+  FiLayers,
+  FiHash,
 } from "react-icons/fi";
-import { apiUrl } from "../../utils/api";
 
-const CustomersList = () => {
+const AllAccounts = () => {
   const navigate = useNavigate();
 
-  const [customers, setCustomers] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
 
-  const getToken = () => {
-    return (
-      sessionStorage.getItem("auth_token") ||
-      localStorage.getItem("auth_token") ||
-      sessionStorage.getItem("token") ||
-      localStorage.getItem("token")
-    );
-  };
-
-  const getCompanyId = () => {
-    return (
-      sessionStorage.getItem("companyId") ||
-      localStorage.getItem("companyId")
-    );
-  };
-
-  const fetchCustomers = async () => {
+  const fetchAccounts = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const companyId = getCompanyId();
-      const token = getToken();
+      const companyId = sessionStorage.getItem("companyId");
+      const token = sessionStorage.getItem("auth_token");
+
+      console.log("Company ID:", companyId);
+      console.log("Token:", token);
 
       if (!companyId || !token) {
         setError("Missing company ID or auth token. Please login again.");
-        setLoading(false);
         return;
       }
 
       const response = await fetch(
-        `${apiUrl}/api/customers/companies/${companyId}`,
+        `http://localhost:8081/api/companies/${companyId}/accounts`,
         {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
+            Accept: "application/json",
           },
         }
       );
@@ -69,74 +55,61 @@ const CustomersList = () => {
       }
 
       const data = await response.json();
-      console.log("Customers:", data);
 
-      setCustomers(Array.isArray(data) ? data : []);
+      console.log("Accounts API Response:", data);
+
+      setAccounts(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error("Failed to fetch customers:", err);
-      setError("Failed to fetch customers. " + err.message);
+      console.error("Failed to fetch accounts:", err);
+      setError("Failed to fetch accounts. " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCustomers();
+    fetchAccounts();
   }, []);
 
-  const filteredCustomers = customers.filter((customer) => {
+  const filteredAccounts = accounts.filter((account) => {
     const searchLower = searchTerm.toLowerCase();
 
     return (
-      (customer.customerName || "").toLowerCase().includes(searchLower) ||
-      (customer.email || "").toLowerCase().includes(searchLower) ||
-      (customer.mobileNo || "").toLowerCase().includes(searchLower) ||
-      (customer.address || "").toLowerCase().includes(searchLower) ||
-      (customer.customerType || "").toLowerCase().includes(searchLower) ||
-      (customer.tax || "").toLowerCase().includes(searchLower)
+      (account.accountName || "").toLowerCase().includes(searchLower) ||
+      (account.subAccountName || "").toLowerCase().includes(searchLower) ||
+      (account.accountType || "").toLowerCase().includes(searchLower) ||
+      (account.accountCode || "").toLowerCase().includes(searchLower) ||
+      String(account.currentBalance || "").includes(searchLower)
     );
   });
 
-  const getInitials = (name) => {
-    if (!name) return "C";
+  const formatAccountType = (type) => {
+    if (!type) return "-";
 
-    const parts = name.trim().split(" ");
-
-    if (parts.length === 1) {
-      return parts[0].charAt(0).toUpperCase();
-    }
-
-    return (
-      parts[0].charAt(0).toUpperCase() +
-      parts[parts.length - 1].charAt(0).toUpperCase()
-    );
-  };
-
-  const formatEnumText = (value) => {
-    if (!value) return "-";
-
-    return value
+    return type
       .toString()
+      .replace(/_/g, " ")
       .toLowerCase()
-      .replace("_", " ")
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const handleEdit = (customer) => {
-    console.log("Edit customer:", customer);
+  const formatAmount = (amount) => {
+    const value = Number(amount || 0);
 
-    // Later, when backend sends customerId/id, use:
-    // navigate(`/customers/edit/${customer.customerId}`);
-    alert("Edit function needs customer ID from backend.");
+    return value.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
-  const handleDelete = (customer) => {
-    if (window.confirm("Are you sure you want to delete this customer?")) {
-      console.log("Delete customer:", customer);
+  const handleEdit = (account) => {
+    console.log("Edit account:", account);
+    alert("Edit function is not created yet.");
+  };
 
-      // Later, create DELETE backend endpoint and call it here.
-      alert("Delete function needs backend delete API.");
-    }
+  const handleDelete = (account) => {
+    console.log("Delete account:", account);
+    alert("Delete function is not created yet.");
   };
 
   if (loading) {
@@ -155,7 +128,7 @@ const CustomersList = () => {
 
         <button
           type="button"
-          onClick={fetchCustomers}
+          onClick={fetchAccounts}
           className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
         >
           <FiRefreshCw /> Retry
@@ -168,7 +141,7 @@ const CustomersList = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
-          Customers
+          Accounts
         </h1>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
@@ -179,7 +152,7 @@ const CustomersList = () => {
 
             <input
               type="text"
-              placeholder="Search customers..."
+              placeholder="Search accounts..."
               className="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -188,38 +161,32 @@ const CustomersList = () => {
 
           <button
             type="button"
-            onClick={() => {
-              console.log("Add Customer clicked");
-              navigate("/customer/new");
-            }}
+            onClick={() => navigate("/account/new")}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
           >
-            <FiPlus /> Add Customer
+            <FiPlus /> Add Account
           </button>
         </div>
       </div>
 
-      {filteredCustomers.length === 0 ? (
+      {filteredAccounts.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <div className="mx-auto h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mb-4">
-            <FiUser size={30} />
+            <FiCreditCard size={30} />
           </div>
 
           <p className="text-gray-600 text-lg">
-            {customers.length === 0
-              ? "No customers found."
-              : "No matching customers found."}
+            {accounts.length === 0
+              ? "No accounts found."
+              : "No matching accounts found."}
           </p>
 
           <button
             type="button"
-            onClick={() => {
-              console.log("Add New Customer clicked");
-              navigate("/customer/new");
-            }}
+            onClick={() => navigate("/account/new")}
             className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
           >
-            <FiPlus /> Add New Customer
+            <FiPlus /> Add New Account
           </button>
         </div>
       ) : (
@@ -228,104 +195,81 @@ const CustomersList = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Customer
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Account
                   </th>
 
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell"
-                  >
-                    Contact Info
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Account Code
                   </th>
 
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Address
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
                   </th>
 
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell"
-                  >
-                    Type / Tax
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                    Sub Account
                   </th>
 
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Balance
+                  </th>
+
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
 
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredCustomers.map((customer, index) => (
+                {filteredAccounts.map((account) => (
                   <tr
-                    key={index}
+                    key={account.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold uppercase">
-                          {getInitials(customer.customerName)}
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                          <FiCreditCard size={20} />
                         </div>
 
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {customer.customerName || "-"}
+                            {account.accountName || "-"}
                           </div>
 
                           <div className="text-sm text-gray-500 flex items-center">
                             <FiTag className="mr-1" size={14} />
-                            {formatEnumText(customer.customerType)}
+                            ID: {account.id || "-"}
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center">
-                        <FiPhone className="mr-2" size={14} />
-                        {customer.mobileNo || "-"}
-                      </div>
-
-                      <div className="text-sm text-gray-500 flex items-center">
-                        <FiMail className="mr-2" size={14} />
-                        <span
-                          className="truncate max-w-xs"
-                          title={customer.email}
-                        >
-                          {customer.email || "-"}
-                        </span>
+                        <FiHash className="mr-2" size={14} />
+                        {account.accountCode || "-"}
                       </div>
                     </td>
 
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900 flex items-center">
-                        <FiHome className="mr-2 flex-shrink-0" size={14} />
-                        <span
-                          className="truncate max-w-sm"
-                          title={customer.address}
-                        >
-                          {customer.address || "-"}
-                        </span>
+                        <FiLayers className="mr-2" size={14} />
+                        {formatAccountType(account.accountType)}
                       </div>
                     </td>
 
                     <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                       <div className="text-sm text-gray-900">
-                        {formatEnumText(customer.customerType)}
+                        {account.subAccountName || "-"}
                       </div>
+                    </td>
 
-                      <div className="text-sm text-gray-500">
-                        Tax: {formatEnumText(customer.tax)}
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="text-sm font-semibold text-gray-900 flex items-center justify-end">
+                        <FiDollarSign className="mr-1" size={14} />
+                        {formatAmount(account.currentBalance)}
                       </div>
                     </td>
 
@@ -333,7 +277,7 @@ const CustomersList = () => {
                       <div className="flex justify-end space-x-2">
                         <button
                           type="button"
-                          onClick={() => handleEdit(customer)}
+                          onClick={() => handleEdit(account)}
                           className="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-50 transition-colors"
                           title="Edit"
                         >
@@ -342,7 +286,7 @@ const CustomersList = () => {
 
                         <button
                           type="button"
-                          onClick={() => handleDelete(customer)}
+                          onClick={() => handleDelete(account)}
                           className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50 transition-colors"
                           title="Delete"
                         >
@@ -357,7 +301,7 @@ const CustomersList = () => {
           </div>
 
           <div className="bg-gray-50 px-6 py-3 text-sm text-gray-600">
-            Showing {filteredCustomers.length} of {customers.length} customers
+            Showing {filteredAccounts.length} of {accounts.length} accounts
           </div>
         </div>
       )}
@@ -365,4 +309,4 @@ const CustomersList = () => {
   );
 };
 
-export default CustomersList;
+export default AllAccounts;

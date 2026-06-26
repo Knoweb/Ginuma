@@ -60,7 +60,7 @@ const AddAccountForm = () => {
       accountName: accountName.trim(),
       accountType: accountTypeMap[accountType] || accountType.toUpperCase(),
       currentBalance: parseFloat(openingBalance) || 0,
-      subAccount: subAccount.trim(),
+      subAccountName: subAccount.trim(),
     };
 
     // console.log("Request Payload:", requestData); // Debugging log
@@ -129,9 +129,9 @@ const AddAccountForm = () => {
               <option value="Equity">Equity</option>
               <option value="Income">Income</option>
               <option value="Expense">Expense</option>
-              <option value="Cost Of Sale">Cost of sale</option>
-              <option value="Other Income">Other income</option>
-              <option value="Other Expense">Other expense</option>
+              <option value="Cost of Sales">Cost of Sales</option>
+              <option value="Other Income">Other Income</option>
+              <option value="Other Expense">Other Expense</option>
             </select>
           </div>
           <div>

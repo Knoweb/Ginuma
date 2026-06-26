@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import AddAccountForm from "../components/account/AddAccountForm";
+import AllAccounts from "../components/account/AllAccounts";
 import Login from "../pages/Login/Login";
 import Register from "../pages/Register/Register";
 import NotFound from "../pages/NotFound/NotFound";
@@ -122,8 +123,8 @@ function AppRouter() {
             <Route path="aged-receivables" element={<AgedReceivables/>} />
           </Route>
           <Route path="account">
-            <Route index element={<Navigate to="new" replace />} />
-            {/* <Route path="all" element={<AllEmployeesPage />} /> */}
+            <Route index element={<Navigate to="all" replace />} />
+            <Route path="all" element={<AllAccounts />} />
             <Route path="new" element={<AddAccountForm />} />
           </Route>
           <Route path="bank">
