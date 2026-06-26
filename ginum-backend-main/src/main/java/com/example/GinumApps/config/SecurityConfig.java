@@ -1,6 +1,7 @@
 package com.example.GinumApps.config;
 
 import com.example.GinumApps.filter.JwtFilter;
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,10 +37,15 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // 1. CORS OPTIONS
+
+                        // Allow CORS preflight requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 2. Public endpoints
+                        // Allow Spring error page also
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        .requestMatchers("/error").permitAll()
+
+                        // Public endpoints
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/companies/register",
@@ -49,10 +55,52 @@ public class SecurityConfig {
                                 "/api/currencies/**"
                         ).permitAll()
 
-                       .requestMatchers("/api/companies/**")
-                        .hasAnyAuthority("COMPANY", "ROLE_COMPANY", "SUPER_ADMIN", "ROLE_SUPER_ADMIN")
+                        // Project endpoints
+                        .requestMatchers(
+                                "/api/companies/*/projects",
+                                "/api/companies/*/projects/**"
+                        )
+                        .hasAnyAuthority(
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "EMPLOYEE",
+                                "ROLE_EMPLOYEE",
+                                "APP_USER",
+                                "ROLE_APP_USER",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
 
-                        .requestMatchers("/api/employees/**", "/api/suppliers/**")
+                        // Account endpoints
+                        .requestMatchers(
+                                "/api/companies/*/accounts",
+                                "/api/companies/*/accounts/**"
+                        )
+                        .hasAnyAuthority(
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "EMPLOYEE",
+                                "ROLE_EMPLOYEE",
+                                "APP_USER",
+                                "ROLE_APP_USER",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
+
+                        // Company endpoints
+                        .requestMatchers("/api/companies/**")
+                        .hasAnyAuthority(
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
+
+                        // Employee and supplier endpoints
+                        .requestMatchers(
+                                "/api/employees/**",
+                                "/api/suppliers/**"
+                        )
                         .hasAnyAuthority(
                                 "EMPLOYEE",
                                 "ROLE_EMPLOYEE",
@@ -62,6 +110,7 @@ public class SecurityConfig {
                                 "ROLE_SUPER_ADMIN"
                         )
 
+                        // Customer endpoints
                         .requestMatchers("/api/customers/**")
                         .hasAnyAuthority(
                                 "COMPANY",
@@ -74,6 +123,7 @@ public class SecurityConfig {
                                 "ROLE_SUPER_ADMIN"
                         )
 
+                        // All other endpoints need login
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -96,10 +146,16 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        config.setAllowedOriginPatterns(List.of("*"));
+
+        config.setAllowedMethods(
+                Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+        );
+
+        config.setAllowedHeaders(
+                Arrays.asList("Authorization", "Content-Type", "Accept")
+        );
 
         config.setAllowCredentials(true);
 

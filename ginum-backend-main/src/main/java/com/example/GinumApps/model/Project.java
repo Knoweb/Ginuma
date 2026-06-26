@@ -8,8 +8,9 @@ import lombok.Data;
 @Table(name = "projects")
 @Data
 public class Project {
+
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String code;
@@ -22,6 +23,7 @@ public class Project {
 
     private String priority;
 
+    @Enumerated(EnumType.STRING)
     private WorkingStatus workingStatus;
 
     @ManyToOne

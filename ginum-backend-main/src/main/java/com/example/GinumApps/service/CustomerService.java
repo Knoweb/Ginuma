@@ -70,6 +70,7 @@ public class CustomerService {
 
     private CustomerSummaryDto convertToSummaryDto(Customer customer) {
         return CustomerSummaryDto.builder()
+                .customerId(customer.getId())
                 .customerName(customer.getName())
                 .email(customer.getEmail())
                 .mobileNo(customer.getPhoneNo())
