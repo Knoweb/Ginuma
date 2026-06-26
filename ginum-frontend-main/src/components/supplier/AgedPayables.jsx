@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { apiUrl } from "../../utils/api"; // API URL එක import කිරීම
-import { FaSpinner } from "react-icons/fa"; // Loading spinner එක සඳහා
+import { apiUrl } from "../../utils/api";
+import { FaSpinner } from "react-icons/fa"; 
 
 export default function AgedPayables() {
   const [activeTab, setActiveTab] = useState('summary');
   const [searchQuery, setSearchQuery] = useState('');
   const [dateRange, setDateRange] = useState('');
   const [page, setPage] = useState(1);
-  const itemsPerPage = 5; // පිටුවකට පෙන්වන ප්‍රමාණය 5ක් කළා
-
-  // Backend එකෙන් එන Suppliers ලා Save කරගන්න
+  const itemsPerPage = 5; 
   const [suppliers, setSuppliers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // API එකෙන් Suppliers ලාව Fetch කිරීම
   useEffect(() => {
     const fetchSuppliers = async () => {
       try {
@@ -51,7 +48,6 @@ export default function AgedPayables() {
     fetchSuppliers();
   }, []);
 
-  // Backend එකෙන් එන Suppliers ලාව Table එකට ගැලපෙන විදිහට Map කිරීම (දැනට amounts $0.00 යි)
   const dynamicSummaryData = suppliers.map(s => ({
     supplier: s.supplierName,
     notDueYet: '$0.00',
@@ -64,7 +60,7 @@ export default function AgedPayables() {
 
   const dynamicDetailData = suppliers.map(s => ({
     supplier: s.supplierName,
-    invoice: 'N/A', // තාම Invoices නැති නිසා
+    invoice: 'N/A', 
     invoiceDate: new Date().toISOString().split('T')[0],
     dueDate: new Date().toISOString().split('T')[0],
     notDueYet: '$0.00',
@@ -117,7 +113,7 @@ export default function AgedPayables() {
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
-    setPage(1); // Search කරන විට මුල් පිටුවට යාමට
+    setPage(1); 
   };
 
   const handleDateRangeChange = (e) => {

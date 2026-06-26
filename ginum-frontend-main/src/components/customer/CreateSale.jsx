@@ -22,9 +22,18 @@ const CreateSaleOrder = () => {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [modalTransition, setModalTransition] = useState("opacity-0 invisible");
+  
+  // Accounts States
   const [accounts, setAccounts] = useState([]);
   const [accountsError, setAccountsError] = useState(null);
   const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
+
+  // Customers States (New)
+  const [customers, setCustomers] = useState([]);
+  const [customersError, setCustomersError] = useState(null);
+  const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
+
+  // Financial States
   const [subtotal, setSubtotal] = useState(0);
   const [freight, setFreight] = useState(0);
   const [tax, setTax] = useState(0);
@@ -112,11 +121,50 @@ const CreateSaleOrder = () => {
     fetchAccounts();
   }, []);
 
-  const customers = [
-    { id: "1", name: "Customer A" },
-    { id: "2", name: "Customer B" },
-    { id: "3", name: "Customer C" },
-  ];
+  // Fetch customers from API
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setIsLoadingCustomers(true);
+        setCustomersError(null);
+
+        const companyId = sessionStorage.getItem("companyId");
+        const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("token");
+
+        if (!companyId || !token) {
+          throw new Error("Authentication credentials not found");
+        }
+
+        const response = await api.get(`/api/customers/companies/${companyId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        let customersData = response.data;
+
+        if (Array.isArray(response)) {
+          customersData = response;
+        } else if (Array.isArray(response.data)) {
+          customersData = response.data;
+        } else if (response?.data?.data && Array.isArray(response.data.data)) {
+          customersData = response.data.data;
+        }
+
+        if (!Array.isArray(customersData)) {
+          throw new Error("Invalid customers data format");
+        }
+
+        setCustomers(customersData);
+      } catch (error) {
+        console.error("Error fetching customers:", error);
+        setCustomersError("Failed to load customers.");
+        setCustomers([]);
+      } finally {
+        setIsLoadingCustomers(false);
+      }
+    };
+
+    fetchCustomers();
+  }, []);
 
   const projects = [
     { id: "1", name: "Project A" },
@@ -182,13 +230,22 @@ const CreateSaleOrder = () => {
             value={selectedCustomer}
             onChange={(e) => setSelectedCustomer(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+            disabled={isLoadingCustomers}
           >
             <option value="">Select a customer</option>
-            {customers.map((customer) => (
-              <option key={customer.id} value={customer.id}>
-                {customer.name}
-              </option>
-            ))}
+            {isLoadingCustomers ? (
+              <option value="" disabled>Loading customers...</option>
+            ) : customersError ? (
+              <option value="" disabled>{customersError}</option>
+            ) : customers.length === 0 ? (
+              <option value="" disabled>No customers found</option>
+            ) : (
+              customers.map((customer, index) => (
+                <option key={customer.id || index} value={customer.id || customer.email}>
+                  {customer.customerName}
+                </option>
+              ))
+            )}
           </select>
         </div>
         <div>
@@ -251,8 +308,8 @@ const CreateSaleOrder = () => {
               {!isServiceMode && (
                 <th className="p-2">
                   Item ID <span className="text-red-500">*</span>
-                  <button className="text-blue-600 hover:text-blue-700">
-                    <MdAddCircleOutline className="h-5 w-5" />
+                  <button className="text-blue-600 hover:text-blue-700 ml-1">
+                    <MdAddCircleOutline className="h-5 w-5 inline" />
                   </button>
                 </th>
               )}
@@ -265,7 +322,7 @@ const CreateSaleOrder = () => {
                   onClick={() => setShowAccountModal(true)}
                   className="ml-1 text-blue-600 hover:text-blue-700"
                 >
-                  <MdAddCircleOutline className="h-5 w-5" />
+                  <MdAddCircleOutline className="h-5 w-5 inline" />
                 </button>
               </th>
               {!isServiceMode && (
@@ -288,7 +345,7 @@ const CreateSaleOrder = () => {
                   onClick={() => setShowProjectModal(true)}
                   className="ml-1 text-blue-600 hover:text-blue-700"
                 >
-                  <MdAddCircleOutline className="h-5 w-5" />
+                  <MdAddCircleOutline className="h-5 w-5 inline" />
                 </button>
               </th>
               <th className="p-2"></th>
@@ -357,7 +414,6 @@ const CreateSaleOrder = () => {
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        // placeholder="No of units"
                         value={row.quantity}
                         onChange={(e) =>
                           handleRowChange(index, "quantity", e.target.value)
@@ -370,7 +426,6 @@ const CreateSaleOrder = () => {
                       <input
                         type="number"
                         className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        // placeholder="Unit price"
                         value={row.unitPrice}
                         onChange={(e) =>
                           handleRowChange(index, "unitPrice", e.target.value)
@@ -512,18 +567,16 @@ const CreateSaleOrder = () => {
 
       {/* Save and Cancel Buttons */}
       <div className="flex justify-end space-x-2">
-        {/* <button className="bg-gray-500 text-white px-3 py-2 rounded-lg hover:bg-gray-600 text-sm sm:text-base">
-          Cancel
-        </button> */}
         <button className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base">
           Save
         </button>
       </div>
 
+      {/* Modals */}
       {showAccountModal && (
         <div
           className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`}
-          onClick={(e) => handleModalClick(e, setShowAccountModal)} // Close modal when clicking outside
+          onClick={(e) => handleModalClick(e, setShowAccountModal)}
         >
           <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3  p-2 rounded-lg max-h-[90vh] overflow-y-auto relative">
             <button
@@ -540,7 +593,7 @@ const CreateSaleOrder = () => {
       {showProjectModal && (
         <div
           className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`}
-          onClick={(e) => handleModalClick(e, setShowProjectModal)} // Close modal when clicking outside
+          onClick={(e) => handleModalClick(e, setShowProjectModal)}
         >
           <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3  p-2 rounded-lg max-h-[90vh] overflow-y-auto relative">
             <button
@@ -554,8 +607,7 @@ const CreateSaleOrder = () => {
         </div>
       )}
     </div>
-
-    // Account Modal
   );
 };
+
 export default CreateSaleOrder;
