@@ -19,14 +19,18 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/suppliers")
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class SupplierController {
     private final SupplierService supplierService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{companyId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> createSupplier(
+            @PathVariable Integer companyId,
             @RequestPart("supplier") @Valid SupplierDto supplierDto,
             @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
+
+        supplierDto.setCompanyId(companyId);
 
         if (file != null && !file.isEmpty()) {
             supplierDto.setBusinessRegistration(file);
