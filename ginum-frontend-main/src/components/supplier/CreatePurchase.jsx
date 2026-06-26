@@ -34,6 +34,10 @@ const CreatePurchase = () => {
   const [amountPaid, setAmountPaid] = useState(0);
   const [balanceDue, setBalanceDue] = useState(0);
   const [dueDate, setDueDate] = useState("");
+  // Supplier States
+  const [suppliers, setSuppliers] = useState([]);
+  const [isLoadingSuppliers, setIsLoadingSuppliers] = useState(true);
+  const [suppliersError, setSuppliersError] = useState(null);
 
   useEffect(() => {
     if (showAccountModal || showProjectModal || showItemModal) {
@@ -116,12 +120,43 @@ const CreatePurchase = () => {
     fetchAccounts();
   }, []);
 
-  // Sample list of suppliers
-  const suppliers = [
-    { id: "1", name: "Supplier A" },
-    { id: "2", name: "Supplier B" },
-    { id: "3", name: "Supplier C" },
-  ];
+  // Fetch suppliers from API
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        setIsLoadingSuppliers(true);
+        setSuppliersError(null);
+
+        const companyId = sessionStorage.getItem("companyId");
+        if (!companyId) throw new Error("Company ID not found");
+
+        const response = await api.get(`/api/suppliers/companies/${companyId}`);
+        let suppliersData = response.data;
+
+        // Extract array if it's wrapped
+        if (Array.isArray(response)) {
+          suppliersData = response;
+        } else if (response?.data?.data && Array.isArray(response.data.data)) {
+          suppliersData = response.data.data;
+        }
+
+        if (Array.isArray(suppliersData)) {
+          setSuppliers(suppliersData);
+        } else {
+          setSuppliers([]);
+        }
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+        setSuppliersError("Failed to load suppliers");
+        setSuppliers([]);
+      } finally {
+        setIsLoadingSuppliers(false);
+      }
+    };
+
+    fetchSuppliers();
+  }, []);
+
   // Sample data for dropdowns
   const categories = [
     { id: "1", name: "account A" },
@@ -191,13 +226,22 @@ const CreatePurchase = () => {
             value={selectedSupplier}
             onChange={(e) => setSelectedSupplier(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+            disabled={isLoadingSuppliers}
           >
             <option value="">Select a supplier</option>
-            {suppliers.map((supplier) => (
-              <option key={supplier.id} value={supplier.id}>
-                {supplier.name}
-              </option>
-            ))}
+            {isLoadingSuppliers ? (
+              <option value="" disabled>Loading suppliers...</option>
+            ) : suppliersError ? (
+              <option value="" disabled>{suppliersError}</option>
+            ) : suppliers.length === 0 ? (
+              <option value="" disabled>No suppliers found</option>
+            ) : (
+              suppliers.map((supplier, index) => (
+                <option key={supplier.id || index} value={supplier.email}>
+                  {supplier.supplierName}
+                </option>
+              ))
+            )}
           </select>
         </div>
         <div>
@@ -211,7 +255,7 @@ const CreatePurchase = () => {
           />
         </div>
       </div>
-
+      
       {/* Supplier Invoice Number and ATO Checkbox */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>

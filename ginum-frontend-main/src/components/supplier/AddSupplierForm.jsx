@@ -82,10 +82,11 @@ export default function AddSupplierForm() {
         itemCategory: formData.item_category,
         tinNo: formData.tin_no,
         vat: formData.vat,
-        taxType: formData.tax,
+        tax: formData.tax.toUpperCase(), 
         swiftNo: formData.swift_no,
-        currency: formData.currency,
-        discount: formData.discount ? parseFloat(formData.discount) : 0,
+        currencyId: 1, 
+        discountPercentage: formData.discount ? parseFloat(formData.discount) : 0,
+        companyId: parseInt(companyId) 
       };
 
       const formDataToSend = new FormData();
