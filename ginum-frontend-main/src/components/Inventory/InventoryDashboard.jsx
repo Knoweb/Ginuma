@@ -1,261 +1,491 @@
-import React, { useState } from "react";
-import { Pencil, Trash2, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Search, Plus, RefreshCw } from "lucide-react";
+
+import InventoryTable from "./InventoryTable";
+import {
+  Toast,
+  ItemModal,
+  StockModal,
+  DeleteItemModal,
+} from "./InventoryModals";
+
+const API_BASE_URL = "http://localhost:8081";
+
+const emptyItemForm = {
+  itemCode: "",
+  itemName: "",
+  category: "",
+  itemType: "SALES_ITEM",
+  description: "",
+  purchasePrice: "",
+  unitPrice: "",
+  currentStock: "",
+  reorderLevel: "",
+  unit: "",
+  active: true,
+};
 
 const InventoryDashboard = () => {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      itemName: "Pen",
-      category: "Stationery",
-      purchasePrice: 10,
-      sellingPrice: 15,
-      quantity: 200,
-    },
-    {
-      id: 2,
-      itemName: "Notebook",
-      category: "Stationery",
-      purchasePrice: 50,
-      sellingPrice: 70,
-      quantity: 5,
-    },
-  ]);
+  const [items, setItems] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Modal state
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(null); // 'add' or 'reduce'
-  const [currentItem, setCurrentItem] = useState(null);
-  const [quantity, setQuantity] = useState("");
-  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Open modal and reset inputs
-  const openModal = (type, item) => {
-    setModalType(type);
-    setCurrentItem(item);
-    setQuantity("");
-    setNotes("");
-    setModalOpen(true);
+  const [itemModalOpen, setItemModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("add");
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [itemForm, setItemForm] = useState(emptyItemForm);
+
+  const [stockModalOpen, setStockModalOpen] = useState(false);
+  const [stockModalType, setStockModalType] = useState("add");
+  const [selectedStockItem, setSelectedStockItem] = useState(null);
+  const [stockQuantity, setStockQuantity] = useState("");
+  const [stockNotes, setStockNotes] = useState("");
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deletingItem, setDeletingItem] = useState(null);
+
+  const [saving, setSaving] = useState(false);
+  const [stockSaving, setStockSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const [toast, setToast] = useState({
+    show: false,
+    type: "",
+    message: "",
+  });
+
+  const getCompanyId = () => sessionStorage.getItem("companyId");
+  const getToken = () => sessionStorage.getItem("auth_token");
+
+  const showToast = (type, message) => {
+    setToast({ show: true, type, message });
+
+    setTimeout(() => {
+      setToast({ show: false, type: "", message: "" });
+    }, 3000);
   };
 
-  const closeModal = () => {
-    setModalOpen(false);
-    setModalType(null);
-    setCurrentItem(null);
-    setQuantity("");
-    setNotes("");
+  const getAuthHeaders = () => {
+    const token = getToken();
+
+    return {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    };
   };
 
-  // Handle submit of Add or Reduce Stock
-  const handleSubmit = () => {
-    const qty = parseInt(quantity, 10);
-    if (!qty || qty <= 0) {
-      alert("Please enter a valid quantity greater than zero.");
-      return;
+  const getJsonHeaders = () => {
+    const token = getToken();
+
+    return {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+  };
+
+  const checkAuth = () => {
+    const companyId = getCompanyId();
+    const token = getToken();
+
+    if (!companyId || !token) {
+      throw new Error("Missing company ID or auth token. Please login again.");
     }
 
-    if (modalType === "reduce" && qty > currentItem.quantity) {
-      alert("Cannot reduce more than current stock.");
-      return;
-    }
+    return companyId;
+  };
 
-    setItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item.id === currentItem.id) {
-          if (modalType === "add") {
-            return { ...item, quantity: item.quantity + qty };
-          } else if (modalType === "reduce") {
-            return { ...item, quantity: item.quantity - qty };
-          }
+  const fetchItems = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const companyId = checkAuth();
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/companies/${companyId}/items`,
+        {
+          method: "GET",
+          headers: getAuthHeaders(),
         }
-        return item;
-      })
-    );
+      );
 
-    closeModal();
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Items API Response:", data);
+
+      setItems(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch items:", err);
+      setError("Failed to fetch items. " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const openAddModal = () => {
+    setItemForm(emptyItemForm);
+    setEditingItemId(null);
+    setModalMode("add");
+    setItemModalOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setModalMode("edit");
+    setEditingItemId(item.itemId);
+
+    setItemForm({
+      itemCode: item.itemCode || "",
+      itemName: item.name || "",
+      category: item.category || "",
+      itemType: item.itemType || "SALES_ITEM",
+      description: item.description || "",
+      purchasePrice: item.purchasePrice ?? "",
+      unitPrice: item.unitPrice ?? "",
+      currentStock: item.currentStock ?? "",
+      reorderLevel: item.reorderLevel ?? "",
+      unit: item.unit || "",
+      active: item.active !== false,
+    });
+
+    setItemModalOpen(true);
+  };
+
+  const closeItemModal = () => {
+    setItemModalOpen(false);
+    setItemForm(emptyItemForm);
+    setEditingItemId(null);
+  };
+
+  const openStockModal = (type, item) => {
+    setStockModalType(type);
+    setSelectedStockItem(item);
+    setStockQuantity("");
+    setStockNotes("");
+    setStockModalOpen(true);
+  };
+
+  const closeStockModal = () => {
+    setStockModalOpen(false);
+    setSelectedStockItem(null);
+    setStockQuantity("");
+    setStockNotes("");
+  };
+
+  const openDeleteModal = (item) => {
+    setDeletingItem(item);
+    setDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeletingItem(null);
+    setDeleteModalOpen(false);
+  };
+
+  const buildItemPayload = () => ({
+    itemCode: itemForm.itemCode.trim(),
+    name: itemForm.itemName.trim(),
+    category: itemForm.category.trim(),
+    itemType: itemForm.itemType,
+    description: itemForm.description.trim(),
+    purchasePrice: Number(itemForm.purchasePrice || 0),
+    unitPrice: Number(itemForm.unitPrice),
+    currentStock: Number(itemForm.currentStock || 0),
+    reorderLevel: Number(itemForm.reorderLevel || 0),
+    unit: itemForm.unit.trim(),
+    active: itemForm.active,
+  });
+
+  const handleSaveItem = async (e) => {
+    e.preventDefault();
+
+    if (!itemForm.itemName.trim()) {
+      showToast("error", "Item name is required.");
+      return;
+    }
+
+    if (!itemForm.unitPrice || Number(itemForm.unitPrice) <= 0) {
+      showToast("error", "Please enter a valid selling price.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const companyId = checkAuth();
+      const payload = buildItemPayload();
+
+      const url =
+        modalMode === "add"
+          ? `${API_BASE_URL}/api/companies/${companyId}/items`
+          : `${API_BASE_URL}/api/companies/${companyId}/items/${editingItemId}`;
+
+      const method = modalMode === "add" ? "POST" : "PUT";
+
+      const response = await fetch(url, {
+        method,
+        headers: getJsonHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Item save failed.");
+      }
+
+      showToast(
+        "success",
+        modalMode === "add"
+          ? "Item added successfully!"
+          : "Item updated successfully!"
+      );
+
+      closeItemModal();
+      fetchItems();
+    } catch (err) {
+      console.error("Item save error:", err);
+      showToast("error", "Item save failed. Please check the details.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleStockUpdate = async () => {
+    if (!selectedStockItem) {
+      showToast("error", "No item selected.");
+      return;
+    }
+
+    const qty = Number(stockQuantity);
+
+    if (!qty || qty <= 0) {
+      showToast("error", "Please enter a valid quantity.");
+      return;
+    }
+
+    const availableStock = Number(selectedStockItem.currentStock || 0);
+
+    if (stockModalType === "reduce" && qty > availableStock) {
+      showToast("error", "Cannot reduce more than current stock.");
+      return;
+    }
+
+    try {
+      setStockSaving(true);
+
+      const companyId = checkAuth();
+      const itemId = selectedStockItem.itemId;
+
+      const url =
+        stockModalType === "add"
+          ? `${API_BASE_URL}/api/companies/${companyId}/items/${itemId}/stock/add`
+          : `${API_BASE_URL}/api/companies/${companyId}/items/${itemId}/stock/reduce`;
+
+      const payload = {
+        quantity: qty,
+        notes: stockNotes.trim(),
+      };
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: getJsonHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Stock update failed.");
+      }
+
+      showToast(
+        "success",
+        stockModalType === "add"
+          ? "Stock added successfully!"
+          : "Stock reduced successfully!"
+      );
+
+      closeStockModal();
+      fetchItems();
+    } catch (err) {
+      console.error("Stock update error:", err);
+      showToast("error", "Stock update failed.");
+    } finally {
+      setStockSaving(false);
+    }
+  };
+
+  const handleDeactivateItem = async () => {
+    if (!deletingItem?.itemId) {
+      showToast("error", "Item ID is missing.");
+      return;
+    }
+
+    try {
+      setDeleting(true);
+
+      const companyId = checkAuth();
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/companies/${companyId}/items/${deletingItem.itemId}`,
+        {
+          method: "DELETE",
+          headers: getAuthHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Item deactivate failed.");
+      }
+
+      showToast("success", "Item deactivated successfully!");
+      closeDeleteModal();
+      fetchItems();
+    } catch (err) {
+      console.error("Item deactivate error:", err);
+      showToast("error", "Item deactivate failed.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const filteredItems = items.filter((item) => {
+    const text = searchTerm.toLowerCase();
+
+    return (
+      (item.itemCode || "").toLowerCase().includes(text) ||
+      (item.name || "").toLowerCase().includes(text) ||
+      (item.category || "").toLowerCase().includes(text) ||
+      (item.itemType || "").toLowerCase().includes(text) ||
+      (item.description || "").toLowerCase().includes(text) ||
+      (item.unit || "").toLowerCase().includes(text) ||
+      String(item.unitPrice || "").includes(text) ||
+      String(item.currentStock || "").includes(text)
+    );
+  });
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mx-4 mt-6">
+        <p className="font-bold">Error</p>
+        <p>{error}</p>
+
+        <button
+          type="button"
+          onClick={fetchItems}
+          className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold mb-6">Inventory Dashboard</h2>
+    <>
+      <Toast
+        toast={toast}
+        onClose={() => setToast({ show: false, type: "", message: "" })}
+      />
 
-        <div className="overflow-x-auto bg-white shadow rounded-xl p-4">
-          <table className="min-w-full text-sm text-left">
-            <thead className="text-xs text-gray-600 uppercase border-b">
-              <tr>
-                <th className="py-3 px-4"></th>
-                <th className="py-3 px-4">Item Name</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4">Stock</th>
-                <th className="py-3 px-4">Purchase Price</th>
-                <th className="py-3 px-4">Selling Price</th>
-                <th className="py-3 px-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, index) => (
-                <tr
-                  key={item.id}
-                  className="border-b hover:bg-gray-100 transition"
-                >
-                  <td className="py-3 px-4">{index + 1}</td>
-                  <td className="py-3 px-4 font-medium">{item.itemName}</td>
-                  <td className="py-3 px-4">{item.category}</td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`inline-block px-2 py-1 text-xs rounded-full font-semibold ${
-                        item.quantity < 10
-                          ? "bg-red-100 text-red-700"
-                          : "bg-green-100 text-green-700"
-                      }`}
-                    >
-                      {item.quantity} {item.quantity < 10 ? "Low" : "In Stock"}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">Rs. {item.purchasePrice}</td>
-                  <td className="py-3 px-4">Rs. {item.sellingPrice}</td>
-                  <td className="py-3 px-4 text-center space-x-2">
-                    <div className="inline-flex items-center gap-2">
-                      <div className="relative group">
-                        <button className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg">
-                          <Pencil size={16} />
-                        </button>
-                        <span className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition">
-                          Edit
-                        </span>
-                      </div>
-                      <div className="relative group">
-                        <button
-                          onClick={() => openModal("add", item)}
-                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg flex items-center gap-1"
-                        >
-                          <ArrowUpCircle size={16} /> Add Stock
-                        </button>
-                      </div>
-                      <div className="relative group">
-                        <button
-                          onClick={() => openModal("reduce", item)}
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg flex items-center gap-1"
-                        >
-                          <ArrowDownCircle size={16} /> Reduce Stock
-                        </button>
-                      </div>
-                      <div className="relative group">
-                        <button className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg">
-                          <Trash2 size={16} />
-                        </button>
-                        <span className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition">
-                          Delete
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {items.length === 0 && (
-                <tr>
-                  <td colSpan="7" className="text-center py-6 text-gray-500">
-                    No inventory items found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
+            Inventory Dashboard
+          </h1>
 
-      {/* Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-            <h3 className="text-xl font-semibold mb-4">
-              {modalType === "add" ? "Add Stock" : "Reduce Stock"}
-            </h3>
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+            <div className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="text-gray-400" size={18} />
+              </div>
 
-            <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
-                Item
-              </label>
               <input
                 type="text"
-                value={currentItem.itemName}
-                disabled
-                className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
+                placeholder="Search items..."
+                className="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
-            <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
-                Current Stock
-              </label>
-              <input
-                type="number"
-                value={currentItem.quantity}
-                disabled
-                className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed"
-              />
-            </div>
-
-            <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
-                Quantity to {modalType === "add" ? "Add" : "Reduce"}
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-                placeholder="Enter quantity"
-              />
-            </div>
-
-            {modalType === "reduce" && (
-              <div className="mb-3">
-                <label className="block text-gray-700 font-medium mb-1">
-                  Reason
-                </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="w-full border border-gray-300 rounded px-3 py-2"
-                  placeholder="Optional reason for stock reduction"
-                  rows={3}
-                />
-              </div>
-            )}
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                className={`px-4 py-2 rounded text-white ${
-                  modalType === "add"
-                    ? "bg-green-600 hover:bg-green-700"
-                    : "bg-yellow-600 hover:bg-yellow-700"
-                } transition`}
-              >
-                {modalType === "add" ? "Add Stock" : "Reduce Stock"}
-              </button>
-            </div>
-
-            {/* Close X button */}
             <button
-              onClick={closeModal}
-              aria-label="Close modal"
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              type="button"
+              onClick={openAddModal}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
             >
-              ×
+              <Plus size={16} /> Add Item
+            </button>
+
+            <button
+              type="button"
+              onClick={fetchItems}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+            >
+              <RefreshCw size={16} /> Refresh
             </button>
           </div>
         </div>
-      )}
-    </div>
+
+        <InventoryTable
+          items={items}
+          filteredItems={filteredItems}
+          onAddItem={openAddModal}
+          onEditItem={openEditModal}
+          onOpenStock={openStockModal}
+          onDeleteItem={openDeleteModal}
+        />
+      </div>
+
+      <ItemModal
+        open={itemModalOpen}
+        modalMode={modalMode}
+        form={itemForm}
+        setForm={setItemForm}
+        saving={saving}
+        onClose={closeItemModal}
+        onSubmit={handleSaveItem}
+      />
+
+      <StockModal
+        open={stockModalOpen}
+        type={stockModalType}
+        item={selectedStockItem}
+        quantity={stockQuantity}
+        setQuantity={setStockQuantity}
+        notes={stockNotes}
+        setNotes={setStockNotes}
+        saving={stockSaving}
+        onClose={closeStockModal}
+        onSubmit={handleStockUpdate}
+      />
+
+      <DeleteItemModal
+        open={deleteModalOpen}
+        item={deletingItem}
+        deleting={deleting}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeactivateItem}
+      />
+    </>
   );
 };
 
