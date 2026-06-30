@@ -1,85 +1,44 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  FaPlusCircle,
-  FaTimes,
-  FaCheckCircle,
-  FaExclamationCircle,
-} from "react-icons/fa";
-import AddCustomerForm from "../customer/AddCustomer";
+  FiPlus,
+  FiSearch,
+  FiEdit,
+  FiTrash2,
+  FiRefreshCw,
+  FiCreditCard,
+  FiDollarSign,
+  FiTag,
+  FiLayers,
+  FiHash,
+} from "react-icons/fi";
 
-const NewProjectForm = () => {
-  const [showCustomerModal, setShowCustomerModal] = useState(false);
-  const [modalTransition, setModalTransition] = useState("opacity-0 invisible");
+const AllAccounts = () => {
+  const navigate = useNavigate();
 
-  const [projectCode, setProjectCode] = useState("");
-  const [projectName, setProjectName] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [workingStatus, setWorkingStatus] = useState("");
-  const [priority, setPriority] = useState("");
+  const [accounts, setAccounts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [customers, setCustomers] = useState([]);
-  const [customerLoading, setCustomerLoading] = useState(false);
-  const [customerError, setCustomerError] = useState("");
-
-  const [saving, setSaving] = useState(false);
-
-  const [toast, setToast] = useState({
-    show: false,
-    type: "",
-    message: "",
-  });
-
-  useEffect(() => {
-    if (showCustomerModal) {
-      setModalTransition("opacity-100 visible");
-    } else {
-      setModalTransition("opacity-0 invisible");
-    }
-  }, [showCustomerModal]);
-
-  const showToast = (type, message) => {
-    setToast({
-      show: true,
-      type,
-      message,
-    });
-
-    setTimeout(() => {
-      setToast({
-        show: false,
-        type: "",
-        message: "",
-      });
-    }, 3000);
-  };
-
-  const getCompanyId = () => {
-    return sessionStorage.getItem("companyId");
-  };
-
-  const getToken = () => {
-    return sessionStorage.getItem("auth_token");
-  };
-
-  const fetchCustomers = async () => {
+  const fetchAccounts = async () => {
     try {
-      setCustomerLoading(true);
-      setCustomerError("");
+      setLoading(true);
+      setError("");
 
-      const companyId = getCompanyId();
-      const token = getToken();
+      const companyId = sessionStorage.getItem("companyId");
+      const token = sessionStorage.getItem("auth_token");
 
       console.log("Company ID:", companyId);
       console.log("Token:", token);
 
       if (!companyId || !token) {
-        setCustomerError("Missing company ID or auth token. Please login again.");
+        setError("Missing company ID or auth token. Please login again.");
         return;
       }
 
       const response = await fetch(
-        `http://localhost:8081/api/customers/companies/${companyId}`,
+        `http://localhost:8081/api/companies/${companyId}/accounts`,
         {
           method: "GET",
           headers: {
@@ -91,348 +50,263 @@ const NewProjectForm = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Customer fetch error:", errorText);
+        console.error("Backend error:", errorText);
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("Customers:", data);
 
-      setCustomers(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Failed to load customers:", error);
-      setCustomerError("Failed to load customers.");
+      console.log("Accounts API Response:", data);
+
+      setAccounts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch accounts:", err);
+      setError("Failed to fetch accounts. " + err.message);
     } finally {
-      setCustomerLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCustomers();
+    fetchAccounts();
   }, []);
 
-  const closeCustomerModal = () => {
-    setShowCustomerModal(false);
-    fetchCustomers();
+  const filteredAccounts = accounts.filter((account) => {
+    const searchLower = searchTerm.toLowerCase();
+
+    return (
+      (account.accountName || "").toLowerCase().includes(searchLower) ||
+      (account.subAccountName || "").toLowerCase().includes(searchLower) ||
+      (account.accountType || "").toLowerCase().includes(searchLower) ||
+      (account.accountCode || "").toLowerCase().includes(searchLower) ||
+      String(account.currentBalance || "").includes(searchLower)
+    );
+  });
+
+  const formatAccountType = (type) => {
+    if (!type) return "-";
+
+    return type
+      .toString()
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const workingStatusOptions = [
-    { id: "ACTIVE", name: "Active" },
-    { id: "WORKING", name: "Working" },
-    { id: "COMPLETED", name: "Completed" },
-    { id: "CANCELLED", name: "Cancelled" },
-  ];
+  const formatAmount = (amount) => {
+    const value = Number(amount || 0);
 
-  const priorityOptions = [
-    { id: "LOW", name: "Low" },
-    { id: "MEDIUM", name: "Medium" },
-    { id: "HIGH", name: "High" },
-  ];
-
-  const getCustomerId = (customer) => {
-    return customer.customerId || customer.id;
+    return value.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
   };
 
-  const getCustomerName = (customer) => {
-    return customer.customerName || customer.name || "-";
+  const handleEdit = (account) => {
+    console.log("Edit account:", account);
+    alert("Edit function is not created yet.");
   };
 
-  const resetForm = () => {
-    setProjectCode("");
-    setProjectName("");
-    setSelectedCustomer("");
-    setStartDate("");
-    setWorkingStatus("");
-    setPriority("");
+  const handleDelete = (account) => {
+    console.log("Delete account:", account);
+    alert("Delete function is not created yet.");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
-    const companyId = getCompanyId();
-    const token = getToken();
+  if (error) {
+    return (
+      <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mx-4 mt-6">
+        <p className="font-bold">Error</p>
+        <p>{error}</p>
 
-    if (!companyId || !token) {
-      showToast("error", "Missing company ID or auth token. Please login again.");
-      return;
-    }
-
-    if (!selectedCustomer) {
-      showToast("error", "Please select a customer.");
-      return;
-    }
-
-    const projectPayload = {
-      projectCode: projectCode.trim(),
-      projectName: projectName.trim(),
-      customerId: Number(selectedCustomer),
-      startDate,
-      workingStatus,
-      priority,
-      description: "",
-    };
-
-    console.log("Project Payload:", projectPayload);
-
-    try {
-      setSaving(true);
-
-      const response = await fetch(
-        `http://localhost:8081/api/companies/${companyId}/projects`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(projectPayload),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Project save error:", errorText);
-        showToast("error", "Project save failed. Please check the details.");
-        return;
-      }
-
-      const savedProject = await response.json();
-      console.log("Saved Project:", savedProject);
-
-      resetForm();
-      showToast("success", "Project saved successfully!");
-    } catch (error) {
-      console.error("Cannot connect to backend:", error);
-      showToast("error", "Cannot connect to backend.");
-    } finally {
-      setSaving(false);
-    }
-  };
+        <button
+          type="button"
+          onClick={fetchAccounts}
+          className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
+        >
+          <FiRefreshCw /> Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {/* Success / Error Toast */}
-      {toast.show && (
-        <div className="fixed top-5 right-5 z-[9999]">
-          <div
-            className={`min-w-[280px] max-w-sm px-4 py-3 rounded-lg shadow-lg flex items-start gap-3 border ${
-              toast.type === "success"
-                ? "bg-green-50 border-green-300 text-green-800"
-                : "bg-red-50 border-red-300 text-red-800"
-            }`}
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
+          Accounts
+        </h1>
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiSearch className="text-gray-400" />
+            </div>
+
+            <input
+              type="text"
+              placeholder="Search accounts..."
+              className="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/account/new")}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
           >
-            <div className="mt-1">
-              {toast.type === "success" ? (
-                <FaCheckCircle className="text-green-600" />
-              ) : (
-                <FaExclamationCircle className="text-red-600" />
-              )}
-            </div>
+            <FiPlus /> Add Account
+          </button>
+        </div>
+      </div>
 
-            <div className="flex-1">
-              <p className="font-semibold">
-                {toast.type === "success" ? "Success" : "Error"}
-              </p>
-              <p className="text-sm">{toast.message}</p>
-            </div>
+      {filteredAccounts.length === 0 ? (
+        <div className="bg-white rounded-lg shadow p-8 text-center">
+          <div className="mx-auto h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mb-4">
+            <FiCreditCard size={30} />
+          </div>
 
-            <button
-              type="button"
-              onClick={() =>
-                setToast({
-                  show: false,
-                  type: "",
-                  message: "",
-                })
-              }
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <FaTimes />
-            </button>
+          <p className="text-gray-600 text-lg">
+            {accounts.length === 0
+              ? "No accounts found."
+              : "No matching accounts found."}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => navigate("/account/new")}
+            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
+          >
+            <FiPlus /> Add New Account
+          </button>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Account
+                  </th>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Account Code
+                  </th>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Type
+                  </th>
+
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                    Sub Account
+                  </th>
+
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Balance
+                  </th>
+
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredAccounts.map((account) => (
+                  <tr
+                    key={account.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                          <FiCreditCard size={20} />
+                        </div>
+
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {account.accountName || "-"}
+                          </div>
+
+                          <div className="text-sm text-gray-500 flex items-center">
+                            <FiTag className="mr-1" size={14} />
+                            ID: {account.id || "-"}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 flex items-center">
+                        <FiHash className="mr-2" size={14} />
+                        {account.accountCode || "-"}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 flex items-center">
+                        <FiLayers className="mr-2" size={14} />
+                        {formatAccountType(account.accountType)}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                      <div className="text-sm text-gray-900">
+                        {account.subAccountName || "-"}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="text-sm font-semibold text-gray-900 flex items-center justify-end">
+                        <FiDollarSign className="mr-1" size={14} />
+                        {formatAmount(account.currentBalance)}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(account)}
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                          title="Edit"
+                        >
+                          <FiEdit size={18} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(account)}
+                          className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50 transition-colors"
+                          title="Delete"
+                        >
+                          <FiTrash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="bg-gray-50 px-6 py-3 text-sm text-gray-600">
+            Showing {filteredAccounts.length} of {accounts.length} accounts
           </div>
         </div>
       )}
-
-      <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-lg p-4 sm:p-6 my-4 sm:mt-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-          Create Project
-        </h2>
-
-        <form onSubmit={handleSubmit}>
-          {/* Row 1 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-gray-700 font-medium">
-                Project Code <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={projectCode}
-                onChange={(e) => setProjectCode(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                placeholder="Enter Project Code"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium">
-                Project Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                placeholder="Enter Project Name"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Row 2 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-gray-700 font-medium">
-                Customer <span className="text-red-500">*</span>
-              </label>
-
-              <select
-                value={selectedCustomer}
-                onChange={(e) => setSelectedCustomer(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                required
-              >
-                <option value="">
-                  {customerLoading ? "Loading customers..." : "Select a customer"}
-                </option>
-
-                {customers.map((customer, index) => {
-                  const customerId = getCustomerId(customer);
-
-                  return (
-                    <option key={customerId || index} value={customerId}>
-                      {getCustomerName(customer)}
-                    </option>
-                  );
-                })}
-              </select>
-
-              {customerError && (
-                <p className="text-red-500 text-sm mt-1">{customerError}</p>
-              )}
-
-              <button
-                type="button"
-                className="text-blue-500 flex items-center justify-center mt-2"
-                onClick={() => setShowCustomerModal(true)}
-              >
-                <span className="mr-2">
-                  <FaPlusCircle />
-                </span>
-                Add New Customer
-              </button>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium">
-                Start Date <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Row 3 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-gray-700 font-medium">
-                Working Status <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={workingStatus}
-                onChange={(e) => setWorkingStatus(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                required
-              >
-                <option value="">Select working status</option>
-                {workingStatusOptions.map((status) => (
-                  <option key={status.id} value={status.id}>
-                    {status.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 font-medium">
-                Priority <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                required
-              >
-                <option value="">Select priority</option>
-                {priorityOptions.map((priorityItem) => (
-                  <option key={priorityItem.id} value={priorityItem.id}>
-                    {priorityItem.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex justify-end space-x-2">
-            <button
-              type="button"
-              onClick={resetForm}
-              className="bg-gray-500 text-white px-3 py-2 rounded-lg hover:bg-gray-600 text-sm sm:text-base"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {saving ? "Saving..." : "Save"}
-            </button>
-          </div>
-        </form>
-
-        {showCustomerModal && (
-          <div
-            className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) closeCustomerModal();
-            }}
-          >
-            <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 p-2 rounded-lg max-h-[90vh] overflow-y-auto relative bg-white">
-              <button
-                type="button"
-                className="absolute top-2 right-2 text-gray-600 text-xl z-10"
-                onClick={closeCustomerModal}
-              >
-                <FaTimes />
-              </button>
-
-              <AddCustomerForm />
-            </div>
-          </div>
-        )}
-      </div>
-    </>
+    </div>
   );
 };
 
-export default NewProjectForm;
+export default AllAccounts;
