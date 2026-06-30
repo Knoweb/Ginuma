@@ -1,6 +1,6 @@
 package com.example.GinumApps.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.example.GinumApps.enums.ItemType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -16,31 +16,47 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Item {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long itemId;
 
-    @Column( nullable = false)
+    private String itemCode;
+
+    @Column(nullable = false)
     private String name;
 
-//    @Column(nullable = false)
+    private String category;
+
+    @Enumerated(EnumType.STRING)
+    private ItemType itemType;
+
     private String description;
 
-    @DecimalMin("0.01")
+    @DecimalMin(value = "0.00")
+    @Column(precision = 19, scale = 2)
+    private BigDecimal purchasePrice = BigDecimal.ZERO;
+
+    @DecimalMin(value = "0.01")
+    @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal unitPrice;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "account_id", nullable = false)
-//    private Account account;
+    @DecimalMin(value = "0.00")
+    @Column(precision = 19, scale = 2)
+    private BigDecimal currentStock = BigDecimal.ZERO;
+
+    @DecimalMin(value = "0.00")
+    @Column(precision = 19, scale = 2)
+    private BigDecimal reorderLevel = BigDecimal.ZERO;
 
     @Column(length = 20)
     private String unit;
+
+    @Column(nullable = false)
+    private Boolean active = true;
 
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
     @JsonIgnore
     private Company company;
-
-    private boolean isActive = true;
 }
-

@@ -1,25 +1,46 @@
 package com.example.GinumApps.dto;
 
+import com.example.GinumApps.enums.ItemType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ItemDto {
-    @NotBlank
+
+    private Long itemId;
+
+    private String itemCode;
+
+    @NotBlank(message = "Item name is required")
     private String name;
+
+    private String category;
+
+    private ItemType itemType;
 
     private String description;
 
-    @NotNull
-    @DecimalMin("0.0")
+    @DecimalMin(value = "0.00", message = "Purchase price cannot be negative")
+    private BigDecimal purchasePrice;
+
+    @NotNull(message = "Selling price is required")
+    @DecimalMin(value = "0.01", message = "Selling price must be greater than 0")
     private BigDecimal unitPrice;
 
-    private String unit;
-}
+    @DecimalMin(value = "0.00", message = "Current stock cannot be negative")
+    private BigDecimal currentStock;
 
+    @DecimalMin(value = "0.00", message = "Reorder level cannot be negative")
+    private BigDecimal reorderLevel;
+
+    private String unit;
+
+    private Boolean active;
+}

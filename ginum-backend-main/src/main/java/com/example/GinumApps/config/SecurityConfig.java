@@ -111,7 +111,10 @@ public class SecurityConfig {
                         )
 
                         // Customer endpoints
-                        .requestMatchers("/api/customers/**")
+                        .requestMatchers(
+                                "/api/companies/*/items",
+                                "/api/companies/*/items/**"
+                        )
                         .hasAnyAuthority(
                                 "COMPANY",
                                 "ROLE_COMPANY",
