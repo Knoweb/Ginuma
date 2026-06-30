@@ -2,6 +2,8 @@ package com.example.GinumApps.service;
 
 import com.example.GinumApps.dto.*;
 import com.example.GinumApps.enums.JournalEntryType;
+import com.example.GinumApps.enums.LineItemType;
+import com.example.GinumApps.enums.SalesType;
 import com.example.GinumApps.exception.ResourceNotFoundException;
 import com.example.GinumApps.model.*;
 import com.example.GinumApps.repository.*;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SalesOrderService {
+
     private final CompanyRepository companyRepo;
     private final CustomerRepository customerRepo;
     private final SalesOrderRepository salesOrderRepo;
@@ -36,14 +39,22 @@ public class SalesOrderService {
 
         Customer customer = customerRepo.findById(request.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
         if (!customer.getCompany().getCompanyId().equals(companyId)) {
             throw new AccessDeniedException("Customer does not belong to your company");
         }
 
         Account paymentAccount = null;
-        if (request.getPaymentAccountCode() != null) {
+        BigDecimal amountPaid = valueOrZero(request.getAmountPaid());
+
+        if (amountPaid.compareTo(BigDecimal.ZERO) > 0) {
+            if (request.getPaymentAccountCode() == null || request.getPaymentAccountCode().isBlank()) {
+                throw new IllegalArgumentException("Payment account is required when amount paid is greater than zero");
+            }
+
             paymentAccount = accountRepo.findByAccountCodeAndCompany_CompanyId(
-                    request.getPaymentAccountCode(), companyId
+                    request.getPaymentAccountCode(),
+                    companyId
             ).orElseThrow(() -> new ResourceNotFoundException("Invalid payment account code"));
         }
 
@@ -52,65 +63,131 @@ public class SalesOrderService {
         order.setCustomer(customer);
         order.setSoNumber(request.getSoNumber());
         order.setIssueDate(request.getIssueDate());
+        order.setDueDate(request.getDueDate());
         order.setNotes(request.getNotes());
         order.setPaymentAccount(paymentAccount);
-        order.setAmountPaid(request.getAmountPaid());
+        order.setAmountPaid(amountPaid);
         order.setSalesType(request.getSalesType());
 
-        processItems(request.getItems(), order, company);
+        processItems(request.getItems(), order, company, request.getSalesType());
         calculateFinancials(order);
 
-        SalesOrder savedOrder = (SalesOrder) salesOrderRepo.save(order);
+        SalesOrder savedOrder = salesOrderRepo.save(order);
+
+        // Keep this only if your company has Accounts Receivable account configured.
         createJournalEntries(savedOrder);
+
+        if (savedOrder.getBalanceDue().compareTo(BigDecimal.ZERO) > 0) {
+            createAgingReceivableSnapshot(savedOrder);
+        }
 
         return convertToDto(savedOrder);
     }
 
-    private void processItems(List<SalesOrderItemRequestDto> items, SalesOrder order, Company company) {
-        items.forEach(itemRequest -> {
-            Item item = itemRepo.findById(itemRequest.getItemId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Item not found: " + itemRequest.getItemId()));
+    private void processItems(
+            List<SalesOrderItemRequestDto> items,
+            SalesOrder order,
+            Company company,
+            SalesType salesType
+    ) {
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Sales order must have at least one item");
+        }
+
+        for (SalesOrderItemRequestDto itemRequest : items) {
             Account account = accountRepo.findByAccountCodeAndCompany_CompanyId(
-                            itemRequest.getAccountCode(), company.getCompanyId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Account not found: " + itemRequest.getAccountCode()));
+                    itemRequest.getAccountCode(),
+                    company.getCompanyId()
+            ).orElseThrow(() ->
+                    new ResourceNotFoundException("Account not found: " + itemRequest.getAccountCode())
+            );
+
+            Item item = null;
+
+            if (salesType == SalesType.GOODS) {
+                if (itemRequest.getItemId() == null) {
+                    throw new IllegalArgumentException("Item is required for goods sales");
+                }
+
+                item = itemRepo.findByItemIdAndCompany_CompanyId(
+                        itemRequest.getItemId(),
+                        company.getCompanyId()
+                ).orElseThrow(() ->
+                        new ResourceNotFoundException("Item not found: " + itemRequest.getItemId())
+                );
+            }
 
             Project project = null;
+
             if (itemRequest.getProjectId() != null) {
                 project = projectRepo.findById(itemRequest.getProjectId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Project not found: " + itemRequest.getProjectId()));
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException("Project not found: " + itemRequest.getProjectId())
+                        );
+
+                if (!project.getCompany().getCompanyId().equals(company.getCompanyId())) {
+                    throw new AccessDeniedException("Project does not belong to your company");
+                }
             }
+
+            Integer quantity = itemRequest.getQuantity() != null
+                    ? itemRequest.getQuantity()
+                    : 1;
+
+            BigDecimal unitPrice = valueOrZero(itemRequest.getUnitPrice());
+
+            BigDecimal discountPercent = itemRequest.getDiscountPercent() != null
+                    ? itemRequest.getDiscountPercent()
+                    : BigDecimal.ZERO;
+
+            BigDecimal lineAmount = unitPrice
+                    .multiply(BigDecimal.valueOf(quantity))
+                    .multiply(BigDecimal.ONE.subtract(
+                            discountPercent.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                    ));
 
             SalesOrderLineItem line = new SalesOrderLineItem();
             line.setSalesOrder(order);
             line.setItem(item);
             line.setDescription(itemRequest.getDescription());
-            line.setQuantity(itemRequest.getQuantity());
-            line.setUnitPrice(itemRequest.getUnitPrice());
-            line.setDiscountPercent(itemRequest.getDiscountPercent());
+            line.setQuantity(quantity);
+            line.setUnitPrice(unitPrice);
+            line.setDiscountPercent(discountPercent);
             line.setAccount(account);
             line.setProject(project);
-            line.setItemType(itemRequest.getItemType());
+            line.setAmount(lineAmount);
+
+            if (itemRequest.getItemType() != null) {
+                line.setItemType(itemRequest.getItemType());
+            } else {
+                line.setItemType(salesType == SalesType.GOODS ? LineItemType.GOODS : LineItemType.SERVICE);
+            }
+
             order.getItems().add(line);
-        });
+        }
     }
 
     private void calculateFinancials(SalesOrder order) {
         BigDecimal subtotal = order.getItems().stream()
-                .map(item -> item.getUnitPrice()
-                        .multiply(BigDecimal.valueOf(item.getQuantity()))
-                        .multiply(BigDecimal.ONE.subtract(item.getDiscountPercent()
-                                .divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP))))
+                .map(item -> item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         order.setSubtotal(subtotal);
-//        order.setFreight(order.getFreight() != null ? order.getFreight() : BigDecimal.ZERO);
-//        order.setTaxAmount(order.getTaxAmount() != null ? order.getTaxAmount() : BigDecimal.ZERO);
-//        order.setTotal(order.getSubtotal().add(order.getFreight()).add(order.getTaxAmount()));
         order.setTotal(subtotal);
-        order.setBalanceDue(order.getTotal().subtract(order.getAmountPaid() != null ? order.getAmountPaid() : BigDecimal.ZERO));
+
+        BigDecimal paid = valueOrZero(order.getAmountPaid());
+        order.setBalanceDue(order.getTotal().subtract(paid));
+
+        if (order.getBalanceDue().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalStateException("Overpayment detected");
+        }
     }
 
     private void createJournalEntries(SalesOrder order) {
+        if (order.getCompany().getAccountsReceivableAccount() == null) {
+            return;
+        }
+
         JournalEntryDto journal = new JournalEntryDto();
         journal.setEntryType(JournalEntryType.SALE);
         journal.setEntryDate(order.getIssueDate());
@@ -122,35 +199,32 @@ public class SalesOrderService {
         List<JournalEntryLineDto> lines = new ArrayList<>();
 
         for (SalesOrderLineItem item : order.getItems()) {
-            BigDecimal lineTotal = item.getUnitPrice()
-                    .multiply(BigDecimal.valueOf(item.getQuantity()))
-                    .multiply(BigDecimal.ONE.subtract(item.getDiscountPercent()
-                            .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)));
+            BigDecimal lineTotal = item.getAmount() != null
+                    ? item.getAmount()
+                    : BigDecimal.ZERO;
 
             lines.add(new JournalEntryLineDto(
                     item.getAccount().getAccountCode(),
                     lineTotal,
-                    true,
+                    false,
                     item.getDescription()
             ));
         }
 
-        // Credit amountPaid if payment made
-        if (order.getAmountPaid().compareTo(BigDecimal.ZERO) > 0) {
+        if (order.getAmountPaid().compareTo(BigDecimal.ZERO) > 0 && order.getPaymentAccount() != null) {
             lines.add(new JournalEntryLineDto(
                     order.getPaymentAccount().getAccountCode(),
                     order.getAmountPaid(),
-                    false,
+                    true,
                     "Received Payment"
             ));
         }
 
-        // Credit receivable for remaining
         if (order.getBalanceDue().compareTo(BigDecimal.ZERO) > 0) {
             lines.add(new JournalEntryLineDto(
                     order.getCompany().getAccountsReceivableAccount().getAccountCode(),
                     order.getBalanceDue(),
-                    false,
+                    true,
                     "Receivable from " + order.getCustomer().getName()
             ));
         }
@@ -191,15 +265,14 @@ public class SalesOrderService {
         }
 
         Account paymentAccount = accountRepo.findByAccountCodeAndCompany_CompanyId(
-                request.getPaymentAccountCode(), request.getCompanyId()
+                request.getPaymentAccountCode(),
+                request.getCompanyId()
         ).orElseThrow(() -> new ResourceNotFoundException("Payment account not found"));
 
-        // Update balances
         order.setAmountPaid(order.getAmountPaid().add(request.getAmount()));
         order.setBalanceDue(order.getBalanceDue().subtract(request.getAmount()));
         salesOrderRepo.save(order);
 
-        // Create Journal Entry
         JournalEntryDto journal = new JournalEntryDto();
         journal.setEntryType(JournalEntryType.RECEIPT);
         journal.setEntryDate(LocalDate.now());
@@ -210,7 +283,6 @@ public class SalesOrderService {
 
         List<JournalEntryLineDto> lines = new ArrayList<>();
 
-        // Debit payment account (we received money)
         lines.add(new JournalEntryLineDto(
                 paymentAccount.getAccountCode(),
                 request.getAmount(),
@@ -218,22 +290,18 @@ public class SalesOrderService {
                 "Customer payment received"
         ));
 
-        // Credit accounts receivable
-        lines.add(new JournalEntryLineDto(
-                order.getCompany().getAccountsReceivableAccount().getAccountCode(),
-                request.getAmount(),
-                false,
-                "Reduce receivable from customer"
-        ));
+        if (order.getCompany().getAccountsReceivableAccount() != null) {
+            lines.add(new JournalEntryLineDto(
+                    order.getCompany().getAccountsReceivableAccount().getAccountCode(),
+                    request.getAmount(),
+                    false,
+                    "Reduce receivable from customer"
+            ));
+        }
 
         journal.setLines(lines);
         journalService.createJournalEntry(journal);
-
-        // OPTIONAL: Update aging snapshot
-        // You can remove or update the corresponding aging snapshot here if needed.
     }
-
-
 
     private SalesOrderResponseDto convertToDto(SalesOrder order) {
         SalesOrderResponseDto dto = new SalesOrderResponseDto();
@@ -242,30 +310,50 @@ public class SalesOrderService {
         dto.setCustomerName(order.getCustomer().getName());
         dto.setSoNumber(order.getSoNumber());
         dto.setIssueDate(order.getIssueDate());
+        dto.setDueDate(order.getDueDate());
         dto.setNotes(order.getNotes());
         dto.setSubtotal(order.getSubtotal());
-//        dto.setTaxAmount(order.getTaxAmount());
-//        dto.setFreight(order.getFreight());
         dto.setTotal(order.getTotal());
         dto.setAmountPaid(order.getAmountPaid());
         dto.setBalanceDue(order.getBalanceDue());
         dto.setSalesType(order.getSalesType());
-        dto.setItems(order.getItems().stream().map(this::convertLineToDto).collect(Collectors.toList()));
+        dto.setItems(
+                order.getItems()
+                        .stream()
+                        .map(this::convertLineToDto)
+                        .collect(Collectors.toList())
+        );
         return dto;
     }
 
     private SalesOrderItemResponseDto convertLineToDto(SalesOrderLineItem item) {
         SalesOrderItemResponseDto dto = new SalesOrderItemResponseDto();
-        dto.setItemId(item.getItem().getItemId());
-        dto.setItemName(item.getItem().getName());
+
+        if (item.getItem() != null) {
+            dto.setItemId(item.getItem().getItemId());
+            dto.setItemName(item.getItem().getName());
+        }
+
         dto.setDescription(item.getDescription());
         dto.setQuantity(item.getQuantity());
         dto.setUnitPrice(item.getUnitPrice());
         dto.setDiscountPercent(item.getDiscountPercent());
         dto.setAmount(item.getAmount());
-        dto.setAccountCode(item.getAccount().getAccountCode());
+        dto.setAccountCode(item.getAccount() != null ? item.getAccount().getAccountCode() : null);
         dto.setProjectId(item.getProject() != null ? item.getProject().getId() : null);
         dto.setItemType(item.getItemType());
+
         return dto;
+    }
+
+    private BigDecimal valueOrZero(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
+    }
+
+    public List<SalesOrderResponseDto> getSalesOrdersByCompany(Integer companyId) {
+        return salesOrderRepo.findByCompany_CompanyId(companyId)
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 }

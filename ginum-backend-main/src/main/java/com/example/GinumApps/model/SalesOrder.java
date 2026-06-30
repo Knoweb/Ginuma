@@ -13,13 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "sales_orders",
+@Table(
+        name = "sales_orders",
         uniqueConstraints = @UniqueConstraint(
                 columnNames = {"company_id", "so_number"}
         )
 )
 @Data
 public class SalesOrder {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,15 +45,11 @@ public class SalesOrder {
     private String notes;
 
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal subtotal = BigDecimal.ZERO;
 
-//    @DecimalMin("0.00")
-//    private BigDecimal freight = BigDecimal.ZERO;
-
-//    @DecimalMin("0.00")
-//    private BigDecimal taxAmount = BigDecimal.ZERO;
-
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
 
     @ManyToOne
@@ -59,9 +57,11 @@ public class SalesOrder {
     private Account paymentAccount;
 
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal amountPaid = BigDecimal.ZERO;
 
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal balanceDue = BigDecimal.ZERO;
 
     @OneToMany(mappedBy = "salesOrder", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -69,29 +69,40 @@ public class SalesOrder {
     private List<SalesOrderLineItem> items = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    private SalesType salesType; // ITEMS or SERVICE
+    private SalesType salesType;
 
     @PrePersist
     @PreUpdate
     private void calculateTotals() {
         this.subtotal = items.stream()
-                .map(item -> item.getUnitPrice()
-                        .multiply(BigDecimal.valueOf(item.getQuantity()))
-                        .multiply(BigDecimal.ONE.subtract(
-                                item.getDiscountPercent().divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP)
-                        ))
-                )
+                .map(item -> {
+                    BigDecimal unitPrice = item.getUnitPrice() != null
+                            ? item.getUnitPrice()
+                            : BigDecimal.ZERO;
+
+                    int quantity = item.getQuantity() != null
+                            ? item.getQuantity()
+                            : 1;
+
+                    BigDecimal discount = item.getDiscountPercent() != null
+                            ? item.getDiscountPercent()
+                            : BigDecimal.ZERO;
+
+                    return unitPrice
+                            .multiply(BigDecimal.valueOf(quantity))
+                            .multiply(BigDecimal.ONE.subtract(
+                                    discount.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+                            ));
+                })
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-//        this.total = subtotal
-//                .add(freight != null ? freight : BigDecimal.ZERO)
-//                .add(taxAmount != null ? taxAmount : BigDecimal.ZERO);
+        this.total = this.subtotal;
 
-        this.balanceDue = total.subtract(amountPaid != null ? amountPaid : BigDecimal.ZERO);
+        BigDecimal paid = amountPaid != null ? amountPaid : BigDecimal.ZERO;
+        this.balanceDue = this.total.subtract(paid);
 
         if (balanceDue.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalStateException("Overpayment detected");
         }
     }
 }
-

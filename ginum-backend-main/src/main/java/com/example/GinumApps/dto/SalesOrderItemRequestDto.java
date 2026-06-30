@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 @Data
 public class SalesOrderItemRequestDto {
-    @NotNull
+
     private Long itemId;
 
     @NotBlank
@@ -17,8 +17,7 @@ public class SalesOrderItemRequestDto {
     @NotBlank
     private String accountCode;
 
-    @Positive
-    private int quantity;
+    private Integer quantity;
 
     @DecimalMin("0.01")
     private BigDecimal unitPrice;
@@ -29,5 +28,5 @@ public class SalesOrderItemRequestDto {
 
     private Long projectId;
 
-    private LineItemType itemType; // GOODS or SERVICE
+    private LineItemType itemType;
 }
