@@ -9,7 +9,7 @@ const API_BASE_URL = "http://localhost:8081";
 const emptyRow = {
   itemId: "",
   description: "",
-  accountId: "",
+  accountCode: "",
   quantity: "",
   unitPrice: "",
   discount: "",
@@ -50,11 +50,9 @@ const CreateSaleOrder = () => {
   const [modalTransition, setModalTransition] = useState("opacity-0 invisible");
 
   const [subtotal, setSubtotal] = useState(0);
-  const [freight, setFreight] = useState("");
-  const [tax, setTax] = useState(0);
-  const [total, setTotal] = useState(0);
   const [amountPaid, setAmountPaid] = useState("");
   const [balanceDue, setBalanceDue] = useState(0);
+  const [paymentAccountCode, setPaymentAccountCode] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -92,20 +90,32 @@ const CreateSaleOrder = () => {
     return companyId;
   };
 
+  const getCustomerId = (customer) => customer.customerId || customer.id;
+
+  const getProjectId = (project) => project.id || project.projectId;
+
+  const getItemId = (item) => item.itemId || item.id;
+
+  const getAccountLabel = (account) => {
+    const code = account.accountCode || "";
+    const name = account.accountName || account.name || "Unnamed Account";
+
+    return code ? `${code} - ${name}` : name;
+  };
+
   useEffect(() => {
     const newSubtotal = rows.reduce((sum, row) => {
       return sum + (Number(row.amount) || 0);
     }, 0);
 
-    const newTax = newSubtotal * 0;
-    const newTotal = newSubtotal + (Number(freight) || 0) + newTax;
-    const newBalanceDue = Math.max(newTotal - (Number(amountPaid) || 0), 0);
+    const newBalanceDue = Math.max(
+      newSubtotal - (Number(amountPaid) || 0),
+      0
+    );
 
     setSubtotal(newSubtotal);
-    setTax(newTax);
-    setTotal(newTotal);
     setBalanceDue(newBalanceDue);
-  }, [rows, freight, amountPaid]);
+  }, [rows, amountPaid]);
 
   useEffect(() => {
     if (showAccountModal || showProjectModal) {
@@ -138,7 +148,7 @@ const CreateSaleOrder = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || "Failed to load customers");
+        throw new Error(errorText || "Failed to load customers.");
       }
 
       const data = await response.json();
@@ -169,24 +179,11 @@ const CreateSaleOrder = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || "Failed to load accounts");
+        throw new Error(errorText || "Failed to load accounts.");
       }
 
       const data = await response.json();
-
-      const formattedAccounts = Array.isArray(data)
-        ? data.map((account) => ({
-            id: account.id,
-            name: `${account.accountCode || ""} - ${
-              account.accountName || "Unnamed Account"
-            }`,
-            accountType: account.accountType,
-            currentBalance: account.currentBalance,
-            accountCode: account.accountCode,
-          }))
-        : [];
-
-      setAccounts(formattedAccounts);
+      setAccounts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching accounts:", error);
       setAccountsError("Failed to load accounts.");
@@ -213,7 +210,7 @@ const CreateSaleOrder = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || "Failed to load projects");
+        throw new Error(errorText || "Failed to load projects.");
       }
 
       const data = await response.json();
@@ -244,7 +241,7 @@ const CreateSaleOrder = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || "Failed to load items");
+        throw new Error(errorText || "Failed to load items.");
       }
 
       const data = await response.json();
@@ -279,12 +276,17 @@ const CreateSaleOrder = () => {
   };
 
   const shouldAddNewRow = (row) => {
+    if (isServiceMode) {
+      return row.description || row.accountCode || row.amount || row.projectId;
+    }
+
     return (
       row.itemId ||
       row.description ||
-      row.accountId ||
+      row.accountCode ||
       row.quantity ||
       row.unitPrice ||
+      row.discount ||
       row.amount ||
       row.projectId
     );
@@ -292,6 +294,7 @@ const CreateSaleOrder = () => {
 
   const handleRowChange = (index, field, value) => {
     const updatedRows = [...rows];
+
     let updatedRow = {
       ...updatedRows[index],
       [field]: value,
@@ -299,13 +302,13 @@ const CreateSaleOrder = () => {
 
     if (field === "itemId") {
       const selectedItem = items.find(
-        (item) => String(item.itemId) === String(value)
+        (item) => String(getItemId(item)) === String(value)
       );
 
       if (selectedItem) {
         updatedRow = {
           ...updatedRow,
-          itemId: selectedItem.itemId,
+          itemId: getItemId(selectedItem),
           description: selectedItem.description || selectedItem.name || "",
           unitPrice: selectedItem.unitPrice || "",
         };
@@ -344,12 +347,16 @@ const CreateSaleOrder = () => {
   const getValidRows = () => {
     return rows.filter((row) => {
       if (isServiceMode) {
-        return row.description && row.accountId && Number(row.amount) > 0;
+        return (
+          row.description.trim() &&
+          row.accountCode &&
+          Number(row.amount) > 0
+        );
       }
 
       return (
         row.itemId &&
-        row.accountId &&
+        row.accountCode &&
         Number(row.quantity) > 0 &&
         Number(row.unitPrice) > 0 &&
         Number(row.amount) > 0
@@ -385,8 +392,56 @@ const CreateSaleOrder = () => {
       return false;
     }
 
+    if (Number(amountPaid || 0) > 0 && !paymentAccountCode) {
+      setMessage("Please select payment account.");
+      return false;
+    }
+
     setMessage("");
     return true;
+  };
+
+  const buildPayload = () => {
+    const companyId = checkAuth();
+    const validRows = getValidRows();
+
+    return {
+      customerId: Number(selectedCustomer),
+      soNumber: saleOrderNumber.trim(),
+      issueDate: orderDate,
+      dueDate: balanceDue > 0 ? dueDate : null,
+      notes: notes.trim(),
+      amountPaid: Number(amountPaid || 0),
+      salesType: isServiceMode ? "SERVICES" : "GOODS",
+      paymentAccountCode:
+        Number(amountPaid || 0) > 0 ? paymentAccountCode : null,
+      companyId: Number(companyId),
+
+      items: validRows.map((row) => ({
+        itemId: isServiceMode ? null : Number(row.itemId),
+        description: row.description.trim(),
+        accountCode: row.accountCode,
+        quantity: isServiceMode ? 1 : Number(row.quantity),
+        unitPrice: isServiceMode
+          ? Number(row.amount)
+          : Number(row.unitPrice),
+        discountPercent: Number(row.discount || 0),
+        projectId: row.projectId ? Number(row.projectId) : null,
+        itemType: isServiceMode ? "SERVICE" : "GOODS",
+      })),
+    };
+  };
+
+  const resetForm = () => {
+    setRows([{ ...emptyRow }]);
+    setSelectedCustomer("");
+    setSaleOrderNumber("");
+    setOrderDate(new Date().toISOString().split("T")[0]);
+    setDueDate("");
+    setNotes("");
+    setAmountPaid("");
+    setPaymentAccountCode("");
+    setMessage("");
   };
 
   const handleSaveSaleOrder = async () => {
@@ -397,37 +452,12 @@ const CreateSaleOrder = () => {
       setMessage("");
 
       const companyId = checkAuth();
-      const validRows = getValidRows();
+      const payload = buildPayload();
 
-      const payload = {
-        saleOrderNumber: saleOrderNumber.trim(),
-        customerId: Number(selectedCustomer),
-        orderDate,
-        dueDate: balanceDue > 0 ? dueDate : null,
-        mode: isServiceMode ? "SERVICE" : "ITEM",
-        notes: notes.trim(),
-        subtotal: Number(subtotal.toFixed(2)),
-        freight: Number(freight || 0),
-        tax: Number(tax.toFixed(2)),
-        total: Number(total.toFixed(2)),
-        amountPaid: Number(amountPaid || 0),
-        balanceDue: Number(balanceDue.toFixed(2)),
-        lines: validRows.map((row) => ({
-          itemId: isServiceMode ? null : Number(row.itemId),
-          description: row.description,
-          accountId: Number(row.accountId),
-          quantity: isServiceMode ? null : Number(row.quantity),
-          unitPrice: isServiceMode ? null : Number(row.unitPrice),
-          discountPercentage: Number(row.discount || 0),
-          amount: Number(row.amount || 0),
-          projectId: row.projectId ? Number(row.projectId) : null,
-        })),
-      };
-
-      console.log("Sale Order Payload:", payload);
+      console.log("Sales Order Payload:", payload);
 
       const response = await fetch(
-        `${API_BASE_URL}/api/companies/${companyId}/sale-orders`,
+        `${API_BASE_URL}/api/sales-orders/company/${companyId}`,
         {
           method: "POST",
           headers: getJsonHeaders(),
@@ -437,25 +467,15 @@ const CreateSaleOrder = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Sale order save error:", errorText);
-        throw new Error(errorText || "Sale order save failed");
+        console.error("Sales order save error:", errorText);
+        throw new Error(errorText || "Sales order save failed.");
       }
 
-      setMessage("Sale order saved successfully!");
-
-      setRows([{ ...emptyRow }]);
-      setSelectedCustomer("");
-      setSaleOrderNumber("");
-      setOrderDate(new Date().toISOString().split("T")[0]);
-      setDueDate("");
-      setNotes("");
-      setFreight("");
-      setAmountPaid("");
+      setMessage("Sales order saved successfully!");
+      resetForm();
     } catch (error) {
       console.error("Cannot save sale order:", error);
-      setMessage(
-        "Sale order save failed. Backend sale-order API is missing or error occurred."
-      );
+      setMessage(error.message || "Sales order save failed.");
     } finally {
       setSaving(false);
     }
@@ -517,7 +537,7 @@ const CreateSaleOrder = () => {
               </option>
             ) : (
               customers.map((customer, index) => {
-                const customerId = customer.customerId || customer.id;
+                const customerId = getCustomerId(customer);
 
                 return (
                   <option key={customerId || index} value={customerId}>
@@ -566,7 +586,10 @@ const CreateSaleOrder = () => {
             name="mode"
             value="item"
             checked={!isServiceMode}
-            onChange={() => setIsServiceMode(false)}
+            onChange={() => {
+              setIsServiceMode(false);
+              setRows([{ ...emptyRow }]);
+            }}
             className="form-radio h-4 w-4 text-blue-600"
           />
           <span className="ml-2 text-gray-700">Items</span>
@@ -578,7 +601,10 @@ const CreateSaleOrder = () => {
             name="mode"
             value="service"
             checked={isServiceMode}
-            onChange={() => setIsServiceMode(true)}
+            onChange={() => {
+              setIsServiceMode(true);
+              setRows([{ ...emptyRow }]);
+            }}
             className="form-radio h-4 w-4 text-blue-600"
           />
           <span className="ml-2 text-gray-700">Services</span>
@@ -613,6 +639,7 @@ const CreateSaleOrder = () => {
                   type="button"
                   onClick={() => setShowAccountModal(true)}
                   className="ml-1 text-blue-600 hover:text-blue-700"
+                  title="Add account"
                 >
                   <MdAddCircleOutline className="h-5 w-5 inline" />
                 </button>
@@ -642,6 +669,7 @@ const CreateSaleOrder = () => {
                   type="button"
                   onClick={() => setShowProjectModal(true)}
                   className="ml-1 text-blue-600 hover:text-blue-700"
+                  title="Add project"
                 >
                   <MdAddCircleOutline className="h-5 w-5 inline" />
                 </button>
@@ -674,14 +702,22 @@ const CreateSaleOrder = () => {
                         <option value="" disabled>
                           {itemsError}
                         </option>
+                      ) : items.length === 0 ? (
+                        <option value="" disabled>
+                          No items available
+                        </option>
                       ) : (
-                        items.map((item) => (
-                          <option key={item.itemId} value={item.itemId}>
-                            {item.itemCode
-                              ? `${item.itemCode} - ${item.name}`
-                              : item.name}
-                          </option>
-                        ))
+                        items.map((item) => {
+                          const itemId = getItemId(item);
+
+                          return (
+                            <option key={itemId} value={itemId}>
+                              {item.itemCode
+                                ? `${item.itemCode} - ${item.name}`
+                                : item.name}
+                            </option>
+                          );
+                        })
                       )}
                     </select>
                   </td>
@@ -701,9 +737,9 @@ const CreateSaleOrder = () => {
 
                 <td className="p-2">
                   <select
-                    value={row.accountId}
+                    value={row.accountCode}
                     onChange={(e) =>
-                      handleRowChange(index, "accountId", e.target.value)
+                      handleRowChange(index, "accountCode", e.target.value)
                     }
                     className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     disabled={isLoadingAccounts}
@@ -723,9 +759,12 @@ const CreateSaleOrder = () => {
                         No accounts available
                       </option>
                     ) : (
-                      accounts.map((account) => (
-                        <option key={account.id} value={account.id}>
-                          {account.name}
+                      accounts.map((account, accountIndex) => (
+                        <option
+                          key={account.id || account.accountCode || accountIndex}
+                          value={account.accountCode}
+                        >
+                          {getAccountLabel(account)}
                         </option>
                       ))
                     )}
@@ -811,14 +850,22 @@ const CreateSaleOrder = () => {
                       <option value="" disabled>
                         {projectsError}
                       </option>
+                    ) : projects.length === 0 ? (
+                      <option value="" disabled>
+                        No projects available
+                      </option>
                     ) : (
-                      projects.map((project) => (
-                        <option key={project.id} value={project.id}>
-                          {project.code
-                            ? `${project.code} - ${project.name}`
-                            : project.name}
-                        </option>
-                      ))
+                      projects.map((project, projectIndex) => {
+                        const projectId = getProjectId(project);
+
+                        return (
+                          <option key={projectId || projectIndex} value={projectId}>
+                            {project.code
+                              ? `${project.code} - ${project.name}`
+                              : project.name}
+                          </option>
+                        );
+                      })
                     )}
                   </select>
                 </td>
@@ -859,27 +906,8 @@ const CreateSaleOrder = () => {
         </div>
 
         <div className="w-full md:w-1/2 flex justify-between items-center">
-          <label className="text-gray-700 font-medium">Freight:</label>
-
-          <input
-            type="number"
-            className="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            placeholder="0.00"
-            value={freight}
-            onChange={(e) => setFreight(e.target.value)}
-            min="0"
-            step="0.01"
-          />
-        </div>
-
-        <div className="w-full md:w-1/2 flex justify-between items-center">
-          <span className="text-gray-700 font-medium">Tax:</span>
-          <span className="text-gray-900">Rs. {tax.toFixed(2)}</span>
-        </div>
-
-        <div className="w-full md:w-1/2 flex justify-between items-center">
           <span className="text-gray-700 font-medium">Total:</span>
-          <span className="text-gray-900">Rs. {total.toFixed(2)}</span>
+          <span className="text-gray-900">Rs. {subtotal.toFixed(2)}</span>
         </div>
 
         <div className="w-full md:w-1/2 flex justify-between items-center">
@@ -895,6 +923,31 @@ const CreateSaleOrder = () => {
             step="0.01"
           />
         </div>
+
+        {Number(amountPaid || 0) > 0 && (
+          <div className="w-full md:w-1/2 flex justify-between items-center">
+            <label className="text-gray-700 font-medium">
+              Payment Account <span className="text-red-500">*</span>
+            </label>
+
+            <select
+              value={paymentAccountCode}
+              onChange={(e) => setPaymentAccountCode(e.target.value)}
+              className="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+            >
+              <option value="">Select Account</option>
+
+              {accounts.map((account, index) => (
+                <option
+                  key={account.id || account.accountCode || index}
+                  value={account.accountCode}
+                >
+                  {getAccountLabel(account)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className="w-full md:w-1/2 flex justify-between items-center">
           <span className="text-gray-700 font-medium">Balance Due:</span>
