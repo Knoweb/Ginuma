@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { FaPlusCircle, FaTimes,FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaPlusCircle, FaTimes, FaEye, FaEyeSlash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import AddEmployeeForm from "../Employee/AddEmployeeForm";
+import { apiUrl } from "../../utils/api"; 
+import api from "../../utils/api";
 
 const AddUserForm = () => {
+  const navigate = useNavigate();
+  const [employees, setEmployees] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
   const [formData, setFormData] = useState({
+    employeeId: "",
     designation: "",
     department: "",
     mobileNo: "",
     email: "",
     password: "",
     confirmPassword: "",
-    employee: "",
+    role: "USER"
   });
 
   const [errors, setErrors] = useState({});
@@ -19,6 +27,37 @@ const AddUserForm = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalTransition, setModalTransition] = useState("opacity-0 invisible");
 
+  const companyId = sessionStorage.getItem("companyId");
+  const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("token");
+
+  const fetchEmployees = async () => {
+    if (!companyId || !token) return;
+
+    try {
+      const response = await fetch(`${apiUrl}/api/employees/${companyId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setEmployees(Array.isArray(data) ? data : []);
+        console.log("Employees loaded for dropdown:", data);
+      } else {
+        console.error("Failed to load employees, Status:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
   useEffect(() => {
     if (showModal) {
       setModalTransition("opacity-100 visible");
@@ -26,215 +65,185 @@ const AddUserForm = () => {
     } else {
       setModalTransition("opacity-0 invisible");
       document.body.style.overflow = "auto";
+      fetchEmployees(); 
     }
   }, [showModal]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    
+    if (name === "employeeId") {
+      if (!value) {
+        setFormData({
+          employeeId: "", email: "", mobileNo: "", designation: "", department: ""
+        });
+        return;
+      }
+
+      const selectedEmp = employees.find(emp => String(emp.employeeId) === String(value));
+      
+      if (selectedEmp) {
+        setFormData(prev => ({
+          ...prev, 
+          employeeId: value,
+          email: selectedEmp.email || "", 
+          mobileNo: selectedEmp.mobileNo || "",
+          designation: selectedEmp.designation?.name || "N/A",
+          department: selectedEmp.department?.name || "N/A"
+        }));
+        return;
+      }
+    }
+
+    // අනෙකුත් input fields සඳහා (Email, Password)
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-  };
+    console.log("Current Form Data:", formData);
+    
+    if (formData.password !== formData.confirmPassword) {
+      setErrors({ confirmPassword: "Passwords do not match!" });
+      return;
+    }
 
-  const handleModalClick = (e) => {
-    if (e.target === e.currentTarget) {
-      setShowModal(false);
+    setIsLoading(true);
+
+    const payload = {
+      email: formData.email,
+      password: formData.password, 
+      role: formData.role
+    };
+
+    console.log("Payload sending to backend:", payload);
+
+    try {
+      await api.post(`/api/users/companies/${companyId}`, payload, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json" 
+        }
+      });
+      alert("User assigned successfully!"); 
+      navigate("/users/all");
+    } catch (error) {
+      console.error("Error assigning user:", error);
+      alert(error.response?.data?.message || "Failed to assign user.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center p-4 bg-gray-100">
-      <div className="w-full max-w-md sm:max-w-2xl bg-white rounded-lg shadow-md p-7">
+    <div className="flex justify-center p-4 bg-gray-100 min-h-full pt-10"> 
+      <div className="w-full max-w-md sm:max-w-2xl bg-white rounded-lg shadow-md p-7 h-fit"> {/* h-fit එකතු කළා */}
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Assign User</h2>
         <form className="space-y-4 w-full" onSubmit={handleSubmit}>
-          {/* Employee Dropdown */}
+          
           <div>
             <label className="block text-gray-700">
               Select Employee <span className="text-red-500">*</span>
             </label>
             <select
-              name="employee"
+              name="employeeId"
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              value={formData.employee}
+              value={formData.employeeId}
               onChange={handleChange}
+              required
             >
               <option value="">Select an Employee</option>
-              <option value="employee1">Employee 1</option>
-              <option value="employee2">Employee 2</option>
+              {employees.map(emp => (
+                <option key={emp.employeeId} value={emp.employeeId}>
+                  {emp.firstName} {emp.lastName} {emp.nic ? `- ${emp.nic}` : ""}
+                </option>
+              ))}
             </select>
-            {errors.employee && (
-              <p className="text-red-500 text-sm">{errors.employee}</p>
-            )}
             <div className="text-center mt-2">
               <button
                 type="button"
-                className="text-blue-500 flex items-center justify-center"
+                className="text-blue-500 flex items-center justify-center hover:text-blue-700 transition"
                 onClick={() => setShowModal(true)}
               >
-                <span className="mr-2">
-                  <FaPlusCircle />
-                </span>
-                Add Employee
+                <span className="mr-2"><FaPlusCircle /></span> Add New Employee
               </button>
             </div>
           </div>
 
-          {/* Fields in Two Columns on Large Screens */}
+          {/* Form Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Email Field */}
+            
+            {/* Read-Only Department & Designation */}
             <div>
-              <label className="block text-gray-700">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm">{errors.email}</p>
-              )}
+              <label className="block text-gray-700">Department</label>
+              <input type="text" name="department" className="w-full px-4 py-2 border rounded-lg bg-gray-100 text-gray-600" value={formData.department} readOnly placeholder="Auto-filled" />
             </div>
 
-            {/* Mobile Number Field */}
             <div>
-              <label className="block text-gray-700">
-                Mobile Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="mobileNo"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter mobile number"
-                value={formData.mobileNo}
-                onChange={handleChange}
-                readOnly
-              />
-              {errors.mobileNo && (
-                <p className="text-red-500 text-sm">{errors.mobileNo}</p>
-              )}
+              <label className="block text-gray-700">Designation</label>
+              <input type="text" name="designation" className="w-full px-4 py-2 border rounded-lg bg-gray-100 text-gray-600" value={formData.designation} readOnly placeholder="Auto-filled" />
             </div>
 
-            {/* Designation Field */}
+            {/* Read-Only Mobile No */}
             <div>
-              <label className="block text-gray-700">
-                Designation <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="designation"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter designation"
-                value={formData.designation}
-                onChange={handleChange}
-                readOnly
-              />
-              {errors.designation && (
-                <p className="text-red-500 text-sm">{errors.designation}</p>
-              )}
+              <label className="block text-gray-700">Mobile Number</label>
+              <input type="text" name="mobileNo" className="w-full px-4 py-2 border rounded-lg bg-gray-100 text-gray-600" value={formData.mobileNo} readOnly placeholder="Auto-filled" />
             </div>
 
-            {/* Department Field */}
+            {/* Editable Email (Username) */}
             <div>
-              <label className="block text-gray-700">
-                Department <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="department"
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter department"
-                value={formData.department}
-                onChange={handleChange}
-                readOnly
-              />
-              {errors.department && (
-                <p className="text-red-500 text-sm">{errors.department}</p>
-              )}
+              <label className="block text-gray-700">Email (Username) <span className="text-red-500">*</span></label>
+              <input type="email" name="email" className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" value={formData.email} onChange={handleChange} required />
             </div>
 
-            {/* Password Field */}
+            {/* Role Selection */}
+            <div className="md:col-span-2">
+              <label className="block text-gray-700">System Role <span className="text-red-500">*</span></label>
+              <select name="role" className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" value={formData.role} onChange={handleChange}>
+                <option value="USER">User</option>
+                <option value="MANAGER">Manager</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+
+            {/* Passwords */}
             <div className="w-full">
-              <label className="block text-gray-700">
-                Password <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-gray-700">Password <span className="text-red-500">*</span></label>
               <div className="flex items-center w-full border rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  className="flex-1 px-4 py-2 rounded-lg outline-none"
-                  placeholder="Enter password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <button
-                  type="button"
-                  className="p-2"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
+                <input type={showPassword ? "text" : "password"} name="password" className="flex-1 px-4 py-2 rounded-lg outline-none" value={formData.password} onChange={handleChange} required minLength="6" />
+                <button type="button" className="p-2 text-gray-500" onClick={() => setShowPassword(!showPassword)}>
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
-              {errors.password && (
-                <p className="text-red-500 text-sm">{errors.password}</p>
-              )}
             </div>
 
-            {/* Confirm Password Field */}
             <div className="w-full">
-              <label className="block text-gray-700">
-                Confirm Password <span className="text-red-500">*</span>
-              </label>
+              <label className="block text-gray-700">Confirm Password <span className="text-red-500">*</span></label>
               <div className="flex items-center w-full border rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  className="flex-1 px-4 py-2 rounded-lg outline-none"
-                  placeholder="Confirm password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-                <button
-                  type="button"
-                  className="p-2"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
+                <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" className="flex-1 px-4 py-2 rounded-lg outline-none" value={formData.confirmPassword} onChange={handleChange} required />
+                <button type="button" className="p-2 text-gray-500" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                   {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-              )}
+              {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
             </div>
           </div>
-          <button
-            type="submit"
-            className="bg-blue-500 px-4 py-2 rounded-lg text-white font-semibold hover:bg-blue-700"
+
+          <button 
+            type="submit" 
+            disabled={isLoading}
+            className={`mt-6 w-full md:w-auto bg-blue-600 px-8 py-2 rounded-lg text-white font-semibold hover:bg-blue-700 transition ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
           >
-            Save
+            {isLoading ? "Saving..." : "Save User"}
           </button>
         </form>
       </div>
 
-      {/* Modal for Adding Employee */}
+      {/* Add Employee Modal */}
       {showModal && (
-        <div
-          className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`}
-          onClick={handleModalClick} // Close modal when clicking outside
-        >
-          <div className="modal-content relative overflow-auto max-h-screen rounded-lg ">
-            <button
-              className="absolute top-2 right-2 text-black-600 text-xl"
-              onClick={() => setShowModal(false)}
-            >
+        <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300 ${modalTransition}`} onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false) }}>
+          <div className="relative w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 bg-white p-2 rounded-lg max-h-[90vh] overflow-y-auto">
+            <button className="absolute top-4 right-4 text-gray-600 hover:text-red-500 text-xl z-10" onClick={() => setShowModal(false)}>
               <FaTimes />
             </button>
             <AddEmployeeForm />

@@ -1,39 +1,77 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { MdOutlineCancel, MdAddCircleOutline, MdSearch } from "react-icons/md";
 import { FaTimes, FaUserTie, FaBuilding, FaUser } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import AddAccountForm from "../account/AddAccountForm";
 import NewProjectForm from "../projects/NewProjectForm";
 import PayerPayee from "../PayerPayee/PayerPayee";
+import api from "../../utils/api";
+import { apiUrl } from "../../utils/api";
 
-// PayeeDropdown Component
+// 1. Updated PayeeDropdown with API Fetching
 const PayeeDropdown = ({ value, onChange, onAddNew }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [suppliers, setSuppliers] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data - replace with your actual data
-  const { suppliers, customers, employees } = useMemo(
-    () => ({
-      suppliers: [
-        { id: "sup1", name: "Araliya Food City Perera", contact: "0771234567" },
-        { id: "sup2", name: "Shan Bakers", contact: "0777654321" },
-      ],
-      customers: [
-        { id: "cust1", name: "John Doe Enterprises", contact: "john@doe.com" },
-        { id: "cust2", name: "Acme Corporation", contact: "contact@acme.com" },
-      ],
-      employees: [
-        { id: "emp1", name: "Alice Johnson", role: "Manager" },
-        { id: "emp2", name: "Bob Smith", role: "Developer" },
-      ],
-    }),
-    []
-  );
+  // Fetch Suppliers and Customers
+  // Fetch Suppliers and Customers using Native Fetch
+  useEffect(() => {
+    const fetchPayees = async () => {
+      const companyId = sessionStorage.getItem("companyId") || localStorage.getItem("companyId");
+      const token = sessionStorage.getItem("auth_token") || localStorage.getItem("auth_token") || sessionStorage.getItem("token");
+
+      if (!companyId || !token) return;
+
+      setLoading(true);
+      try {
+        const [supRes, custRes] = await Promise.all([
+          fetch(`${apiUrl || 'http://localhost:8081'}/api/suppliers/companies/${companyId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${apiUrl || 'http://localhost:8081'}/api/customers/companies/${companyId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
+        const supData = supRes.ok ? await supRes.json() : [];
+        const custData = custRes.ok ? await custRes.json() : [];
+
+        // Format Suppliers
+        const suppliersData = (Array.isArray(supData) ? supData : []).map(s => ({
+          id: s.id || s.email || s.supplierName, 
+          name: s.supplierName,
+          contact: s.mobileNo || s.email,
+          type: "Supplier"
+        }));
+
+        // Format Customers
+        const customersData = (Array.isArray(custData) ? custData : []).map(c => ({
+          id: c.customerId || c.id || c.email || c.customerName,
+          name: c.customerName,
+          contact: c.mobileNo || c.email,
+          type: "Customer"
+        }));
+
+        setSuppliers(suppliersData);
+        setCustomers(customersData);
+      } catch (error) {
+        console.error("Error fetching Payees (Suppliers/Customers):", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPayees();
+  }, []);
 
   const filteredGroups = useMemo(() => {
     const lowerSearch = searchTerm.toLowerCase();
 
     const filterItems = (items) =>
-      items.filter((item) => item.name.toLowerCase().includes(lowerSearch));
+      items.filter((item) => (item.name || "").toLowerCase().includes(lowerSearch));
 
     return [
       {
@@ -45,24 +83,19 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
         label: "Customers",
         icon: <FaUser className="text-green-500" />,
         items: filterItems(customers),
-      },
-      {
-        label: "Employees",
-        icon: <FaUserTie className="text-purple-500" />,
-        items: filterItems(employees),
-      },
+      }
     ].filter((group) => group.items.length > 0);
-  }, [searchTerm, suppliers, customers, employees]);
+  }, [searchTerm, suppliers, customers]);
 
   const selectedItem = useMemo(() => {
-    const allItems = [...suppliers, ...customers, ...employees];
+    const allItems = [...suppliers, ...customers];
     return allItems.find((item) => item.id === value);
-  }, [value, suppliers, customers, employees]);
+  }, [value, suppliers, customers]);
 
   return (
     <div className="relative w-full">
       <div
-        className="flex items-center justify-between w-full px-3 py-2 border rounded-lg cursor-pointer"
+        className="flex items-center justify-between w-full px-3 py-2 border rounded-lg cursor-pointer bg-white"
         onClick={() => setIsOpen(!isOpen)}
       >
         {selectedItem ? (
@@ -73,24 +106,18 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
                 ({selectedItem.contact})
               </span>
             )}
+            <span className="ml-2 text-xs bg-gray-200 px-2 py-0.5 rounded">{selectedItem.type}</span>
           </div>
         ) : (
-          <span className="text-gray-400">Select payee/payer</span>
+          <span className="text-gray-400">
+             {loading ? "Loading payees..." : "Select payee/payer"}
+          </span>
         )}
         <svg
-          className={`w-4 h-4 ml-2 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+          className={`w-4 h-4 ml-2 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          fill="none" stroke="currentColor" viewBox="0 0 24 24"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </div>
 
@@ -110,7 +137,9 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
             </div>
           </div>
 
-          {filteredGroups.length > 0 ? (
+          {loading ? (
+             <div className="p-4 text-center text-blue-500">Loading...</div>
+          ) : filteredGroups.length > 0 ? (
             filteredGroups.map((group) => (
               <div key={group.label} className="border-b last:border-b-0">
                 <div className="flex items-center px-4 py-2 bg-gray-50 text-gray-700 font-medium">
@@ -131,22 +160,15 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
                     <div className="flex justify-between">
                       <span>{item.name}</span>
                       {item.contact && (
-                        <span className="text-sm text-gray-500">
-                          {item.contact}
-                        </span>
+                        <span className="text-sm text-gray-500">{item.contact}</span>
                       )}
                     </div>
-                    {item.role && (
-                      <div className="text-xs text-gray-400">{item.role}</div>
-                    )}
                   </div>
                 ))}
               </div>
             ))
           ) : (
-            <div className="p-4 text-center text-gray-500">
-              No results found
-            </div>
+            <div className="p-4 text-center text-gray-500">No results found</div>
           )}
         </div>
       )}
@@ -154,13 +176,64 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
   );
 };
 
-// Main Component
+// 2. Updated Main Component (MoneyTransaction)
 const MoneyTransaction = ({ type }) => {
+  const navigate = useNavigate();
   const [showContactModal, setShowContactModal] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [modalTransition, setModalTransition] = useState("opacity-0 invisible");
+  
   const [selectedPayee, setSelectedPayee] = useState(null);
+  const [selectedBankAccount, setSelectedBankAccount] = useState("");
+  const [accounts, setAccounts] = useState([]); // Store fetched accounts
+  
+  const [date, setDate] = useState("");
+  const [referenceNumber, setReferenceNumber] = useState("1");
+  const [description, setDescription] = useState("");
+
+  const [rows, setRows] = useState([
+    { account: "", amount: "0.00", quantity: "0", description: "", project: "" },
+  ]);
+
+  // Fetch Bank Accounts on load using Native Fetch
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      const companyId = sessionStorage.getItem("companyId") || localStorage.getItem("companyId");
+      const token = sessionStorage.getItem("auth_token") || localStorage.getItem("auth_token") || sessionStorage.getItem("token");
+
+      if (!companyId || !token) return;
+
+      try {
+        const response = await fetch(`${apiUrl || 'http://localhost:8081'}/api/companies/${companyId}/accounts`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json"
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const accountsList = Array.isArray(data) ? data : [];
+          setAccounts(accountsList);
+          console.log("Loaded Accounts for Dropdown:", accountsList);
+        } else {
+          console.error("Failed to load accounts, Status:", response.status);
+        }
+      } catch (error) {
+        console.error("Error fetching accounts:", error);
+      }
+    };
+
+    fetchAccounts();
+  }, []);
+
+  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toISOString().split("T")[0];
+    setDate(formattedDate);
+  }, []);
 
   useEffect(() => {
     if (showContactModal || showAccountModal || showProjectModal) {
@@ -171,40 +244,7 @@ const MoneyTransaction = ({ type }) => {
   }, [showContactModal, showAccountModal, showProjectModal]);
 
   const handleModalClick = (e, setModal) => {
-    if (e.target === e.currentTarget) {
-      setModal(false);
-    }
-  };
-
-  const [rows, setRows] = useState([
-    {
-      account: "",
-      amount: "0.00",
-      quantity: "0",
-      description: "",
-      project: "",
-    },
-  ]);
-
-  const [date, setDate] = useState("");
-
-  useEffect(() => {
-    const today = new Date();
-    const formattedDate = today.toISOString().split("T")[0];
-    setDate(formattedDate);
-  }, []);
-
-  const addRow = () => {
-    setRows([
-      ...rows,
-      {
-        account: "",
-        amount: "0.00",
-        quantity: "0",
-        description: "",
-        project: "",
-      },
-    ]);
+    if (e.target === e.currentTarget) setModal(false);
   };
 
   const handleRowChange = (index, field, value) => {
@@ -212,15 +252,8 @@ const MoneyTransaction = ({ type }) => {
     updatedRows[index][field] = value;
 
     if (index === rows.length - 1 && value.trim() !== "") {
-      updatedRows.push({
-        account: "",
-        amount: "0.00",
-        quantity: "0",
-        description: "",
-        project: "",
-      });
+      updatedRows.push({ account: "", amount: "0.00", quantity: "0", description: "", project: "" });
     }
-
     setRows(updatedRows);
   };
 
@@ -229,22 +262,35 @@ const MoneyTransaction = ({ type }) => {
     setRows(updatedRows);
   };
 
+  // Calculate Totals dynamically
+  const subtotal = rows.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+  const tax = 0; // Update tax logic if needed
+  const total = subtotal + tax;
+
   return (
     <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-lg p-4 sm:p-6 mt-4 sm:mt-6">
       <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-        {type === "spend"
-          ? " Spend Money Transaction"
-          : " Receive Money Transaction"}
+        {type === "spend" ? "Spend Money Transaction" : "Receive Money Transaction"}
       </h2>
 
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Real Bank Accounts Dropdown */}
           <div>
             <label className="block text-gray-700 font-medium">
               Bank Account <span className="text-red-500">*</span>
             </label>
-            <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
-              <option>1-1110 Business Bank Account #1</option>
+            <select 
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+              value={selectedBankAccount}
+              onChange={(e) => setSelectedBankAccount(e.target.value)}
+            >
+              <option value="">Select Bank Account</option>
+              {accounts.map(acc => (
+                <option key={acc.id} value={acc.id}>
+                  {acc.accountCode} - {acc.accountName}
+                </option>
+              ))}
             </select>
           </div>
           <div>
@@ -253,18 +299,18 @@ const MoneyTransaction = ({ type }) => {
             </label>
             <input
               type="text"
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-              defaultValue="1"
+              className="w-full px-3 py-2 border bg-gray-50 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+              value={referenceNumber}
+              onChange={(e) => setReferenceNumber(e.target.value)}
               readOnly
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Real Payee Dropdown */}
           <div>
-            <label className="block text-gray-700 font-medium">
-              Payee / Payer
-            </label>
+            <label className="block text-gray-700 font-medium">Payee / Payer</label>
             <div className="flex items-center gap-2">
               <div className="flex-grow">
                 <PayeeDropdown
@@ -295,12 +341,12 @@ const MoneyTransaction = ({ type }) => {
         </div>
 
         <div>
-          <label className="block text-gray-700 font-medium">
-            Description of Transaction
-          </label>
+          <label className="block text-gray-700 font-medium">Description of Transaction</label>
           <textarea
             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
             rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           ></textarea>
         </div>
 
@@ -309,26 +355,18 @@ const MoneyTransaction = ({ type }) => {
             <thead>
               <tr className="bg-gray-100 text-gray-700 text-sm">
                 <th className="p-2">
-                  Account <span className="text-red-500">*</span>{" "}
-                  <button
-                    onClick={() => setShowAccountModal(true)}
-                    className="ml-2 text-blue-600 hover:text-blue-700"
-                  >
-                    <MdAddCircleOutline className="h-5 w-5" />
+                  Account <span className="text-red-500">*</span>
+                  <button onClick={() => setShowAccountModal(true)} className="ml-2 text-blue-600 hover:text-blue-700">
+                    <MdAddCircleOutline className="h-5 w-5 inline" />
                   </button>
                 </th>
-                <th className="p-2">
-                  Amount ($) <span className="text-red-500">*</span>
-                </th>
+                <th className="p-2">Amount ($) <span className="text-red-500">*</span></th>
                 <th className="p-2">Quantity</th>
                 <th className="p-2">Description</th>
                 <th className="p-2">
-                  Project{" "}
-                  <button
-                    onClick={() => setShowProjectModal(true)}
-                    className="ml-2  text-blue-600 hover:text-blue-700"
-                  >
-                    <MdAddCircleOutline className="h-5 w-5" />
+                  Project
+                  <button onClick={() => setShowProjectModal(true)} className="ml-2 text-blue-600 hover:text-blue-700">
+                    <MdAddCircleOutline className="h-5 w-5 inline" />
                   </button>
                 </th>
                 <th className="p-2"></th>
@@ -336,64 +374,60 @@ const MoneyTransaction = ({ type }) => {
             </thead>
             <tbody>
               {rows.map((row, index) => (
-                <tr key={index}>
+                <tr key={index} className="border-b last:border-0">
                   <td className="p-2">
                     <select
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base min-w-[150px]"
                       value={row.account}
-                      onChange={(e) =>
-                        handleRowChange(index, "account", e.target.value)
-                      }
+                      onChange={(e) => handleRowChange(index, "account", e.target.value)}
                     >
-                      <option>6-1420 Donations</option>
-                      <option>6-1120 Advertising & Marketing</option>
+                      <option value="">Select Account</option>
+                      {/* Populate actual accounts here as well */}
+                      {accounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>
+                           {acc.accountCode} - {acc.accountName}
+                        </option>
+                      ))}
                     </select>
                   </td>
                   <td className="p-2">
                     <input
                       type="number"
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base min-w-[100px]"
                       min={0}
                       value={row.amount}
-                      onChange={(e) =>
-                        handleRowChange(index, "amount", e.target.value)
-                      }
+                      onChange={(e) => handleRowChange(index, "amount", e.target.value)}
                     />
                   </td>
                   <td className="p-2">
                     <input
                       type="number"
-                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base min-w-[80px]"
                       min={0}
                       value={row.quantity}
-                      onChange={(e) =>
-                        handleRowChange(index, "quantity", e.target.value)
-                      }
+                      onChange={(e) => handleRowChange(index, "quantity", e.target.value)}
                     />
                   </td>
                   <td className="p-2">
                     <textarea
-                      className="w-full px-3  border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                      className="w-full px-3 py-1 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base min-w-[150px]"
                       value={row.description}
-                      onChange={(e) =>
-                        handleRowChange(index, "description", e.target.value)
-                      }
-                      rows={2}
+                      onChange={(e) => handleRowChange(index, "description", e.target.value)}
+                      rows={1}
                     />
                   </td>
                   <td className="p-2">
                     <select
-                      className=" px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                      className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base min-w-[120px]"
                       value={row.project}
-                      onChange={(e) =>
-                        handleRowChange(index, "project", e.target.value)
-                      }
+                      onChange={(e) => handleRowChange(index, "project", e.target.value)}
                     >
-                      <option>project-1</option>
-                      <option>project-2</option>
+                      <option value="">Select Project</option>
+                      <option value="1">Project-1</option>
+                      <option value="2">Project-2</option>
                     </select>
                   </td>
-                  <td className="p-2">
+                  <td className="p-2 text-center">
                     {index !== rows.length - 1 && (
                       <button
                         onClick={() => removeRow(index)}
@@ -410,79 +444,42 @@ const MoneyTransaction = ({ type }) => {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-center mt-4 space-y-4 sm:space-y-0">
-          {/* <div className="flex space-x-2">
-            <button className="bg-gray-200 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-300 text-sm sm:text-base">
-              Save as recurring
-            </button>
-            <button className="bg-gray-200 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-300 text-sm sm:text-base">
-              Prefill from recurring
-            </button>
-          </div> */}
-          <div className="text-center sm:text-right">
-            <span className="font-semibold text-gray-900">Subtotal: $0.00</span>
-            <span className="ml-4 font-semibold text-gray-900">Tax: $0.00</span>
-            <span className="ml-4 font-semibold text-gray-900">
-              Total: $0.00
-            </span>
+          <div className="text-center sm:text-right w-full">
+            <span className="font-semibold text-gray-900">Subtotal: ${subtotal.toFixed(2)}</span>
+            <span className="ml-4 font-semibold text-gray-900">Tax: ${tax.toFixed(2)}</span>
+            <span className="ml-4 font-semibold text-gray-900">Total: ${total.toFixed(2)}</span>
           </div>
           <div className="flex space-x-2">
-            {/* <button className="bg-gray-500 text-white px-3 py-2 rounded-lg hover:bg-gray-600 text-sm sm:text-base">
-              Cancel
-            </button> */}
-            <button className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base">
+            <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium transition-colors">
               Record
             </button>
           </div>
         </div>
       </div>
 
-      {/* Modal for creating a new contact */}
+      {/* Modals */}
       {showContactModal && (
-        <div
-          className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`}
-          onClick={(e) => handleModalClick(e, setShowContactModal)}
-        >
-          <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3  p-2 rounded-lg  max-h-[90vh] overflow-y-auto relative">
-            <button
-              className="absolute top-2 right-2 text-xl"
-              onClick={() => setShowContactModal(false)}
-            >
-              <FaTimes />
-            </button>
+        <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`} onClick={(e) => handleModalClick(e, setShowContactModal)}>
+          <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 p-2 rounded-lg max-h-[90vh] overflow-y-auto relative bg-white">
+            <button className="absolute top-2 right-2 text-xl" onClick={() => setShowContactModal(false)}><FaTimes /></button>
             <PayerPayee />
           </div>
         </div>
       )}
 
       {showAccountModal && (
-        <div
-          className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`}
-          onClick={(e) => handleModalClick(e, setShowAccountModal)}
-        >
-          <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3  p-2 rounded-lg max-h-[90vh] overflow-y-auto relative">
-            <button
-              className="absolute top-2 right-2 text-black-600 text-xl"
-              onClick={() => setShowAccountModal(false)}
-            >
-              <FaTimes />
-            </button>
+        <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`} onClick={(e) => handleModalClick(e, setShowAccountModal)}>
+          <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 p-2 rounded-lg max-h-[90vh] overflow-y-auto relative bg-white">
+            <button className="absolute top-2 right-2 text-xl text-gray-600" onClick={() => setShowAccountModal(false)}><FaTimes /></button>
             <AddAccountForm />
           </div>
         </div>
       )}
 
       {showProjectModal && (
-        <div
-          className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`}
-          onClick={(e) => handleModalClick(e, setShowProjectModal)}
-        >
-          <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3  p-2 rounded-lg max-h-[90vh] overflow-y-auto relative">
-            <button
-              className="absolute top-2 right-2 text-black-600 text-xl"
-              onClick={() => setShowProjectModal(false)}
-            >
-              <FaTimes />
-            </button>
+        <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`} onClick={(e) => handleModalClick(e, setShowProjectModal)}>
+          <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 p-2 rounded-lg max-h-[90vh] overflow-y-auto relative bg-white">
+            <button className="absolute top-2 right-2 text-xl text-gray-600" onClick={() => setShowProjectModal(false)}><FaTimes /></button>
             <NewProjectForm />
           </div>
         </div>
