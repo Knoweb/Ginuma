@@ -122,7 +122,7 @@ const AllEmployeePage = () => {
             />
           </div>
           <button 
-  onClick={() => navigate("/employee/new")} // path එක නිවැරදි කළා
+  onClick={() => navigate("/employee/new")} 
   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
 >
   <FiPlus /> Add Employee
@@ -136,7 +136,7 @@ const AllEmployeePage = () => {
             {employees.length === 0 ? "No employees found." : "No matching employees found."}
           </p>
           <button 
-  onClick={() => navigate("/employee/new")} // path එක නිවැරදි කළා
+  onClick={() => navigate("/employee/new")} 
   className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
 >
   <FiPlus /> Add New Employee

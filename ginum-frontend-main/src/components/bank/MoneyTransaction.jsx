@@ -66,7 +66,7 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
         type: "Customer"
       }));
 
-      // Employees ⭐ NEW
+      // Employees 
       const employeesData = (Array.isArray(empData) ? empData : []).map(e => ({
         id: `EMP-${e.employeeId}`,
         name: `${e.firstName} ${e.lastName}`,
@@ -107,7 +107,7 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
   },
   
   {
-    label: "Employees",   // ⭐ NEW
+    label: "Employees",   
     icon: <FaUserTie className="text-purple-500" />,
     items: filterItems(employees),
   }
@@ -253,7 +253,6 @@ const MoneyTransaction = ({ type }) => {
         const data = await response.json();
         console.log("Projects fetched for dropdown:", data);
         
-        // දත්ත Array එකක් ලෙස State එකට ඇතුලත් කිරීම
         setProjects(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -272,7 +271,6 @@ const MoneyTransaction = ({ type }) => {
       if (!companyId || !token) return;
 
       try {
-        // api.get වෙනුවට AllAccounts පිටුවේ භාවිතා කළ සාර්ථක fetch ක්‍රමයම භාවිතා කිරීම
         const response = await fetch(`${apiUrl || 'http://localhost:8081'}/api/companies/${companyId}/accounts`, {
           method: "GET",
           headers: {
@@ -288,7 +286,6 @@ const MoneyTransaction = ({ type }) => {
         const data = await response.json();
         console.log("Accounts fetched for dropdown:", data);
         
-        // දත්ත Array එකක් ලෙස State එකට ඇතුලත් කිරීම
         setAccounts(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching accounts:", error);
@@ -327,7 +324,6 @@ const MoneyTransaction = ({ type }) => {
   };
 
   const handleRecord = async () => {
-    // 1. තෝරාගත් දත්ත එකතු කිරීම
     const payload = {
       companyId: sessionStorage.getItem("companyId"),
       accountId: selectedBankAccount,
@@ -335,11 +331,10 @@ const MoneyTransaction = ({ type }) => {
       date: date,
       description: description,
       totalAmount: total,
-      rows: rows.filter(r => r.account !== "") // හිස් row ඉවත් කිරීම
+      rows: rows.filter(r => r.account !== "") 
     };
 
     try {
-      // 2. Backend එකට යැවීම
       const response = await fetch(`${apiUrl}/api/transactions`, {
         method: "POST",
         headers: { 
@@ -351,7 +346,7 @@ const MoneyTransaction = ({ type }) => {
 
       if (response.ok) {
         alert("Transaction recorded successfully!");
-        navigate("/bank-reconciliation"); // සාර්ථක වූ පසු BankReconciliation වෙත යැවීම
+        navigate("/bank-reconciliation"); 
       }
     } catch (err) {
       console.error("Error recording:", err);

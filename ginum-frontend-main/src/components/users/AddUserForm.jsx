@@ -95,7 +95,6 @@ const AddUserForm = () => {
       }
     }
 
-    // අනෙකුත් input fields සඳහා (Email, Password)
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 

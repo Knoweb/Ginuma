@@ -117,7 +117,6 @@ export default function AddSupplierForm({ onClose }) {
 
       Alert.success("Supplier added successfully!");
 
-      // ... fetch request එකට පසු ...
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(errText || `HTTP error! status: ${response.status}`);
@@ -131,7 +130,6 @@ export default function AddSupplierForm({ onClose }) {
         currency: "USD", discount: "", br_document: null,
       });
 
-      // 2. මෙන්න මේ කොටස අලුතින් එකතු කරන්න
       if (onClose) {
         onClose();
       }

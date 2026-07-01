@@ -17,8 +17,6 @@ function AllUsers() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // මෙතැනදී api.get භාවිතා කරනවා නම් api එක හරහා යන්න, 
-      // නැත්නම් apiUrl පාවිච්චි කරලා fetch යන්න.
       const response = await fetch(`${apiUrl}/api/users/companies/${companyId}`, {
         method: "GET",
         headers: { 

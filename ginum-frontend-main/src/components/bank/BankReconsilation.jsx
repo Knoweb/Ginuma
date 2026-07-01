@@ -12,7 +12,6 @@ function BankReconsilation() {
     const companyId = sessionStorage.getItem("companyId");
     const token = sessionStorage.getItem("auth_token");
     
-    // Backend එකෙන් transactions ලබා ගැනීම
     const response = await fetch(`${apiUrl}/api/transactions/companies/${companyId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });

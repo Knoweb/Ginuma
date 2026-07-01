@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-// 1. onClose prop එක මෙතැනට ලබාගන්න
 export default function AddCustomerForm({ onClose }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -23,7 +22,6 @@ export default function AddCustomerForm({ onClose }) {
   const [loading, setLoading] = useState(false);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
 
-  // ... (ඔබේ getAuthToken, getCompanyId, handleChange, validateForm, resetForm ඒ විදිහටම තබන්න) ...
   const getAuthToken = () => { return sessionStorage.getItem("auth_token") || localStorage.getItem("auth_token") || sessionStorage.getItem("token") || localStorage.getItem("token"); };
   const getCompanyId = () => { return sessionStorage.getItem("companyId") || localStorage.getItem("companyId"); };
 
@@ -34,7 +32,6 @@ export default function AddCustomerForm({ onClose }) {
   };
 
   const validateForm = () => {
-    // ... (ඔබේ Validation කේතය ඒ විදිහටම තබන්න) ...
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.phone_no.trim()) newErrors.phone_no = "Phone No is required";
@@ -109,12 +106,9 @@ export default function AddCustomerForm({ onClose }) {
   };
 
   return (
-    // පෙනුම සරල කිරීම සඳහා outer shadow/padding මඳක් අඩු කළා (Modal එක ඇතුළට ගැළපෙන්න)
     <div className="w-full flex flex-col">
       <form onSubmit={handleSubmit} className="space-y-4 w-full pt-4">
         <div className="flex flex-wrap -mx-2">
-          
-          {/* මෙතැන් සිට පහළට ඔබේ Input Fields සියල්ලම පෙර පරිදිම පවතී */}
           <div className="w-full md:w-1/2 px-2 mb-4">
             <label className="block text-gray-700">Name <span className="text-red-500">*</span></label>
             <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />

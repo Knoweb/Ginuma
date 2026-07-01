@@ -246,7 +246,6 @@ if (!companyId || companyId === "undefined" || companyId.length > 50) {
         return date.toISOString().split("T")[0];
       };
 
-      // 1. හිස් අගයන් (Empty strings) null බවට පත් කර යැවීම
       const payload = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
@@ -273,16 +272,13 @@ if (!companyId || companyId === "undefined" || companyId.length > 50) {
         body: JSON.stringify(payload),
       });
 
-      // 2. Error එක හරියටම මොකක්ද කියලා Alert එකට ගැනීම
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Backend Validation Error:", errorData);
         
         let errorMessage = "Failed to create employee.";
         
-        // Spring Boot වලින් එවන errors array එක කියවීම
         if (errorData.errors && Array.isArray(errorData.errors)) {
-            // උදා: "mobileNo: Invalid mobile number format"
             errorMessage = errorData.errors.map(err => `${err.field}: ${err.defaultMessage}`).join('\n');
         } else if (errorData.message) {
             errorMessage = errorData.message;

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaUser, FaBuilding, FaUserTie } from "react-icons/fa";
-import AddCustomerForm from "../customer/AddCustomer"; // ඔබගේ path එක නිවැරදිදැයි බලන්න
+import AddCustomerForm from "../customer/AddCustomer"; 
 import AddSupplierForm from "../supplier/AddSupplierForm";
 import AddEmployeeForm from "../Employee/AddEmployeeForm";
 
@@ -43,7 +43,6 @@ const PayerPayee = ({ onClose }) => {
         </div>
       </div>
 
-      {/* මෙතැනදී කිසිදු <form> එකක් භාවිතා නොකර අදාළ Component එක පමණක් කැඳවන්න */}
       <div className="p-2 max-h-[70vh] overflow-y-auto">
         {activeTab === "customer" && <AddCustomerForm onClose={onClose} />}
         {activeTab === "supplier" && <AddSupplierForm onClose={onClose} />}
