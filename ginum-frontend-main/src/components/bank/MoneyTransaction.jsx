@@ -15,57 +15,78 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
   const [suppliers, setSuppliers] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [employees, setEmployees] = useState([]);
 
   // Fetch Suppliers and Customers
-  // Fetch Suppliers and Customers using Native Fetch
   useEffect(() => {
-    const fetchPayees = async () => {
-      const companyId = sessionStorage.getItem("companyId") || localStorage.getItem("companyId");
-      const token = sessionStorage.getItem("auth_token") || localStorage.getItem("auth_token") || sessionStorage.getItem("token");
+  const fetchPayees = async () => {
+    const companyId =
+      sessionStorage.getItem("companyId") ||
+      localStorage.getItem("companyId");
 
-      if (!companyId || !token) return;
+    const token =
+      sessionStorage.getItem("auth_token") ||
+      localStorage.getItem("auth_token") ||
+      sessionStorage.getItem("token");
 
-      setLoading(true);
-      try {
-        const [supRes, custRes] = await Promise.all([
-          fetch(`${apiUrl || 'http://localhost:8081'}/api/suppliers/companies/${companyId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch(`${apiUrl || 'http://localhost:8081'}/api/customers/companies/${companyId}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-        ]);
+    if (!companyId || !token) return;
 
-        const supData = supRes.ok ? await supRes.json() : [];
-        const custData = custRes.ok ? await custRes.json() : [];
+    setLoading(true);
 
-        // Format Suppliers
-        const suppliersData = (Array.isArray(supData) ? supData : []).map(s => ({
-          id: s.id || s.email || s.supplierName, 
-          name: s.supplierName,
-          contact: s.mobileNo || s.email,
-          type: "Supplier"
-        }));
+    try {
+      const [supRes, custRes, empRes] = await Promise.all([
+        fetch(`${apiUrl || "http://localhost:8081"}/api/suppliers/companies/${companyId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${apiUrl || "http://localhost:8081"}/api/customers/companies/${companyId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        fetch(`${apiUrl || "http://localhost:8081"}/api/employees/${companyId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
 
-        // Format Customers
-        const customersData = (Array.isArray(custData) ? custData : []).map(c => ({
-          id: c.customerId || c.id || c.email || c.customerName,
-          name: c.customerName,
-          contact: c.mobileNo || c.email,
-          type: "Customer"
-        }));
+      const supData = supRes.ok ? await supRes.json() : [];
+      const custData = custRes.ok ? await custRes.json() : [];
+      const empData = empRes.ok ? await empRes.json() : [];
 
-        setSuppliers(suppliersData);
-        setCustomers(customersData);
-      } catch (error) {
-        console.error("Error fetching Payees (Suppliers/Customers):", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      // Suppliers
+      const suppliersData = (Array.isArray(supData) ? supData : []).map(s => ({
+        id: `SUP-${s.id || s.email}`,
+        name: s.supplierName,
+        contact: s.mobileNo || s.email,
+        type: "Supplier"
+      }));
 
-    fetchPayees();
-  }, []);
+      // Customers
+      const customersData = (Array.isArray(custData) ? custData : []).map(c => ({
+        id: `CUS-${c.customerId || c.id}`,
+        name: c.customerName,
+        contact: c.mobileNo || c.email,
+        type: "Customer"
+      }));
+
+      // Employees ⭐ NEW
+      const employeesData = (Array.isArray(empData) ? empData : []).map(e => ({
+        id: `EMP-${e.employeeId}`,
+        name: `${e.firstName} ${e.lastName}`,
+        contact: e.mobileNo || e.email,
+        type: "Employee"
+      }));
+
+      setSuppliers(suppliersData);
+      setCustomers(customersData);
+      setEmployees(employeesData);
+
+    } catch (error) {
+      console.error("Error fetching Payees:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPayees();
+}, []);
 
   const filteredGroups = useMemo(() => {
     const lowerSearch = searchTerm.toLowerCase();
@@ -75,16 +96,22 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
 
     return [
       {
-        label: "Suppliers",
-        icon: <FaBuilding className="text-blue-500" />,
-        items: filterItems(suppliers),
-      },
-      {
-        label: "Customers",
-        icon: <FaUser className="text-green-500" />,
-        items: filterItems(customers),
-      }
-    ].filter((group) => group.items.length > 0);
+    label: "Customers",
+    icon: <FaUser className="text-green-500" />,
+    items: filterItems(customers),
+  },
+  {
+    label: "Suppliers",
+    icon: <FaBuilding className="text-blue-500" />,
+    items: filterItems(suppliers),
+  },
+  
+  {
+    label: "Employees",   // ⭐ NEW
+    icon: <FaUserTie className="text-purple-500" />,
+    items: filterItems(employees),
+  }
+].filter(group => group.items.length > 0);
   }, [searchTerm, suppliers, customers]);
 
   const selectedItem = useMemo(() => {
@@ -92,6 +119,7 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
     return allItems.find((item) => item.id === value);
   }, [value, suppliers, customers]);
 
+  
   return (
     <div className="relative w-full">
       <div
@@ -192,11 +220,13 @@ const MoneyTransaction = ({ type }) => {
   const [referenceNumber, setReferenceNumber] = useState("1");
   const [description, setDescription] = useState("");
 
+  const [refreshPayees, setRefreshPayees] = useState(0);
+
   const [rows, setRows] = useState([
     { account: "", amount: "0.00", quantity: "0", description: "", project: "" },
   ]);
 
-  // Fetch Bank Accounts on load using Native Fetch
+  // Fetch Bank Accounts on load
   useEffect(() => {
     const fetchAccounts = async () => {
       const companyId = sessionStorage.getItem("companyId") || localStorage.getItem("companyId");
@@ -205,22 +235,11 @@ const MoneyTransaction = ({ type }) => {
       if (!companyId || !token) return;
 
       try {
-        const response = await fetch(`${apiUrl || 'http://localhost:8081'}/api/companies/${companyId}/accounts`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Accept": "application/json"
-          }
+        const response = await api.get(`/api/companies/${companyId}/accounts`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-
-        if (response.ok) {
-          const data = await response.json();
-          const accountsList = Array.isArray(data) ? data : [];
-          setAccounts(accountsList);
-          console.log("Loaded Accounts for Dropdown:", accountsList);
-        } else {
-          console.error("Failed to load accounts, Status:", response.status);
-        }
+        const accountsData = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+        setAccounts(accountsData);
       } catch (error) {
         console.error("Error fetching accounts:", error);
       }

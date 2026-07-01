@@ -3,7 +3,7 @@ import { apiUrl } from "../../utils/api";
 import Alert from "../../components/Alert/Alert";
 import { FaSpinner } from "react-icons/fa";
 
-export default function AddSupplierForm() {
+export default function AddSupplierForm({ onClose }) {
   const [formData, setFormData] = useState({
     supplier_name: "",
     email: "",
@@ -40,7 +40,9 @@ export default function AddSupplierForm() {
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Invalid email address";
     }
-    if (formData.mobile && !/^\d{10}$/.test(formData.mobile)) {
+    if (!formData.mobile.trim()) {
+      newErrors.mobile = "Mobile No is required";
+    } else if (!/^\d{10}$/.test(formData.mobile)) {
       newErrors.mobile = "Mobile number must be 10 digits";
     }
     if (!formData.supplier_type) newErrors.supplier_type = "Supplier Type is required";
@@ -114,12 +116,25 @@ export default function AddSupplierForm() {
       }
 
       Alert.success("Supplier added successfully!");
+
+      // ... fetch request එකට පසු ...
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || `HTTP error! status: ${response.status}`);
+      }
+
+      Alert.success("Supplier added successfully!");
       
       setFormData({
         supplier_name: "", email: "", mobile: "", address: "", supplier_type: "",
         item_category: "", tin_no: "", vat: "", tax: "inclusive", swift_no: "",
         currency: "USD", discount: "", br_document: null,
       });
+
+      // 2. මෙන්න මේ කොටස අලුතින් එකතු කරන්න
+      if (onClose) {
+        onClose();
+      }
 
     } catch (error) {
       console.error("Error adding supplier:", error);
@@ -128,6 +143,7 @@ export default function AddSupplierForm() {
       setIsSubmitting(false);
     }
   };
+      
 
   return (
     <div className="flex items-center justify-center p-4">
