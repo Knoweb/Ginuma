@@ -3,7 +3,7 @@ import { apiUrl } from "../../utils/api";
 import Alert from "../../components/Alert/Alert";
 import { FaSpinner } from "react-icons/fa";
 
-export default function AddSupplierForm() {
+export default function AddSupplierForm({ onClose }) {
   const [formData, setFormData] = useState({
     supplier_name: "",
     email: "",
@@ -120,12 +120,23 @@ export default function AddSupplierForm() {
       }
 
       Alert.success("Supplier added successfully!");
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || `HTTP error! status: ${response.status}`);
+      }
+
+      Alert.success("Supplier added successfully!");
       
       setFormData({
         supplier_name: "", email: "", mobile: "", address: "", supplier_type: "",
         item_category: "", tin_no: "", vat: "", tax: "inclusive", swift_no: "",
         currency: "USD", discount: "", br_document: null,
       });
+
+      if (onClose) {
+        onClose();
+      }
 
     } catch (error) {
       console.error("Error adding supplier:", error);
@@ -134,6 +145,7 @@ export default function AddSupplierForm() {
       setIsSubmitting(false);
     }
   };
+      
 
   return (
     <div className="flex items-center justify-center p-4">

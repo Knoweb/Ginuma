@@ -1,6 +1,7 @@
 package com.example.GinumApps.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,8 @@ public class AppUser {
     @Column(nullable = false, unique = true, length = 254)
     private String email;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
-    @JsonIgnore
     private String password;
 
     @Column(nullable = false)
@@ -28,6 +29,7 @@ public class AppUser {
     @JoinColumn(name = "company_id")
     @JsonIgnore
     private Company company;
+
 }
 
 

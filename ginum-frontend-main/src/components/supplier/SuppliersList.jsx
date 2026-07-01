@@ -23,7 +23,6 @@ const SuppliersList = () => {
     }
 
     try {
-      // Backend එකේ GET request එක කෝල් කිරීම
       const response = await fetch(`${apiUrl}/api/suppliers/companies/${companyId}`, {
         method: "GET",
         headers: {
@@ -37,7 +36,7 @@ const SuppliersList = () => {
       }
 
       const data = await response.json();
-      setSuppliers(data); // Backend එකෙන් එන දත්ත state එකට දැමීම
+      setSuppliers(data); 
 
     } catch (err) {
       console.error("Error fetching suppliers:", err);
@@ -49,8 +48,6 @@ const SuppliersList = () => {
   };
 
   const handleDelete = (supplierEmail) => {
-    // මෙය ඉදිරියේදී සකස් කිරීමට ඇති Delete function එකයි.
-    // Backend එකට අදාළ ID එක හෝ Email එක යවා Delete කළ හැක.
     Alert.info(`Delete requested for: ${supplierEmail}`);
   };
 
@@ -83,7 +80,6 @@ const SuppliersList = () => {
           </thead>
           <tbody>
             {suppliers.map((supplier, index) => (
-              // දැනට Backend එකෙන් ID එකක් එන්නේ නැති නිසා index එක key එක විදිහට පාවිච්චි කරමු
               <tr key={index} className="border-t hover:bg-gray-50">
                 <td className="py-3 px-4 font-medium">{supplier.supplierName}</td>
                 <td className="py-3 px-4">{supplier.itemCategory}</td>

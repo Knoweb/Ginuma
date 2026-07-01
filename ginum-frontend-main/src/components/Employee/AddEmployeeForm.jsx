@@ -5,7 +5,7 @@ import AddDesignationForm from "../department/AddDesignationForm";
 import { apiUrl } from "../../utils/api";
 import Alert from "../../components/Alert/Alert";
 
-const AddEmployeeForm = () => {
+const AddEmployeeForm = ({ onClose }) => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -250,17 +250,13 @@ if (!companyId || companyId === "undefined" || companyId.length > 50) {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         gender: formData.gender,
-        designationId: formData.designationId
-          ? Number(formData.designationId)
-          : null,
-        departmentId: formData.departmentId
-          ? Number(formData.departmentId)
-          : null,
-        address: formData.address.trim(),
+        designationId: formData.designationId ? Number(formData.designationId) : null,
+        departmentId: formData.departmentId ? Number(formData.departmentId) : null,
+        address: formData.address.trim() || null,
         mobileNo: formData.mobileNo.trim(),
         dob: formatDate(formData.dob),
         nic: formData.nic.trim(),
-        epfNo: formData.epfNo.trim(),
+        epfNo: formData.epfNo.trim() || null,
         email: formData.email.trim().toLowerCase(),
         dateAdded: formatDate(formData.dateAdded) || formatDate(new Date()),
       };
@@ -276,6 +272,21 @@ if (!companyId || companyId === "undefined" || companyId.length > 50) {
         body: JSON.stringify(payload),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Backend Validation Error:", errorData);
+        
+        let errorMessage = "Failed to create employee.";
+        
+        if (errorData.errors && Array.isArray(errorData.errors)) {
+            errorMessage = errorData.errors.map(err => `${err.field}: ${err.defaultMessage}`).join('\n');
+        } else if (errorData.message) {
+            errorMessage = errorData.message;
+        }
+
+        throw new Error(errorMessage);
+      }
+
       const data = await response.json();
       console.log("API Response:", data);
 
@@ -287,35 +298,21 @@ if (!companyId || companyId === "undefined" || companyId.length > 50) {
           { autoClose: 5000 }
         );
 
-        // Clear form
         setFormData({
-          firstName: "",
-          lastName: "",
-          gender: "",
-          dob: "",
-          epfNo: "",
-          nic: "",
-          mobileNo: "",
-          email: "",
-          address: "",
-          dateAdded: new Date().toISOString().split("T")[0],
-          designationId: "",
-          departmentId: "",
+          firstName: "", lastName: "", gender: "", dob: "", epfNo: "", nic: "",
+          mobileNo: "", email: "", address: "", dateAdded: new Date().toISOString().split("T")[0],
+          designationId: "", departmentId: "",
         });
+
+        if (onClose) {
+          onClose();
+        }
       } else {
-        console.error("Unexpected response format:", data);
         Alert.error("Failed to create employee. Invalid response format.");
       }
     } catch (error) {
-      let errorMessage = "Failed to create employee.";
-      if (error.response) {
-        errorMessage =
-          error.response.data?.message ||
-          `Server error (${error.response.status})`;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      Alert.error(errorMessage);
+      console.error("Catch Block Error:", error);
+      Alert.error(error.message || "Failed to create employee.");
     } finally {
       setIsSubmitting(false);
     }
@@ -489,7 +486,9 @@ if (!companyId || companyId === "undefined" || companyId.length > 50) {
 
             {/* Address */}
             <div className="w-full px-2">
-              <label className="block text-gray-700">Address</label>
+              <label className="block text-gray-700">Address
+                <span className="text-red-500">*</span>
+              </label>
               <textarea
                 name="address"
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
