@@ -82,7 +82,7 @@ const SpendMoney = () => {
   const [selectedBankAccount, setSelectedBankAccount] = useState("");
   const [rows, setRows] = useState([{ account: "", amount: "0.00", quantity: "0", description: "", project: "" }]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [referenceNumber, setReferenceNumber] = useState("REF-001");
+  const [referenceNumber, setReferenceNumber] = useState(`REF-${Math.floor(Date.now() / 1000)}`);
   const [description, setDescription] = useState("");
   
   const [showContactModal, setShowContactModal] = useState(false);
@@ -111,32 +111,64 @@ const SpendMoney = () => {
     setRows(newRows);
   };
 
-  const handleRecord = async () => {
-    const payload = {
-      companyId: parseInt(sessionStorage.getItem("companyId")),
+ const handleRecord = async () => {
+    if (!selectedBankAccount) {
+      alert("Bank Account is required!"); return;
+    }
+    
+    const validRows = rows.filter(r => r.account !== "" && parseFloat(r.amount) > 0);
+    if (validRows.length === 0) {
+      alert("Add at least one valid record!"); return;
+    }
+
+    const totalAmount = validRows.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+
+    const entries = [];
+
+    entries.push({
       accountId: parseInt(selectedBankAccount),
-      payeeId: selectedPayee,
-      transactionType: "SPEND",
-      referenceNumber,
-      description,
-      date,
-      totalAmount: rows.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0),
-      rows: rows.filter(r => r.account !== "").map(r => ({ 
-        accountId: parseInt(r.account), 
-        amount: parseFloat(r.amount),
-        quantity: parseInt(r.quantity),
-        description: r.description,
-        projectId: r.project ? parseInt(r.project) : null 
-      }))
+      debit: 0.0,
+      credit: totalAmount,
+      description: description || "Spend Money Transaction"
+    });
+
+    validRows.forEach(r => {
+      entries.push({
+        accountId: parseInt(r.account),
+        debit: parseFloat(r.amount),
+        credit: 0.0,
+        description: r.description || ""
+      });
+    });
+
+    const payload = {
+      referenceNumber: referenceNumber,
+      date: date,
+      description: description,
+      totalDebit: totalAmount,
+      totalCredit: totalAmount, 
+      entries: entries
     };
+
+    console.log("Valid Spend Payload:", payload);
+
     try {
-      const res = await fetch(`${apiUrl}/api/transactions`, {
+      const companyId = sessionStorage.getItem("companyId");
+      const res = await fetch(`${apiUrl}/api/transactions/companies/${companyId}`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${sessionStorage.getItem("auth_token")}`, "Content-Type": "application/json" },
+        headers: { 
+          "Authorization": `Bearer ${sessionStorage.getItem("auth_token")}`, 
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify(payload)
       });
-      if (res.ok) { alert("Recorded!"); navigate("/bank-reconciliation"); }
-    } catch (err) { alert("Error!"); }
+      
+      if (res.ok) { 
+        alert("Spend Recorded!"); 
+        setReferenceNumber(`REF-${Math.floor(Date.now() / 1000)}`);
+        navigate("/bank/reconsilation"); 
+      } else { alert("Failed to save to database."); }
+    } catch (err) { console.error(err); }
   };
 
   return (
@@ -176,7 +208,6 @@ const SpendMoney = () => {
       
       <button onClick={handleRecord} className="bg-red-600 text-white px-6 py-2 rounded-lg">Record Spend</button>
 
-            {/* SpendMoney.jsx හි Modal කොටස */}
       {showContactModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-4 rounded-lg w-1/2">

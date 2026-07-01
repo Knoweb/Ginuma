@@ -65,7 +65,7 @@ const ReceiveMoney = () => {
   const [projects, setProjects] = useState([]);
   const [rows, setRows] = useState([{ account: "", amount: "0.00", quantity: "0", description: "", project: "" }]);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [referenceNumber, setReferenceNumber] = useState("REF-001");
+  const [referenceNumber, setReferenceNumber] = useState(`REF-${Math.floor(Date.now() / 1000)}`);
   const [description, setDescription] = useState("");
   
   const [showContactModal, setShowContactModal] = useState(false);
@@ -95,34 +95,65 @@ const ReceiveMoney = () => {
   };
 
   const handleRecord = async () => {
-    const payload = {
-      companyId: parseInt(sessionStorage.getItem("companyId")),
+    if (!selectedBankAccount) {
+      alert("Bank Account is required!"); return;
+    }
+    
+    const validRows = rows.filter(r => r.account !== "" && parseFloat(r.amount) > 0);
+    if (validRows.length === 0) {
+      alert("Add at least one valid record!"); return;
+    }
+
+    const totalAmount = validRows.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+
+    const entries = [];
+
+    entries.push({
       accountId: parseInt(selectedBankAccount),
-      payeeId: selectedPayee,
-      transactionType: "RECEIVE",
-      referenceNumber,
-      description,
-      date,
-      totalAmount: rows.reduce((sum, r) => sum + parseFloat(r.amount || 0), 0),
-      rows: rows.filter(r => r.account !== "").map(r => ({ 
-        accountId: parseInt(r.account), 
-        amount: parseFloat(r.amount),
-        quantity: parseInt(r.quantity),
-        description: r.description,
-        projectId: r.project ? parseInt(r.project) : null 
-      }))
+      debit: totalAmount,
+      credit: 0.0,
+      description: description || "Receive Money Transaction"
+    });
+
+    validRows.forEach(r => {
+      entries.push({
+        accountId: parseInt(r.account),
+        debit: 0.0,
+        credit: parseFloat(r.amount),
+        description: r.description || ""
+      });
+    });
+
+    const payload = {
+      referenceNumber: referenceNumber,
+      date: date,
+      description: description,
+      totalDebit: totalAmount,
+      totalCredit: totalAmount, 
+      entries: entries
     };
+
+    console.log("Valid Receive Payload:", payload);
+
     try {
-      const res = await fetch(`${apiUrl}/api/transactions`, {
+      const companyId = sessionStorage.getItem("companyId");
+      const res = await fetch(`${apiUrl}/api/transactions/companies/${companyId}`, {
         method: "POST",
-        headers: { "Authorization": `Bearer ${sessionStorage.getItem("auth_token")}`, "Content-Type": "application/json" },
+        headers: { 
+          "Authorization": `Bearer ${sessionStorage.getItem("auth_token")}`, 
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify(payload)
       });
-      if (res.ok) { alert("Recorded successfully!"); navigate("/bank-reconciliation"); }
-    } catch (err) { alert("Error recording transaction!"); }
+      
+      if (res.ok) { 
+        alert("Receive Recorded!"); 
+        setReferenceNumber(`REF-${Math.floor(Date.now() / 1000)}`);
+        navigate("/bank/reconsilation"); 
+      } else { alert("Failed to save to database."); }
+    } catch (err) { console.error(err); }
   };
 
-  // Modal වැසීම සඳහා Function එක
   const handleModalClick = (e, setModal) => {
     if (e.target === e.currentTarget) setModal(false);
   };

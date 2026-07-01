@@ -377,7 +377,7 @@
 //       }
 
 //       alert("Transaction recorded successfully!");
-//       navigate("/bank-reconciliation"); // සාර්ථක වූ පසු Bank Reconciliation පිටුවට යයි
+//       navigate("/bank-reconciliation"); 
 //     } catch (err) {
 //       console.error("Error recording transaction:", err);
 //       alert("Failed to record transaction. Check console.");

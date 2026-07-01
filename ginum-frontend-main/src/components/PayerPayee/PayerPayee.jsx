@@ -4,9 +4,8 @@ import AddCustomerForm from "../customer/AddCustomer";
 import AddSupplierForm from "../supplier/AddSupplierForm";
 import AddEmployeeForm from "../Employee/AddEmployeeForm";
 
-// allowedTabs මගින් කුමන ටැබ් පෙන්වනවාද යන්න පාලනය කරයි
 const PayerPayee = ({ onClose, allowedTabs = ["customer", "supplier", "employee"] }) => {
-  // ලබා දී ඇති allowedTabs වලින් පළමු එක activeTab ලෙස ආරම්භ කරන්න
+  
   const [activeTab, setActiveTab] = useState(allowedTabs[0]);
 
   const handleTabChange = (tab) => {

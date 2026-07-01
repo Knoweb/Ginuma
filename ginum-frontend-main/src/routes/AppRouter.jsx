@@ -41,7 +41,6 @@ import BalanceSheet from "../components/reports/BalacenSheet";
 import Revenue from "../components/reports/Revenue";
 import CreateQuotation from "../components/quotations/CreateQuotation";
 import AllQuotations from "../components/quotations/AllQuotations";
-import MoneyTransaction from "../components/bank/MoneyTransaction";
 import ReceiveMoney from "../components/bank/ReceiveMoney";
 import SpendMoney from "../components/bank/SpendMoney";
 import CreatePurchase from "../components/supplier/CreatePurchase";
