@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.ToString;
 
@@ -15,6 +14,7 @@ import java.math.BigDecimal;
 @Table(name = "purchase_order_line_items")
 @Data
 public class PurchaseOrderLineItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long lineItemId;
@@ -25,23 +25,23 @@ public class PurchaseOrderLineItem {
     @ToString.Exclude
     private PurchaseOrder purchaseOrder;
 
+    // GOODS only. SERVICES can be null.
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id", nullable = false)
+    @JoinColumn(name = "item_id")
     @ToString.Exclude
     private Item item;
 
     private String description;
 
-    @Positive
-    private int quantity;
+    private Integer quantity;
 
-    @Positive
     @DecimalMin("0.01")
-    @Column(precision = 10, scale =2)
+    @Column(precision = 19, scale = 2)
     private BigDecimal unitPrice;
 
     @DecimalMin("0.00")
     @DecimalMax("100.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal discountPercent = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,15 +49,13 @@ public class PurchaseOrderLineItem {
     private Project project;
 
     @ManyToOne
-    @JoinColumn(name = "account_code")
+    @JoinColumn(name = "account_id")
     private Account account;
 
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    private LineItemType itemType; // GOODS or SERVICE
+    private LineItemType itemType;
 }
-
-
-

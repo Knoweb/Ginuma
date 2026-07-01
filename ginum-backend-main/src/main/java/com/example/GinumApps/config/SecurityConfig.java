@@ -55,6 +55,22 @@ public class SecurityConfig {
                                 "/api/currencies/**"
                         ).permitAll()
 
+                        // Purchase order endpoints
+                        .requestMatchers(
+                                "/api/*/purchase-orders",
+                                "/api/*/purchase-orders/**"
+                        )
+                        .hasAnyAuthority(
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "EMPLOYEE",
+                                "ROLE_EMPLOYEE",
+                                "APP_USER",
+                                "ROLE_APP_USER",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
+
                         // Project endpoints
                         .requestMatchers(
                                 "/api/companies/*/projects",

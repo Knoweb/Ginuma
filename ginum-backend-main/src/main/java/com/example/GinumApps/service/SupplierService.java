@@ -99,13 +99,18 @@ public class SupplierService {
 
     private SupplierSummaryDto convertToSummaryDto(Supplier supplier) {
         return SupplierSummaryDto.builder()
+                .id(supplier.getId())
                 .supplierName(supplier.getSupplierName())
                 .email(supplier.getEmail())
                 .mobileNo(supplier.getMobileNo())
                 .address(supplier.getAddress())
                 .supplierType(supplier.getSupplierType())
                 .tax(supplier.getTax())
-                .itemCategory(supplier.getItemCategory().name())
+                .itemCategory(
+                        supplier.getItemCategory() != null
+                                ? supplier.getItemCategory().name()
+                                : null
+                )
                 .build();
     }
 }

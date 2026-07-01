@@ -7,19 +7,20 @@ import jakarta.validation.constraints.DecimalMin;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "purchase_orders",
-            uniqueConstraints = @UniqueConstraint(
+@Table(
+        name = "purchase_orders",
+        uniqueConstraints = @UniqueConstraint(
                 columnNames = {"company_id", "po_number"}
-            )
-        ) // PO numbers are unique per company)
+        )
+)
 @Data
 public class PurchaseOrder {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -45,15 +46,19 @@ public class PurchaseOrder {
     private String notes;
 
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal subtotal = BigDecimal.ZERO;
 
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal freight = BigDecimal.ZERO;
 
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal taxAmount = BigDecimal.ZERO;
 
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
 
     @ManyToOne
@@ -61,39 +66,34 @@ public class PurchaseOrder {
     private Account paymentAccount;
 
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal amountPaid = BigDecimal.ZERO;
 
     @DecimalMin("0.00")
+    @Column(precision = 19, scale = 2)
     private BigDecimal balanceDue = BigDecimal.ZERO;
 
     @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("po-line-items")
     private List<PurchaseOrderLineItem> items = new ArrayList<>();
 
-
     @Enumerated(EnumType.STRING)
-    private PurchaseType purchaseType; // ITEM or SERVICE
-
-//    @ManyToOne
-//    private Project project;
+    private PurchaseType purchaseType;
 
     @PrePersist
     @PreUpdate
     private void calculateTotals() {
-        // Recalculate subtotal from line items (prevents tampered frontend values)
         this.subtotal = items.stream()
-                .map(item -> item.getUnitPrice()
-                        .multiply(BigDecimal.valueOf(item.getQuantity()))
-                        .multiply(BigDecimal.ONE.subtract(
-                                item.getDiscountPercent().divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP)
-                        ))
-                )
+                .map(item -> item.getAmount() != null ? item.getAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Recalculate total and balance due (enforce consistency)
-        this.total = subtotal.add(freight != null ? freight : BigDecimal.ZERO)
-                .add(taxAmount != null ? taxAmount : BigDecimal.ZERO);
-        this.balanceDue = total.subtract(amountPaid != null ? amountPaid : BigDecimal.ZERO);
+        BigDecimal safeFreight = freight != null ? freight : BigDecimal.ZERO;
+        BigDecimal safeTax = taxAmount != null ? taxAmount : BigDecimal.ZERO;
+        BigDecimal safePaid = amountPaid != null ? amountPaid : BigDecimal.ZERO;
+
+        this.total = subtotal.add(safeFreight).add(safeTax);
+        this.balanceDue = total.subtract(safePaid);
+
         if (this.balanceDue.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalStateException("Overpayment detected");
         }

@@ -12,12 +12,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/{companyId}/purchase-orders")
 @RequiredArgsConstructor
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
+
+    @GetMapping
+    public ResponseEntity<List<PurchaseOrderResponseDto>> getPurchaseOrdersByCompany(
+            @PathVariable Integer companyId
+    ) {
+        List<PurchaseOrderResponseDto> response =
+                purchaseOrderService.getPurchaseOrdersByCompany(companyId);
+
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping
     public ResponseEntity<PurchaseOrderResponseDto> createPurchaseOrder(

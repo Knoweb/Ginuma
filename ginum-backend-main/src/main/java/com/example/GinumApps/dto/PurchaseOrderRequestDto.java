@@ -1,7 +1,6 @@
 package com.example.GinumApps.dto;
 
 import com.example.GinumApps.enums.PurchaseType;
-import com.example.GinumApps.model.Account;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -17,8 +16,9 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class PurchaseOrderRequestDto {
+
     @NotNull(message = "Supplier ID is required")
-    private Integer supplierId;
+    private Long supplierId;
 
     @NotBlank(message = "Supplier invoice number is required")
     private String supplierInvoiceNumber;
@@ -37,7 +37,6 @@ public class PurchaseOrderRequestDto {
     @NotEmpty
     private List<PurchaseOrderItemRequestDto> items;
 
-
     @DecimalMin(value = "0.00", message = "Freight cannot be negative")
     private BigDecimal freight = BigDecimal.ZERO;
 
@@ -48,8 +47,7 @@ public class PurchaseOrderRequestDto {
     private BigDecimal amountPaid = BigDecimal.ZERO;
 
     @NotNull(message = "Purchase type is required")
-    private PurchaseType purchaseType; // ITEM or SERVICE
+    private PurchaseType purchaseType;
 
     private String paymentAccountCode;
-
 }

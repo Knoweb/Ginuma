@@ -8,13 +8,11 @@ import java.math.BigDecimal;
 @Data
 public class PurchaseOrderItemRequestDto {
 
-    @NotNull(message = "Item ID is required")
+    // GOODS නම් required. SERVICES නම් null allowed.
     private Long itemId;
 
-//    @NotBlank(message = "Description is required")
     private String description;
 
-    @Min(1)
     private Integer quantity;
 
     @DecimalMin(value = "0.01", message = "Unit price must be at least 0.01")
@@ -24,11 +22,11 @@ public class PurchaseOrderItemRequestDto {
     @DecimalMax(value = "100.00", message = "Discount cannot exceed 100%")
     private BigDecimal discount;
 
-    @DecimalMin(value = "0.01", message = "Amount must be positive (for SERVICES)")
+    @DecimalMin(value = "0.01", message = "Amount must be positive")
     private BigDecimal amount;
 
     @NotBlank(message = "Account code is required")
-    private String accountCode; // Linked to chart of accounts
+    private String accountCode;
 
-    private Long projectId; // Optional
+    private Long projectId;
 }
