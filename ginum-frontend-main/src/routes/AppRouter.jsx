@@ -42,6 +42,8 @@ import Revenue from "../components/reports/Revenue";
 import CreateQuotation from "../components/quotations/CreateQuotation";
 import AllQuotations from "../components/quotations/AllQuotations";
 import MoneyTransaction from "../components/bank/MoneyTransaction";
+import ReceiveMoney from "../components/bank/ReceiveMoney";
+import SpendMoney from "../components/bank/SpendMoney";
 import CreatePurchase from "../components/supplier/CreatePurchase";
 import CreateSaleOrder from "../components/customer/CreateSale";
 import AllPurchases from "../components/supplier/AllPurchases";
@@ -132,12 +134,10 @@ function AppRouter() {
             <Route path="reconsilation" element={<BankReconsilation />} />
             <Route
               path="spend-money"
-              element={<MoneyTransaction type="spend" />}
-            />
+              element={<SpendMoney />} />
             <Route
               path="receive-money"
-              element={<MoneyTransaction type="receive" />}
-            />
+              element={<ReceiveMoney />} />
           </Route>
           <Route path="department">
             <Route index element={<Navigate to="all" replace />} />

@@ -112,12 +112,12 @@ const PayeeDropdown = ({ value, onChange, onAddNew }) => {
     items: filterItems(employees),
   }
 ].filter(group => group.items.length > 0);
-  }, [searchTerm, suppliers, customers]);
+  }, [searchTerm, suppliers, customers, employees]);
 
   const selectedItem = useMemo(() => {
-    const allItems = [...suppliers, ...customers];
+    const allItems = [...suppliers, ...customers, ...employees];
     return allItems.find((item) => item.id === value);
-  }, [value, suppliers, customers]);
+  }, [value, suppliers, customers, employees]);
 
   
   return (
@@ -323,40 +323,67 @@ const MoneyTransaction = ({ type }) => {
     setRows(updatedRows);
   };
 
+  const removeRow = (index) => {
+    const updatedRows = rows.filter((_, i) => i !== index);
+    setRows(updatedRows);
+  };
+
+  // 1. මෙන්න මේ handleRecord function එක අලුතින් එකතු කරන්න
   const handleRecord = async () => {
+    if (!selectedBankAccount) {
+      alert("Please select a Bank Account.");
+      return;
+    }
+    
+    const validRows = rows.filter(r => r.account !== "" && parseFloat(r.amount) > 0);
+    if (validRows.length === 0) {
+      alert("Please add at least one valid transaction row with an amount.");
+      return;
+    }
+
     const payload = {
-      companyId: sessionStorage.getItem("companyId"),
-      accountId: selectedBankAccount,
-      payeeId: selectedPayee,
+      companyId: parseInt(sessionStorage.getItem("companyId")),
+      accountId: parseInt(selectedBankAccount),
+      payeeId: selectedPayee, 
       date: date,
       description: description,
       totalAmount: total,
-      rows: rows.filter(r => r.account !== "") 
+      transactionType: type ? type.toUpperCase() : "SPEND", 
+      rows: validRows.map(r => ({
+        accountId: parseInt(r.account),
+        amount: parseFloat(r.amount),
+        quantity: parseInt(r.quantity) || 1,
+        description: r.description,
+        projectId: r.project ? parseInt(r.project) : null
+      }))
     };
 
+    console.log("Recording Transaction:", payload);
+
     try {
+      const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("token");
       const response = await fetch(`${apiUrl}/api/transactions`, {
         method: "POST",
         headers: { 
-          "Authorization": `Bearer ${sessionStorage.getItem("auth_token")}`,
+          "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json" 
         },
         body: JSON.stringify(payload)
       });
 
-      if (response.ok) {
-        alert("Transaction recorded successfully!");
-        navigate("/bank-reconciliation"); 
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData || "Failed to record transaction");
       }
+
+      alert("Transaction recorded successfully!");
+      navigate("/bank-reconciliation"); // සාර්ථක වූ පසු Bank Reconciliation පිටුවට යයි
     } catch (err) {
-      console.error("Error recording:", err);
+      console.error("Error recording transaction:", err);
+      alert("Failed to record transaction. Check console.");
     }
   };
-
-  const removeRow = (index) => {
-    const updatedRows = rows.filter((_, i) => i !== index);
-    setRows(updatedRows);
-  };
+  
 
   // Calculate Totals dynamically
   const subtotal = rows.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
@@ -549,9 +576,12 @@ const MoneyTransaction = ({ type }) => {
             <span className="ml-4 font-semibold text-gray-900">Total: ${total.toFixed(2)}</span>
           </div>
           <div className="flex space-x-2">
-            <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium transition-colors">
-              Record
-            </button>
+            <button 
+                onClick={handleRecord} 
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium transition-colors"
+              >
+                Record
+              </button>
           </div>
         </div>
       </div>
