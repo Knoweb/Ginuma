@@ -174,7 +174,7 @@ const CreatePurchase = () => {
       const companyId = checkAuth();
 
       const response = await fetch(
-        `${API_BASE_URL}/api/suppliers/companies/${companyId}`,
+        `${API_BASE_URL}/api/suppliers/companies/${companyId}/active`,
         {
           method: "GET",
           headers: getAuthHeaders(),

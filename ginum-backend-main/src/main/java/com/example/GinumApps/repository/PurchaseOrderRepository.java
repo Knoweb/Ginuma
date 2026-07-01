@@ -13,4 +13,5 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
     String findLastPoNumberByCompanyId(@Param("companyId") Long companyId);
 
     List<PurchaseOrder> findByCompany_CompanyId(Integer companyId);
+    boolean existsBySupplier_Id(Long supplierId);
 }

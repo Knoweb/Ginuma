@@ -4,17 +4,10 @@ import com.example.GinumApps.enums.ItemCategory;
 import com.example.GinumApps.enums.SupplierType;
 import com.example.GinumApps.enums.TaxType;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class SupplierDto {
+public class SupplierUpdateDto {
 
     @NotBlank(message = "Supplier name is mandatory")
     private String supplierName;
@@ -36,11 +29,6 @@ public class SupplierDto {
     @NotNull(message = "Tax type is mandatory")
     private TaxType tax;
 
-    @NotNull(message = "Currency is mandatory")
-    private Integer currencyId;
-
-    private MultipartFile businessRegistration;
-
     @NotNull(message = "Category is required")
     private ItemCategory itemCategory;
 
@@ -49,4 +37,8 @@ public class SupplierDto {
     @DecimalMin(value = "0.0", message = "Discount cannot be negative")
     @DecimalMax(value = "100.0", message = "Discount cannot exceed 100%")
     private Double discountPercentage;
+
+    private Integer currencyId;
+
+    private Boolean active;
 }

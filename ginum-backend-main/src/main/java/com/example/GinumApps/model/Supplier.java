@@ -55,6 +55,9 @@ public class Supplier {
 
     private Double discountPercentage;
 
+    @Column(nullable = false)
+    private Boolean active = true;
+
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;

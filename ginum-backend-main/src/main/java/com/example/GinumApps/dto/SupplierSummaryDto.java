@@ -16,4 +16,8 @@ public class SupplierSummaryDto {
     private SupplierType supplierType;
     private TaxType tax;
     private String itemCategory;
+    private String tinNo;
+    private String swiftNo;
+    private Double discountPercentage;
+    private Boolean active;
 }
