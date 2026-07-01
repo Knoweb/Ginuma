@@ -23,20 +23,16 @@ public class UserController {
 
     @PostMapping("/companies/{companyId}")
     public ResponseEntity<?> assignUser(@PathVariable Integer companyId, @RequestBody AppUser user) {
-        // 1. එම Email එකෙන් User කෙනෙක් සිටීදැයි පරීක්ෂා කරන්න
         Optional<AppUser> existingUser = userRepository.findByEmail(user.getEmail());
 
         if (existingUser.isPresent()) {
-            // සිටී නම්: පැරණි User ගේ ID එක අරගෙන ඒ දත්ත Update කරන්න
             AppUser userToUpdate = existingUser.get();
             userToUpdate.setRole(user.getRole());
-            // අවධානය: මුරපදය (password) වෙනස් කරන්නේ නම් පමණක් Encrypt කර Update කරන්න
             if (user.getPassword() != null && !user.getPassword().isEmpty()) {
                 userToUpdate.setPassword(user.getPassword());
             }
             return ResponseEntity.ok(userRepository.save(userToUpdate));
         } else {
-            // සිටින්නේ නැති නම්: අලුතින් Save කරන්න
             Company company = companyRepository.findById(companyId)
                     .orElseThrow(() -> new RuntimeException("Company not found"));
             user.setCompany(company);

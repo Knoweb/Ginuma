@@ -91,9 +91,6 @@ export default function AddCustomerForm({ onClose }) {
 
       alert("Customer saved successfully!");
       resetForm();
-      
-      // 2. මෙන්න මේ කොටස අලුතින් එකතු කළා
-      // මෙමගින් Customer Save වූ විගස Modal එක වැසී Dropdown එකට දත්ත Refresh වේ
       if (onClose) {
         onClose();
       }

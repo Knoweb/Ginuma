@@ -399,14 +399,14 @@ const SuppliersList = () => {
               Add Supplier
             </button>
 
-            <button
+            {/* <button
               type="button"
               onClick={fetchSuppliers}
               className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 px-4 py-3 rounded-lg text-base flex items-center justify-center gap-2"
               title="Refresh"
             >
               <FaSyncAlt />
-            </button>
+            </button> */}
           </div>
         </div>
 
