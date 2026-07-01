@@ -214,7 +214,9 @@ const MoneyTransaction = ({ type }) => {
   
   const [selectedPayee, setSelectedPayee] = useState(null);
   const [selectedBankAccount, setSelectedBankAccount] = useState("");
-  const [accounts, setAccounts] = useState([]); // Store fetched accounts
+
+  const [accounts, setAccounts] = useState([]); 
+  const [projects, setProjects] = useState([]);
   
   const [date, setDate] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("1");
@@ -226,6 +228,41 @@ const MoneyTransaction = ({ type }) => {
     { account: "", amount: "0.00", quantity: "0", description: "", project: "" },
   ]);
 
+
+  // Fetch Projects on load
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const companyId = sessionStorage.getItem("companyId") || localStorage.getItem("companyId");
+      const token = sessionStorage.getItem("auth_token") || localStorage.getItem("auth_token") || sessionStorage.getItem("token");
+
+      if (!companyId || !token) return;
+
+      try {
+        const response = await fetch(`${apiUrl || 'http://localhost:8081'}/api/companies/${companyId}/projects`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Projects fetched for dropdown:", data);
+        
+        // දත්ත Array එකක් ලෙස State එකට ඇතුලත් කිරීම
+        setProjects(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
   // Fetch Bank Accounts on load
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -235,11 +272,24 @@ const MoneyTransaction = ({ type }) => {
       if (!companyId || !token) return;
 
       try {
-        const response = await api.get(`/api/companies/${companyId}/accounts`, {
-          headers: { Authorization: `Bearer ${token}` }
+        // api.get වෙනුවට AllAccounts පිටුවේ භාවිතා කළ සාර්ථක fetch ක්‍රමයම භාවිතා කිරීම
+        const response = await fetch(`${apiUrl || 'http://localhost:8081'}/api/companies/${companyId}/accounts`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
         });
-        const accountsData = Array.isArray(response.data) ? response.data : (response.data?.data || []);
-        setAccounts(accountsData);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Accounts fetched for dropdown:", data);
+        
+        // දත්ත Array එකක් ලෙස State එකට ඇතුලත් කිරීම
+        setAccounts(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching accounts:", error);
       }
@@ -274,6 +324,38 @@ const MoneyTransaction = ({ type }) => {
       updatedRows.push({ account: "", amount: "0.00", quantity: "0", description: "", project: "" });
     }
     setRows(updatedRows);
+  };
+
+  const handleRecord = async () => {
+    // 1. තෝරාගත් දත්ත එකතු කිරීම
+    const payload = {
+      companyId: sessionStorage.getItem("companyId"),
+      accountId: selectedBankAccount,
+      payeeId: selectedPayee,
+      date: date,
+      description: description,
+      totalAmount: total,
+      rows: rows.filter(r => r.account !== "") // හිස් row ඉවත් කිරීම
+    };
+
+    try {
+      // 2. Backend එකට යැවීම
+      const response = await fetch(`${apiUrl}/api/transactions`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${sessionStorage.getItem("auth_token")}`,
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert("Transaction recorded successfully!");
+        navigate("/bank-reconciliation"); // සාර්ථක වූ පසු BankReconciliation වෙත යැවීම
+      }
+    } catch (err) {
+      console.error("Error recording:", err);
+    }
   };
 
   const removeRow = (index) => {
@@ -442,8 +524,11 @@ const MoneyTransaction = ({ type }) => {
                       onChange={(e) => handleRowChange(index, "project", e.target.value)}
                     >
                       <option value="">Select Project</option>
-                      <option value="1">Project-1</option>
-                      <option value="2">Project-2</option>
+                      {projects.map((proj) => (
+                        <option key={proj.id} value={proj.id}>
+                          {proj.code ? `${proj.code} - ` : ""}{proj.name}
+                        </option>
+                      ))}
                     </select>
                   </td>
                   <td className="p-2 text-center">
