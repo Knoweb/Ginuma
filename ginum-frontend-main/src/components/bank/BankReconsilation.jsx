@@ -80,6 +80,7 @@ function BankReconsilation() {
   };
 
   const getContactName = (t) => {
+    if (t.payeeName) return t.payeeName;
     const desc = t.description || "";
     if (desc.includes("Receive Money - ")) {
       const parts = desc.split("Receive Money - ");

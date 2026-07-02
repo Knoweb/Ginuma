@@ -20,4 +20,11 @@ public class Transaction {
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company;
+
+    private String payeeType;
+    private Integer payeeId;
+    private String payeeName;
+    private String paymentCategory;
+    private String paymentMethod;
+    private String paymentAccountCode;
 }

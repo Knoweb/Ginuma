@@ -331,6 +331,14 @@ public class PurchaseOrderService {
         transaction.setTotalDebit(0.0);
         transaction.setTotalCredit(request.getAmount().doubleValue());
         transaction.setCompany(po.getCompany());
+        
+        transaction.setPayeeType("Supplier");
+        transaction.setPayeeId(po.getSupplier().getId().intValue());
+        transaction.setPayeeName(po.getSupplier().getSupplierName());
+        transaction.setPaymentCategory("Supplier Payment");
+        transaction.setPaymentMethod("Bank Transfer");
+        transaction.setPaymentAccountCode(request.getPaymentAccountCode());
+        
         transactionRepo.save(transaction);
 
         if (savedPO.getBalanceDue().compareTo(BigDecimal.ZERO) > 0) {
