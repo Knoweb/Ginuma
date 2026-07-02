@@ -422,10 +422,10 @@ const CreateSaleOrder = () => {
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
             <FiFileText className="text-blue-600" />
             Create Sale Order
-          </h2>
+          </h1>
           <p className="text-sm text-gray-500 mt-1">
             Create and issue a new customer billing invoice order
           </p>

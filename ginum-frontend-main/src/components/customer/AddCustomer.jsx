@@ -204,10 +204,10 @@ export default function AddCustomerForm({ onClose }) {
       {!onClose && (
         <div className="flex justify-between items-center pb-4 border-b border-gray-200">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
               <FiUser className="text-blue-600" />
               Create Customer
-            </h2>
+            </h1>
             <p className="text-sm text-gray-500 mt-1">
               Add a new customer to system contacts and ledger
             </p>

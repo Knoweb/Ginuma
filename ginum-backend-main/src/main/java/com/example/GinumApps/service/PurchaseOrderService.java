@@ -1,6 +1,7 @@
 package com.example.GinumApps.service;
 
 import com.example.GinumApps.dto.*;
+import com.example.GinumApps.enums.AccountType;
 import com.example.GinumApps.enums.JournalEntryType;
 import com.example.GinumApps.enums.LineItemType;
 import com.example.GinumApps.enums.PurchaseType;
@@ -197,6 +198,26 @@ public class PurchaseOrderService {
     }
 
     private void createJournalEntries(PurchaseOrder po) {
+        Company company = po.getCompany();
+        Account apAccount = company.getAccountsPayableAccount();
+        if (apAccount == null) {
+            apAccount = accountRepo.findByAccountCodeAndCompany_CompanyId("2100", company.getCompanyId())
+                    .orElseGet(() -> {
+                        Account newAp = new Account();
+                        newAp.setAccountName("Accounts Payable");
+                        newAp.setNormalizedName("ACCOUNTSPAYABLE");
+                        newAp.setSubAccountName("");
+                        newAp.setAccountType(AccountType.LIABILITY_ACCOUNTS_PAYABLE);
+                        newAp.setCurrentBalance(BigDecimal.ZERO);
+                        newAp.setCompany(company);
+                        newAp.setAccountCode("2100");
+                        return accountRepo.save(newAp);
+                    });
+            company.setAccountsPayableAccount(apAccount);
+            companyRepository.save(company);
+            po.setCompany(company);
+        }
+
         JournalEntryDto entryDto = new JournalEntryDto();
         entryDto.setLines(new ArrayList<>());
 

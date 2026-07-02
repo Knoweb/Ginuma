@@ -140,7 +140,7 @@ const AddUserForm = () => {
           <FiUserPlus className="text-blue-600 text-xl" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Assign User</h2>
+          <h1 className="text-3xl font-bold text-gray-800">Assign User</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Grant system access to an employee with a specific role
           </p>

@@ -239,9 +239,9 @@ const ReceiveMoney = () => {
             <FaHandHoldingUsd className="text-green-600 text-xl" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-800">
               Receive Money
-            </h2>
+            </h1>
             <p className="text-sm text-gray-500 mt-0.5">
               Record an incoming payment received from a customer sale order
             </p>
