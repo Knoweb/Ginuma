@@ -52,7 +52,7 @@ public class Item {
     @Column(length = 20)
     private String unit;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "BIT DEFAULT 1")
     private Boolean active = true;
 
     @ManyToOne
