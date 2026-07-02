@@ -58,7 +58,8 @@ public class SecurityConfig {
                         // Purchase order endpoints
                         .requestMatchers(
                                 "/api/*/purchase-orders",
-                                "/api/*/purchase-orders/**"
+                                "/api/*/purchase-orders/**",
+                                "/api/purchase-orders/**"
                         )
                         .hasAnyAuthority(
                                 "COMPANY",
@@ -75,6 +76,22 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/companies/*/projects",
                                 "/api/companies/*/projects/**"
+                        )
+                        .hasAnyAuthority(
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "EMPLOYEE",
+                                "ROLE_EMPLOYEE",
+                                "APP_USER",
+                                "ROLE_APP_USER",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
+
+                        // Report endpoints
+                        .requestMatchers(
+                                "/api/companies/*/reports",
+                                "/api/companies/*/reports/**"
                         )
                         .hasAnyAuthority(
                                 "COMPANY",

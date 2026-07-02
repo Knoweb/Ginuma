@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/{companyId}/purchase-orders")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
 
-    @GetMapping
+    @GetMapping("/api/{companyId}/purchase-orders")
     public ResponseEntity<List<PurchaseOrderResponseDto>> getPurchaseOrdersByCompany(
             @PathVariable Integer companyId
     ) {
@@ -31,12 +31,26 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping
+    @PostMapping({"/api/{companyId}/purchase-orders", "/api/purchase-orders/company/{companyId}"})
     public ResponseEntity<PurchaseOrderResponseDto> createPurchaseOrder(
             @PathVariable Integer companyId,
-            @Valid @RequestBody PurchaseOrderRequestDto request) {
-        PurchaseOrderResponseDto response = purchaseOrderService.createPurchaseOrder(request,companyId);
+            @Valid @RequestBody PurchaseOrderRequestDto request
+    ) {
+        PurchaseOrderResponseDto response = purchaseOrderService.createPurchaseOrder(request, companyId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/api/{companyId}/purchase-orders/{poId}/pay")
+    public ResponseEntity<?> payPurchaseOrder(
+            @PathVariable Integer companyId,
+            @PathVariable Long poId,
+            @RequestBody @Valid PurchasePaymentRequestDto request
+    ) {
+        if (!companyId.equals(request.getCompanyId())) {
+            throw new AccessDeniedException("Access denied: Company mismatch");
+        }
+        purchaseOrderService.payPurchaseOrder(poId, request);
+        return ResponseEntity.ok("Payment recorded successfully");
     }
 
     // Exception handler for validation errors
@@ -52,19 +66,10 @@ public class PurchaseOrderController {
     public ResponseEntity<String> handleNotFoundExceptions(EntityNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<String> handleAccessDeniedExceptions(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
-
-    @PostMapping("/{poId}/pay")
-    public ResponseEntity<?> payPurchaseOrder(
-            @PathVariable Long poId,
-            @RequestBody @Valid PurchasePaymentRequestDto request
-    ) {
-        purchaseOrderService.payPurchaseOrder(poId, request);
-        return ResponseEntity.ok("Payment recorded successfully");
-    }
-
 }

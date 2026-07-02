@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -56,5 +57,36 @@ public class AppUserService {
 
     public List<AppUser> getUsersByCompany(Integer companyId) {
         return appUserRepository.findAllByCompanyCompanyId(companyId);
+    }
+
+    @Transactional
+    public AppUser assignUser(Integer companyId, AppUser user) {
+        Optional<AppUser> existingUser = appUserRepository.findByEmail(user.getEmail());
+
+        if (existingUser.isPresent()) {
+            AppUser userToUpdate = existingUser.get();
+            userToUpdate.setRole(user.getRole());
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                userToUpdate.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
+            return appUserRepository.save(userToUpdate);
+        } else {
+            Company company = companyRepository.findById(companyId)
+                    .orElseThrow(() -> new RuntimeException("Company not found"));
+            
+            AppUser newUser = new AppUser();
+            newUser.setEmail(user.getEmail());
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                newUser.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
+            newUser.setRole(user.getRole());
+            newUser.setCompany(company);
+            return appUserRepository.save(newUser);
+        }
+    }
+
+    @Transactional
+    public void deleteUser(Integer userId) {
+        appUserRepository.deleteById(userId);
     }
 }

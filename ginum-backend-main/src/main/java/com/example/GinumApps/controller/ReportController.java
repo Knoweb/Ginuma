@@ -19,4 +19,64 @@ public class ReportController {
         BalanceSheetResponseDto report = reportService.getBalanceSheet(companyId);
         return ResponseEntity.ok(report);
     }
+
+    @GetMapping("/income-statement")
+    public ResponseEntity<com.example.GinumApps.dto.IncomeStatementResponseDto> getIncomeStatement(
+            @PathVariable Integer companyId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer quarter,
+            @RequestParam(required = false) Integer month
+    ) {
+        com.example.GinumApps.dto.IncomeStatementResponseDto report = reportService.getIncomeStatement(
+                companyId, startDate, endDate, year, quarter, month
+        );
+        return ResponseEntity.ok(report);
+    }
+
+    @GetMapping("/trial-balance")
+    public ResponseEntity<com.example.GinumApps.dto.TrialBalanceResponseDto> getTrialBalance(
+            @PathVariable Integer companyId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer quarter,
+            @RequestParam(required = false) Integer month
+    ) {
+        com.example.GinumApps.dto.TrialBalanceResponseDto report = reportService.getTrialBalance(
+                companyId, startDate, endDate, year, quarter, month
+        );
+        return ResponseEntity.ok(report);
+    }
+
+    @GetMapping("/cash-flow")
+    public ResponseEntity<com.example.GinumApps.dto.CashFlowResponseDto> getCashFlow(
+            @PathVariable Integer companyId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer quarter,
+            @RequestParam(required = false) Integer month
+    ) {
+        com.example.GinumApps.dto.CashFlowResponseDto report = reportService.getCashFlow(
+                companyId, startDate, endDate, year, quarter, month
+        );
+        return ResponseEntity.ok(report);
+    }
+
+    @GetMapping("/general-ledger")
+    public ResponseEntity<com.example.GinumApps.dto.GeneralLedgerResponseDto> getGeneralLedger(
+            @PathVariable Integer companyId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer quarter,
+            @RequestParam(required = false) Integer month
+    ) {
+        com.example.GinumApps.dto.GeneralLedgerResponseDto report = reportService.getGeneralLedger(
+                companyId, startDate, endDate, year, quarter, month
+        );
+        return ResponseEntity.ok(report);
+    }
 }
