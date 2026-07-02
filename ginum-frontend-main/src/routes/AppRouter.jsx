@@ -56,6 +56,7 @@ import BankReconsilation from "../components/bank/BankReconsilation";
 import AgedPayables from "../components/supplier/AgedPayables";
 import AgedReceivables from "../components/customer/AgedReceivables";
 import InventoryDashboard from "../components/Inventory/InventoryDashboard";
+import Depreciation from "../components/depreciation/Depreciation";
 
 function AppRouter() {
   return (
@@ -178,6 +179,7 @@ function AppRouter() {
             <Route index element={<Navigate to="all" replace />} />
             <Route path="all" element={<InventoryDashboard  />} />
           </Route>
+          <Route path="depreciation" element={<Depreciation />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

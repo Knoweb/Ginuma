@@ -31,6 +31,7 @@ public class SalesOrderService {
     private final ProjectRepository projectRepo;
     private final JournalEntryService journalService;
     private final AgingReceivableSnapshotRepository agingReceivableSnapshotRepo;
+    private final TransactionRepository transactionRepo;
 
     @Transactional
     public SalesOrderResponseDto createSalesOrder(SalesOrderRequestDto request, Integer companyId) {
@@ -45,18 +46,7 @@ public class SalesOrderService {
         }
 
         Account paymentAccount = null;
-        BigDecimal amountPaid = valueOrZero(request.getAmountPaid());
-
-        if (amountPaid.compareTo(BigDecimal.ZERO) > 0) {
-            if (request.getPaymentAccountCode() == null || request.getPaymentAccountCode().isBlank()) {
-                throw new IllegalArgumentException("Payment account is required when amount paid is greater than zero");
-            }
-
-            paymentAccount = accountRepo.findByAccountCodeAndCompany_CompanyId(
-                    request.getPaymentAccountCode(),
-                    companyId
-            ).orElseThrow(() -> new ResourceNotFoundException("Invalid payment account code"));
-        }
+        BigDecimal amountPaid = BigDecimal.ZERO;
 
         SalesOrder order = new SalesOrder();
         order.setCompany(company);
@@ -65,8 +55,8 @@ public class SalesOrderService {
         order.setIssueDate(request.getIssueDate());
         order.setDueDate(request.getDueDate());
         order.setNotes(request.getNotes());
-        order.setPaymentAccount(paymentAccount);
-        order.setAmountPaid(amountPaid);
+        order.setPaymentAccount(null);
+        order.setAmountPaid(BigDecimal.ZERO);
         order.setSalesType(request.getSalesType());
 
         processItems(request.getItems(), order, company, request.getSalesType());
@@ -273,34 +263,43 @@ public class SalesOrderService {
         order.setBalanceDue(order.getBalanceDue().subtract(request.getAmount()));
         salesOrderRepo.save(order);
 
-        JournalEntryDto journal = new JournalEntryDto();
-        journal.setEntryType(JournalEntryType.RECEIPT);
-        journal.setEntryDate(LocalDate.now());
-        journal.setJournalTitle("Sales Payment");
-        journal.setReferenceNo(order.getSoNumber());
-        journal.setCompanyId(request.getCompanyId());
-        journal.setDescription("Payment received for SO #" + order.getId());
-
-        List<JournalEntryLineDto> lines = new ArrayList<>();
-
-        lines.add(new JournalEntryLineDto(
-                paymentAccount.getAccountCode(),
-                request.getAmount(),
-                true,
-                "Customer payment received"
-        ));
+        Transaction transaction = new Transaction();
+        transaction.setReferenceNumber(order.getSoNumber());
+        transaction.setDate(LocalDate.now().toString());
+        transaction.setDescription("Receive Money - " + order.getCustomer().getName() + " (SO: " + order.getSoNumber() + ")");
+        transaction.setTotalDebit(request.getAmount().doubleValue());
+        transaction.setTotalCredit(0.0);
+        transaction.setCompany(order.getCompany());
+        transactionRepo.save(transaction);
 
         if (order.getCompany().getAccountsReceivableAccount() != null) {
+            JournalEntryDto journal = new JournalEntryDto();
+            journal.setEntryType(JournalEntryType.RECEIPT);
+            journal.setEntryDate(LocalDate.now());
+            journal.setJournalTitle("Sales Payment");
+            journal.setReferenceNo(order.getSoNumber());
+            journal.setCompanyId(request.getCompanyId());
+            journal.setDescription("Payment received for SO #" + order.getId());
+
+            List<JournalEntryLineDto> lines = new ArrayList<>();
+
+            lines.add(new JournalEntryLineDto(
+                    paymentAccount.getAccountCode(),
+                    request.getAmount(),
+                    true,
+                    "Customer payment received"
+            ));
+
             lines.add(new JournalEntryLineDto(
                     order.getCompany().getAccountsReceivableAccount().getAccountCode(),
                     request.getAmount(),
                     false,
                     "Reduce receivable from customer"
             ));
-        }
 
-        journal.setLines(lines);
-        journalService.createJournalEntry(journal);
+            journal.setLines(lines);
+            journalService.createJournalEntry(journal);
+        }
     }
 
     private SalesOrderResponseDto convertToDto(SalesOrder order) {

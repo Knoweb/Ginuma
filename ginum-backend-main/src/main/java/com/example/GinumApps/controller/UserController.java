@@ -45,5 +45,9 @@ public class UserController {
         return ResponseEntity.ok(userRepository.findByCompany_CompanyId(companyId));
     }
 
-
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Integer userId) {
+        userRepository.deleteById(userId);
+        return ResponseEntity.ok().build();
+    }
 }

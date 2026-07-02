@@ -2,6 +2,7 @@ package com.example.GinumApps.controller;
 
 import com.example.GinumApps.dto.SalesOrderRequestDto;
 import com.example.GinumApps.dto.SalesOrderResponseDto;
+import com.example.GinumApps.dto.SalesPaymentRequestDto;
 import com.example.GinumApps.service.SalesOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +38,14 @@ public class SalesOrderController {
                 salesOrderService.getSalesOrdersByCompany(companyId);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{soId}/pay")
+    public ResponseEntity<Void> paySalesOrder(
+            @PathVariable Long soId,
+            @Valid @RequestBody SalesPaymentRequestDto requestDto
+    ) {
+        salesOrderService.paySalesOrder(soId, requestDto);
+        return ResponseEntity.ok().build();
     }
 }

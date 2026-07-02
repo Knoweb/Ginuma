@@ -10,6 +10,6 @@ import java.util.List;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
-    @Query("SELECT t FROM Transaction t WHERE t.company.companyId = :companyId")
+    @Query("SELECT t FROM Transaction t WHERE t.company.companyId = :companyId OR t.company IS NULL")
     List<Transaction> findByCompanyId(@Param("companyId") Integer companyId);
 }

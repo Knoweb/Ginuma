@@ -3,8 +3,9 @@ import { MdOutlineCancel, MdAddCircleOutline } from "react-icons/md";
 import { FaTimes } from "react-icons/fa";
 import AddAccountForm from "../account/AddAccountForm";
 import NewProjectForm from "../projects/NewProjectForm";
+import { apiUrl } from "../../utils/api";
 
-const API_BASE_URL = "http://localhost:8081";
+const API_BASE_URL = apiUrl;
 
 const emptyRow = {
   itemId: "",
@@ -387,13 +388,8 @@ const CreateSaleOrder = () => {
       return false;
     }
 
-    if (balanceDue > 0 && !dueDate) {
+    if (!dueDate) {
       setMessage("Please select due date.");
-      return false;
-    }
-
-    if (Number(amountPaid || 0) > 0 && !paymentAccountCode) {
-      setMessage("Please select payment account.");
       return false;
     }
 
@@ -409,12 +405,11 @@ const CreateSaleOrder = () => {
       customerId: Number(selectedCustomer),
       soNumber: saleOrderNumber.trim(),
       issueDate: orderDate,
-      dueDate: balanceDue > 0 ? dueDate : null,
+      dueDate: dueDate,
       notes: notes.trim(),
-      amountPaid: Number(amountPaid || 0),
+      amountPaid: 0,
       salesType: isServiceMode ? "SERVICES" : "GOODS",
-      paymentAccountCode:
-        Number(amountPaid || 0) > 0 ? paymentAccountCode : null,
+      paymentAccountCode: null,
       companyId: Number(companyId),
 
       items: validRows.map((row) => ({
@@ -907,68 +902,22 @@ const CreateSaleOrder = () => {
 
         <div className="w-full md:w-1/2 flex justify-between items-center">
           <span className="text-gray-700 font-medium">Total:</span>
-          <span className="text-gray-900">Rs. {subtotal.toFixed(2)}</span>
+          <span className="text-gray-900 font-bold">Rs. {subtotal.toFixed(2)}</span>
         </div>
 
         <div className="w-full md:w-1/2 flex justify-between items-center">
-          <label className="text-gray-700 font-medium">Amount Paid:</label>
+          <label className="block text-gray-700 font-medium">
+            Due Date <span className="text-red-500">*</span>
+          </label>
 
           <input
-            type="number"
+            type="date"
             className="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            placeholder="0.00"
-            value={amountPaid}
-            onChange={(e) => setAmountPaid(e.target.value)}
-            min="0"
-            step="0.01"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            required
           />
         </div>
-
-        {Number(amountPaid || 0) > 0 && (
-          <div className="w-full md:w-1/2 flex justify-between items-center">
-            <label className="text-gray-700 font-medium">
-              Payment Account <span className="text-red-500">*</span>
-            </label>
-
-            <select
-              value={paymentAccountCode}
-              onChange={(e) => setPaymentAccountCode(e.target.value)}
-              className="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            >
-              <option value="">Select Account</option>
-
-              {accounts.map((account, index) => (
-                <option
-                  key={account.id || account.accountCode || index}
-                  value={account.accountCode}
-                >
-                  {getAccountLabel(account)}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <div className="w-full md:w-1/2 flex justify-between items-center">
-          <span className="text-gray-700 font-medium">Balance Due:</span>
-          <span className="text-gray-900">Rs. {balanceDue.toFixed(2)}</span>
-        </div>
-
-        {balanceDue > 0 && (
-          <div className="w-full md:w-1/2 flex justify-between items-center">
-            <label className="block text-gray-700 font-medium">
-              Due Date <span className="text-red-500">*</span>
-            </label>
-
-            <input
-              type="date"
-              className="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              required
-            />
-          </div>
-        )}
       </div>
 
       <div className="flex justify-end space-x-2">
@@ -976,7 +925,7 @@ const CreateSaleOrder = () => {
           type="button"
           onClick={handleSaveSaleOrder}
           disabled={saving}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold shadow"
         >
           {saving ? "Saving..." : "Save"}
         </button>

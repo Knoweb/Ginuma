@@ -32,6 +32,7 @@ public class PurchaseOrderService {
     private final ItemRepository itemRepository;
     private final ProjectRepository projectRepo;
     private final AgingPayableSnapshotRepository agingRepo;
+    private final TransactionRepository transactionRepo;
 
     @Transactional
     public List<PurchaseOrderResponseDto> getPurchaseOrdersByCompany(Integer companyId) {
@@ -302,38 +303,47 @@ public class PurchaseOrderService {
 
         PurchaseOrder savedPO = purchaseOrderRepo.save(po);
 
+        Transaction transaction = new Transaction();
+        transaction.setReferenceNumber(po.getPoNumber());
+        transaction.setDate(LocalDate.now().toString());
+        transaction.setDescription("Spend Money - " + po.getSupplier().getSupplierName() + " (PO: " + po.getPoNumber() + ")");
+        transaction.setTotalDebit(0.0);
+        transaction.setTotalCredit(request.getAmount().doubleValue());
+        transaction.setCompany(po.getCompany());
+        transactionRepo.save(transaction);
+
         if (savedPO.getBalanceDue().compareTo(BigDecimal.ZERO) > 0) {
             createAgingSnapshot(savedPO);
         }
 
-        JournalEntryDto journal = new JournalEntryDto();
-        journal.setEntryType(JournalEntryType.PAYMENT);
-        journal.setEntryDate(LocalDate.now());
-        journal.setJournalTitle("PO Payment");
-        journal.setReferenceNo(po.getSupplierInvoiceNumber());
-        journal.setCompanyId(request.getCompanyId());
-        journal.setDescription("Payment for PO #" + po.getId());
-
-        List<JournalEntryLineDto> lines = new ArrayList<>();
-
-        lines.add(new JournalEntryLineDto(
-                paymentAccount.getAccountCode(),
-                request.getAmount(),
-                false,
-                "Payment from account for PO"
-        ));
-
         if (po.getCompany().getAccountsPayableAccount() != null) {
+            JournalEntryDto journal = new JournalEntryDto();
+            journal.setEntryType(JournalEntryType.PAYMENT);
+            journal.setEntryDate(LocalDate.now());
+            journal.setJournalTitle("PO Payment");
+            journal.setReferenceNo(po.getSupplierInvoiceNumber());
+            journal.setCompanyId(request.getCompanyId());
+            journal.setDescription("Payment for PO #" + po.getId());
+
+            List<JournalEntryLineDto> lines = new ArrayList<>();
+
+            lines.add(new JournalEntryLineDto(
+                    paymentAccount.getAccountCode(),
+                    request.getAmount(),
+                    false,
+                    "Payment from account for PO"
+            ));
+
             lines.add(new JournalEntryLineDto(
                     po.getCompany().getAccountsPayableAccount().getAccountCode(),
                     request.getAmount(),
                     true,
                     "Reduce payable for PO"
             ));
-        }
 
-        journal.setLines(lines);
-        journalEntryService.createJournalEntry(journal);
+            journal.setLines(lines);
+            journalEntryService.createJournalEntry(journal);
+        }
     }
 
     private PurchaseOrderResponseDto convertToDto(PurchaseOrder po) {

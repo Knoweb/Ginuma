@@ -1,223 +1,429 @@
 import React, { useState, useEffect } from "react";
-import { MdDelete, MdAddCircleOutline } from "react-icons/md";
-import { FaTimes } from "react-icons/fa";
+import { FaSpinner, FaArrowLeft, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../utils/api";
-import PayerPayee from "../PayerPayee/PayerPayee";
-import AddAccountForm from "../account/AddAccountForm";
-import NewProjectForm from "../projects/NewProjectForm";
-
-const PayeeDropdown = ({ value, onChange, onAddNew }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchCustomers = async () => {
-    const companyId = sessionStorage.getItem("companyId");
-    const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("token");
-    if (!companyId || !token) return;
-    setLoading(true);
-    try {
-      const res = await fetch(`${apiUrl}/api/customers/companies/${companyId}`, { 
-        headers: { Authorization: `Bearer ${token}` } 
-      });
-      const data = res.ok ? await res.json() : [];
-      setCustomers(data.map(c => ({ 
-        id: `CUS-${c.customerId || c.id}`, 
-        name: c.customerName, 
-        contact: c.mobileNo, 
-        type: "Customer" 
-      })));
-    } catch (error) { console.error(error); } finally { setLoading(false); }
-  };
-
-  useEffect(() => { fetchCustomers(); }, []);
-
-  const filtered = customers.filter(c => (c.name || "").toLowerCase().includes(searchTerm.toLowerCase()));
-  const selectedItem = customers.find(item => item.id === value);
-
-  return (
-    <div className="relative w-full">
-      <div className="flex items-center justify-between w-full px-3 py-2 border rounded-lg cursor-pointer bg-white" onClick={() => setIsOpen(!isOpen)}>
-        {selectedItem ? <div>{selectedItem.name} <span className="text-xs bg-gray-200 px-1 rounded">{selectedItem.type}</span></div> : <span className="text-gray-400">{loading ? "Loading..." : "Select Customer"}</span>}
-      </div>
-      {isOpen && (
-        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-          <input type="text" className="w-full p-2 border-b" placeholder="Search..." onChange={(e) => setSearchTerm(e.target.value)} />
-          {filtered.map(item => (
-            <div key={item.id} className="px-4 py-2 cursor-pointer hover:bg-blue-50" onClick={() => { onChange(item.id); setIsOpen(false); }}>
-              {item.name}
-            </div>
-          ))}
-          <button onClick={onAddNew} className="w-full p-2 text-blue-600 hover:bg-blue-50 font-semibold border-t">+ Add New Customer</button>
-        </div>
-      )}
-    </div>
-  );
-};
+import Alert from "../Alert/Alert";
 
 const ReceiveMoney = () => {
   const navigate = useNavigate();
-  const [selectedPayee, setSelectedPayee] = useState(null);
-  const [selectedBankAccount, setSelectedBankAccount] = useState("");
+
+  // State variables
   const [accounts, setAccounts] = useState([]);
-  const [projects, setProjects] = useState([]);
-  const [rows, setRows] = useState([{ account: "", amount: "0.00", quantity: "0", description: "", project: "" }]);
+  const [customers, setCustomers] = useState([]);
+  const [salesOrders, setSalesOrders] = useState([]);
+
+  const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [selectedSoId, setSelectedSoId] = useState("");
+  const [selectedBankAccountCode, setSelectedBankAccountCode] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [referenceNumber, setReferenceNumber] = useState(`REF-${Math.floor(Date.now() / 1000)}`);
-  const [description, setDescription] = useState("");
-  
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [showAccountModal, setShowAccountModal] = useState(false);
-  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [paymentNote, setPaymentNote] = useState("");
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const companyId = sessionStorage.getItem("companyId");
+  const token = sessionStorage.getItem("auth_token");
+
+  // Helper functions
+  const getCustomerId = (customer) => {
+    return customer.id || customer.customerId || customer.customer_id || customer.customerID || "";
+  };
+
+  const getCustomerName = (customer) => {
+    return customer.customerName || customer.name || customer.companyName || customer.email || "Unnamed Customer";
+  };
+
+  const getAccountLabel = (account) => {
+    const code = account.accountCode || "";
+    const name = account.accountName || account.name || "Unnamed Account";
+    return code ? `${code} - ${name}` : name;
+  };
+
+  const getAuthHeaders = () => ({
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  });
+
+  // Fetch initial data (accounts, customers, Sales Orders)
   useEffect(() => {
     const fetchData = async () => {
-      const companyId = sessionStorage.getItem("companyId");
-      const token = sessionStorage.getItem("auth_token");
-      if (!companyId || !token) return;
-      const [accRes, projRes] = await Promise.all([
-        fetch(`${apiUrl}/api/companies/${companyId}/accounts`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${apiUrl}/api/companies/${companyId}/projects`, { headers: { Authorization: `Bearer ${token}` } })
-      ]);
-      if(accRes.ok) setAccounts(await accRes.json());
-      if(projRes.ok) setProjects(await projRes.json());
+      if (!companyId || !token) {
+        Alert.error("Missing company ID or auth token. Please login again.");
+        return;
+      }
+
+      setIsLoading(true);
+      setErrorMsg("");
+
+      try {
+        const [accRes, custRes, soRes] = await Promise.all([
+          fetch(`${apiUrl}/api/companies/${companyId}/accounts`, { headers: getAuthHeaders() }),
+          fetch(`${apiUrl}/api/customers/companies/${companyId}`, { headers: getAuthHeaders() }),
+          fetch(`${apiUrl}/api/sales-orders/company/${companyId}`, { headers: getAuthHeaders() })
+        ]);
+
+        if (accRes.ok) {
+          const accData = await accRes.json();
+          setAccounts(Array.isArray(accData) ? accData : accData?.data || []);
+        } else {
+          console.error("Failed to fetch accounts");
+        }
+
+        if (custRes.ok) {
+          const custData = await custRes.json();
+          setCustomers(Array.isArray(custData) ? custData : custData?.data || []);
+        } else {
+          console.error("Failed to fetch customers");
+        }
+
+        if (soRes.ok) {
+          const soData = await soRes.json();
+          setSalesOrders(Array.isArray(soData) ? soData : soData?.data || soData?.salesOrders || []);
+        } else {
+          console.error("Failed to fetch sales orders");
+        }
+
+      } catch (err) {
+        console.error("Error loading receive money data:", err);
+        setErrorMsg("Failed to load layout data from server.");
+      } finally {
+        setIsLoading(false);
+      }
     };
+
     fetchData();
-  }, []);
+  }, [companyId, token]);
 
-  const handleRowChange = (index, field, value) => {
-    const newRows = [...rows];
-    newRows[index][field] = value;
-    if (index === rows.length - 1 && value !== "") newRows.push({ account: "", amount: "0.00", quantity: "0", description: "", project: "" });
-    setRows(newRows);
-  };
+  // Unpaid sales orders filtered by the selected customer
+  const customerSalesOrders = salesOrders.filter((so) => {
+    return (
+      String(so.customerId) === String(selectedCustomer) &&
+      Number(so.balanceDue || 0) > 0
+    );
+  });
 
-  const handleRecord = async () => {
-    if (!selectedBankAccount) {
-      alert("Bank Account is required!"); return;
+  // Selected Sales Order details
+  const currentSo = salesOrders.find((so) => String(so.id) === String(selectedSoId));
+
+  // Set default amount when selected SO changes
+  useEffect(() => {
+    if (currentSo) {
+      setPaymentAmount(Number(currentSo.balanceDue || 0).toFixed(2));
+    } else {
+      setPaymentAmount("");
     }
-    
-    const validRows = rows.filter(r => r.account !== "" && parseFloat(r.amount) > 0);
-    if (validRows.length === 0) {
-      alert("Add at least one valid record!"); return;
+  }, [selectedSoId, salesOrders]);
+
+  const handleRecordPayment = async (e) => {
+    e.preventDefault();
+
+    if (!selectedBankAccountCode) {
+      Alert.error("Please select a bank account.");
+      return;
     }
 
-    const totalAmount = validRows.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+    if (!selectedCustomer) {
+      Alert.error("Please select a customer.");
+      return;
+    }
 
-    const entries = [];
+    if (!selectedSoId) {
+      Alert.error("Please select a sales order.");
+      return;
+    }
 
-    entries.push({
-      accountId: parseInt(selectedBankAccount),
-      debit: totalAmount,
-      credit: 0.0,
-      description: description || "Receive Money Transaction"
-    });
+    if (currentSo && String(currentSo.customerId) !== String(selectedCustomer)) {
+      Alert.error("Selected sales order does not belong to the selected customer.");
+      return;
+    }
 
-    validRows.forEach(r => {
-      entries.push({
-        accountId: parseInt(r.account),
-        debit: 0.0,
-        credit: parseFloat(r.amount),
-        description: r.description || ""
-      });
-    });
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      Alert.error("Please enter a valid payment amount greater than zero.");
+      return;
+    }
 
-    const payload = {
-      referenceNumber: referenceNumber,
-      date: date,
-      description: description,
-      totalDebit: totalAmount,
-      totalCredit: totalAmount, 
-      entries: entries
-    };
+    if (currentSo && amount > Number(currentSo.balanceDue)) {
+      Alert.error(`Payment amount cannot exceed the balance due of Rs. ${Number(currentSo.balanceDue).toFixed(2)}.`);
+      return;
+    }
 
-    console.log("Valid Receive Payload:", payload);
+    setIsSubmitting(true);
 
     try {
-      const companyId = sessionStorage.getItem("companyId");
-      const res = await fetch(`${apiUrl}/api/transactions/companies/${companyId}`, {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${sessionStorage.getItem("auth_token")}`, 
-          "Content-Type": "application/json" 
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      if (res.ok) { 
-        alert("Receive Recorded!"); 
-        setReferenceNumber(`REF-${Math.floor(Date.now() / 1000)}`);
-        navigate("/bank/reconsilation"); 
-      } else { alert("Failed to save to database."); }
-    } catch (err) { console.error(err); }
+      const payload = {
+        amount: amount,
+        paymentAccountCode: selectedBankAccountCode,
+        companyId: parseInt(companyId, 10),
+      };
+
+      const response = await fetch(
+        `${apiUrl}/api/sales-orders/${selectedSoId}/pay`,
+        {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Payment submission failed.");
+      }
+
+      Alert.success("Payment received successfully!");
+
+      // Reset form fields
+      setSelectedCustomer("");
+      setSelectedSoId("");
+      setPaymentAmount("");
+      setPaymentNote("");
+      setReferenceNumber(`REF-${Math.floor(Date.now() / 1000)}`);
+
+      // Fetch fresh SOs to update status in memory
+      const soRes = await fetch(`${apiUrl}/api/sales-orders/company/${companyId}`, { headers: getAuthHeaders() });
+      if (soRes.ok) {
+        const soData = await soRes.json();
+        setSalesOrders(Array.isArray(soData) ? soData : soData?.data || soData?.salesOrders || []);
+      }
+    } catch (err) {
+      console.error("Receipt record error:", err);
+      Alert.error(err.message || "Failed to record payment.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleModalClick = (e, setModal) => {
-    if (e.target === e.currentTarget) setModal(false);
-  };
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <FaSpinner className="animate-spin text-4xl text-blue-600" />
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white shadow rounded-lg mt-6">
-      <h2 className="text-2xl font-bold mb-6">Receive Money Transaction</h2>
-      
-      <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="flex items-center gap-2">
-            <PayeeDropdown value={selectedPayee} onChange={setSelectedPayee} onAddNew={() => setShowContactModal(true)} />
-            <button onClick={() => setShowContactModal(true)}><MdAddCircleOutline className="text-2xl text-blue-600"/></button>
-          </div>
-          <select className="p-2 border rounded" value={selectedBankAccount} onChange={(e) => setSelectedBankAccount(e.target.value)}>
-            <option value="">Select Bank Account</option>
-            {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.accountCode} - {acc.accountName}</option>)}
-          </select>
-          <input type="text" className="p-2 border rounded" placeholder="Reference Number" value={referenceNumber} onChange={(e) => setReferenceNumber(e.target.value)} />
-          <input type="date" className="p-2 border rounded" value={date} onChange={(e) => setDate(e.target.value)} />
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-white shadow-xl rounded-2xl mt-6 border border-gray-100">
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+        <div>
+          <h2 className="text-2xl font-extrabold text-gray-900">Receive Money Transaction</h2>
+          <p className="text-sm text-gray-500 mt-1">Record a payment received against an outstanding sale order</p>
+        </div>
+        <button
+          onClick={() => navigate("/customer/sales/all")}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium transition-colors"
+        >
+          <FaArrowLeft /> Back to Sales
+        </button>
       </div>
 
-      <textarea className="w-full p-2 border rounded mb-4" placeholder="Transaction Description..." value={description} onChange={(e) => setDescription(e.target.value)} />
-
-      <table className="w-full border-collapse mb-4">
-        <thead><tr className="bg-gray-100"><th className="p-2 border">Account</th><th className="p-2 border">Amount</th><th className="p-2 border">Qty</th><th className="p-2 border">Description</th><th className="p-2 border">Project</th><th className="p-2 border"></th></tr></thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={index}>
-              <td className="p-2 border"><select className="w-full" value={row.account} onChange={(e) => handleRowChange(index, "account", e.target.value)}><option value="">Select</option>{accounts.map(a => <option key={a.id} value={a.id}>{a.accountName}</option>)}</select></td>
-              <td className="p-2 border"><input type="number" className="w-20" value={row.amount} onChange={(e) => handleRowChange(index, "amount", e.target.value)} /></td>
-              <td className="p-2 border"><input type="number" className="w-16" value={row.quantity} onChange={(e) => handleRowChange(index, "quantity", e.target.value)} /></td>
-              <td className="p-2 border"><input type="text" className="w-full" value={row.description} onChange={(e) => handleRowChange(index, "description", e.target.value)} /></td>
-              <td className="p-2 border"><select className="w-full" value={row.project} onChange={(e) => handleRowChange(index, "project", e.target.value)}><option value="">Select</option>{projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></td>
-              <td className="p-2 border text-center"><button onClick={() => setRows(rows.filter((_,i) => i !== index))}><MdDelete className="text-red-500 text-xl"/></button></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      
-      <button onClick={handleRecord} className="bg-green-600 text-white px-6 py-2 rounded-lg">Record Receive</button>
-
-      {/* Styled Modal for Customer */}
-      {showContactModal && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500" 
-          onClick={(e) => handleModalClick(e, setShowContactModal)}
-        >
-          <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 p-2 rounded-lg max-h-[90vh] overflow-y-auto relative bg-white shadow-2xl">
-            <button 
-              className="absolute top-4 right-4 text-xl text-gray-600 hover:text-red-500 z-10" 
-              onClick={() => setShowContactModal(false)}
-            >
-              <FaTimes />
-            </button>
-            <PayerPayee 
-               allowedTabs={["customer"]} 
-               onClose={() => {
-                   setShowContactModal(false);
-                   window.location.reload(); 
-               }} 
-            />
-          </div>
+      {errorMsg && (
+        <div className="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg flex items-center gap-3">
+          <FaExclamationTriangle className="text-xl flex-shrink-0" />
+          <span>{errorMsg}</span>
         </div>
       )}
+
+      <form onSubmit={handleRecordPayment} className="space-y-6">
+        {/* Core details grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Bank Account */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Deposit Account <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={selectedBankAccountCode}
+              onChange={(e) => setSelectedBankAccountCode(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 bg-gray-50 font-medium transition-all"
+              required
+            >
+              <option value="">Select Account</option>
+              {accounts.map((acc) => (
+                <option key={acc.id} value={acc.accountCode}>
+                  {getAccountLabel(acc)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Date */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Receipt Date <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 bg-gray-50 font-medium transition-all"
+              required
+            />
+          </div>
+
+          {/* Reference Number */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">Reference Number</label>
+            <input
+              type="text"
+              value={referenceNumber}
+              onChange={(e) => setReferenceNumber(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 bg-gray-50 font-medium transition-all"
+              placeholder="e.g. REF-12345"
+            />
+          </div>
+
+          {/* Customer Dropdown */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Customer <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={selectedCustomer}
+              onChange={(e) => {
+                setSelectedCustomer(e.target.value);
+                setSelectedSoId(""); // Reset SO when customer changes
+              }}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 bg-gray-50 font-medium transition-all"
+              required
+            >
+              <option value="">Select Customer</option>
+              {customers.map((cust) => {
+                const cId = getCustomerId(cust);
+                return (
+                  <option key={cId} value={cId}>
+                    {getCustomerName(cust)}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        </div>
+
+        {/* SO and Payment amount details */}
+        {selectedCustomer && (
+          <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Sales Order Dropdown */}
+              <div>
+                <label className="block text-blue-900 font-semibold mb-2">
+                  Select Sales Order <span className="text-red-500">*</span>
+                </label>
+                {customerSalesOrders.length === 0 ? (
+                  <div className="text-amber-700 font-medium py-3 text-sm flex items-center gap-2">
+                    <FaExclamationTriangle /> No outstanding sales orders for this customer.
+                  </div>
+                ) : (
+                  <select
+                    value={selectedSoId}
+                    onChange={(e) => setSelectedSoId(e.target.value)}
+                    className="w-full px-4 py-3 border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 bg-white font-medium transition-all"
+                    required
+                  >
+                    <option value="">Choose Sales Order</option>
+                    {customerSalesOrders.map((so) => (
+                      <option key={so.id} value={so.id}>
+                        {so.soNumber || `SO #${so.id}`} (Balance: Rs. {Number(so.balanceDue).toFixed(2)})
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Payment Amount */}
+              {selectedSoId && currentSo && (
+                <div>
+                  <label className="block text-blue-900 font-semibold mb-2">
+                    Received Amount <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-500 font-semibold">
+                      Rs.
+                    </div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0.01"
+                      max={Number(currentSo.balanceDue)}
+                      value={paymentAmount}
+                      onChange={(e) => setPaymentAmount(e.target.value)}
+                      className="w-full pl-12 pr-4 py-3 border border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 bg-white font-semibold transition-all"
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
+                  <span className="text-xs text-blue-700 mt-2 block font-medium">
+                    Maximum receivable: Rs. {Number(currentSo.balanceDue).toFixed(2)}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* SO Financial Snapshot Card */}
+            {selectedSoId && currentSo && (
+              <div className="bg-white p-4 rounded-xl border border-blue-200/60 shadow-sm grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                <div>
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">Total Invoice Amt</span>
+                  <span className="text-sm font-bold text-gray-800">Rs. {Number(currentSo.total).toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">Amount Received</span>
+                  <span className="text-sm font-bold text-green-600">Rs. {Number(currentSo.amountPaid || 0).toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">Balance Due</span>
+                  <span className="text-sm font-bold text-red-600">Rs. {Number(currentSo.balanceDue).toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block">Due Date</span>
+                  <span className="text-sm font-bold text-gray-800">{currentSo.dueDate || currentSo.issueDate || "-"}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Transaction Description */}
+        <div>
+          <label className="block text-gray-700 font-semibold mb-2">Description / Notes</label>
+          <textarea
+            value={paymentNote}
+            onChange={(e) => setPaymentNote(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 bg-gray-50 font-medium transition-all"
+            rows="3"
+            placeholder="Describe the nature of this transaction..."
+          />
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex justify-end gap-4 pt-4 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={() => navigate("/customer/sales/all")}
+            className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-semibold transition-colors"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/20 disabled:bg-blue-400 disabled:cursor-not-allowed transition-all"
+            disabled={isSubmitting || !selectedSoId}
+          >
+            {isSubmitting ? (
+              <>
+                <FaSpinner className="animate-spin" /> Recording...
+              </>
+            ) : (
+              "Record Receipt"
+            )}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
