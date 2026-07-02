@@ -43,6 +43,8 @@ public class PurchaseOrder {
 
     private LocalDate dueDate;
 
+    private LocalDate promiseDate;
+
     private String notes;
 
     @DecimalMin("0.00")

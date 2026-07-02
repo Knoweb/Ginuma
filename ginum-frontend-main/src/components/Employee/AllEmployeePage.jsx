@@ -11,9 +11,12 @@ import {
   FiMail, 
   FiHome, 
   FiCreditCard,
-  FiHash
+  FiHash,
+  FiX
 } from "react-icons/fi";
 import {apiUrl} from "../../utils/api";
+import Alert from "../Alert/Alert";
+import EditEmployeeForm from "./EditEmployeeForm";
 
 
 const AllEmployeePage = () => {
@@ -22,6 +25,8 @@ const AllEmployeePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -75,13 +80,51 @@ const AllEmployeePage = () => {
     );
   });
 
-  const handleEdit = (employeeId) => {
-    console.log("Edit employee:", employeeId);
+  const handleEdit = (emp) => {
+    setSelectedEmployee(emp);
+    setIsEditModalOpen(true);
   };
 
-  const handleDelete = (employeeId) => {
-    if (window.confirm("Are you sure you want to delete this employee?")) {
-      console.log("Delete employee:", employeeId);
+  const handleEditSuccess = (updatedEmployee) => {
+    setEmployees(prev => prev.map(emp => emp.employeeId === updatedEmployee.employeeId ? updatedEmployee : emp));
+  };
+
+  const handleDelete = async (employeeId) => {
+    const result = await Alert.confirm(
+      "Are you sure you want to permanently delete this employee record?",
+      "Delete",
+      "Cancel"
+    );
+    if (result.isConfirmed) {
+      try {
+        const companyId = sessionStorage.getItem("companyId");
+        const token = sessionStorage.getItem("auth_token");
+
+        if (!companyId || !token) {
+          Alert.error("Missing company ID or auth token.");
+          return;
+        }
+
+        const response = await fetch(
+          `${apiUrl}/api/employees/${companyId}/${employeeId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to delete employee from server.");
+        }
+
+        setEmployees(prev => prev.filter(emp => emp.employeeId !== employeeId));
+        Alert.success("Employee record deleted successfully!");
+      } catch (err) {
+        Alert.error(err.message || "Failed to delete employee.");
+      }
     }
   };
 
@@ -242,7 +285,7 @@ const AllEmployeePage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         <button
-                          onClick={() => handleEdit(emp.employeeId)}
+                          onClick={() => handleEdit(emp)}
                           className="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-50 transition-colors"
                           title="Edit"
                         >
@@ -261,6 +304,32 @@ const AllEmployeePage = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Employee Modal */}
+      {isEditModalOpen && selectedEmployee && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative p-6 shadow-2xl">
+            <button
+              onClick={() => {
+                setIsEditModalOpen(false);
+                setSelectedEmployee(null);
+              }}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+              title="Close"
+            >
+              <FiX size={24} />
+            </button>
+            <EditEmployeeForm
+              employee={selectedEmployee}
+              onClose={() => {
+                setIsEditModalOpen(false);
+                setSelectedEmployee(null);
+              }}
+              onSuccess={handleEditSuccess}
+            />
           </div>
         </div>
       )}

@@ -57,4 +57,47 @@ public class EmployeeService {
     public List<Employee> getEmployeesByCompany(Integer companyId) {
         return employeeRepository.findAllByCompanyCompanyId(companyId);
     }
+
+    @Transactional
+    public Employee updateEmployee(Integer employeeId, EmployeeRequestDto request, Integer companyId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        if (!employee.getCompany().getCompanyId().equals(companyId)) {
+            throw new RuntimeException("Employee does not belong to this company");
+        }
+
+        Department department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+
+        Designation designation = designationRepository.findById(request.getDesignationId())
+                .orElseThrow(() -> new RuntimeException("Designation not found"));
+
+        employee.setFirstName(request.getFirstName());
+        employee.setLastName(request.getLastName());
+        employee.setGender(request.getGender());
+        employee.setDesignation(designation);
+        employee.setDepartment(department);
+        employee.setAddress(request.getAddress());
+        employee.setMobileNo(request.getMobileNo());
+        employee.setDob(request.getDob());
+        employee.setNic(request.getNic());
+        employee.setEpfNo(request.getEpfNo());
+        employee.setEmail(request.getEmail());
+        employee.setDateAdded(request.getDateAdded());
+
+        return employeeRepository.save(employee);
+    }
+
+    @Transactional
+    public void deleteEmployee(Integer employeeId, Integer companyId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        if (!employee.getCompany().getCompanyId().equals(companyId)) {
+            throw new RuntimeException("Employee does not belong to this company");
+        }
+
+        employeeRepository.delete(employee);
+    }
 }

@@ -1,9 +1,0 @@
-RewriteEngine On
-
-# Set login.php as the default page
-
-DirectoryIndex login.php
-
-# Custom 404 error page
-
-ErrorDocument 404 error/notfound.php

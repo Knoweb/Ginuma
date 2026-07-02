@@ -17,7 +17,7 @@ const MainLayout = () => {
 
       {/* Main Content */}
       <div
-        className={`flex flex-col flex-1 h-full transition-all duration-300 ${
+        className={`flex flex-col flex-1 h-full min-w-0 transition-all duration-300 ${
           isSidebarVisible ? "lg:ml-72 ml-0" : "md:ml-1 ml-0"
         }`}
       >

@@ -11,19 +11,21 @@ export const exportAgedPayablesToCSV = (rows, activeTab) => {
 
   const headers =
     activeTab === "summary"
-      ? ["Supplier", "Not Due Yet", "1-30", "31-60", "61-90+", "Total"]
+      ? ["Supplier", "Not Due Yet", "1-30 Days", "31-60 Days", "61-90 Days", "90+ Days", "Outstanding Balance"]
       : [
           "Supplier",
           "Invoice",
           "Invoice Date",
           "Due Date",
           "Days Overdue",
+          "Status",
           "Not Due Yet",
-          "1-30",
-          "31-60",
-          "61-90+",
-          "Total",
-          "Balance",
+          "1-30 Days",
+          "31-60 Days",
+          "61-90 Days",
+          "90+ Days",
+          "Total Amount",
+          "Balance Due",
         ];
 
   const csvRows = rows.map((row) => {
@@ -34,6 +36,7 @@ export const exportAgedPayablesToCSV = (rows, activeTab) => {
         row.age1,
         row.age2,
         row.age3,
+        row.age4,
         row.total,
       ];
     }
@@ -43,11 +46,13 @@ export const exportAgedPayablesToCSV = (rows, activeTab) => {
       row.invoice,
       row.invoiceDate,
       row.dueDate,
-      row.daysOverdue,
+      row.daysOverdue <= 0 ? "Not Due" : `${row.daysOverdue} Days`,
+      row.status?.label || "-",
       row.notDueYet,
       row.age1,
       row.age2,
       row.age3,
+      row.age4,
       row.total,
       row.balance,
     ];

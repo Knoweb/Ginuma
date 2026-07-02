@@ -54,9 +54,8 @@ const CreatePurchase = () => {
   const [freight, setFreight] = useState("");
   const [taxAmount, setTaxAmount] = useState("");
   const [total, setTotal] = useState(0);
-  const [amountPaid, setAmountPaid] = useState("");
+  const [promiseDate, setPromiseDate] = useState("");
   const [balanceDue, setBalanceDue] = useState(0);
-  const [paymentAccountCode, setPaymentAccountCode] = useState("");
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -145,12 +144,10 @@ const CreatePurchase = () => {
     const newTotal =
       newSubtotal + (Number(freight) || 0) + (Number(taxAmount) || 0);
 
-    const newBalanceDue = Math.max(newTotal - (Number(amountPaid) || 0), 0);
-
     setSubtotal(newSubtotal);
     setTotal(newTotal);
-    setBalanceDue(newBalanceDue);
-  }, [rows, freight, taxAmount, amountPaid]);
+    setBalanceDue(newTotal);
+  }, [rows, freight, taxAmount]);
 
   useEffect(() => {
     if (showAccountModal || showProjectModal || showItemModal) {
@@ -432,20 +429,15 @@ const CreatePurchase = () => {
       return false;
     }
 
+    if (!promiseDate) {
+      setMessage("Please select promise date.");
+      return false;
+    }
+
     const validRows = getValidRows();
 
     if (validRows.length === 0) {
       setMessage("Please add at least one valid item or service row.");
-      return false;
-    }
-
-    if (balanceDue > 0 && !dueDate) {
-      setMessage("Please select promised date.");
-      return false;
-    }
-
-    if (Number(amountPaid || 0) > 0 && !paymentAccountCode) {
-      setMessage("Please select payment account.");
       return false;
     }
 
@@ -461,15 +453,15 @@ const CreatePurchase = () => {
       supplierInvoiceNumber: supplierInvoiceNumber.trim(),
       poNumber: poNumber.trim(),
       issueDate,
-      dueDate: balanceDue > 0 ? dueDate : null,
+      dueDate: promiseDate || null,
+      promiseDate: promiseDate || null,
       notes: notes.trim(),
 
       freight: Number(freight || 0),
       taxAmount: Number(taxAmount || 0),
-      amountPaid: Number(amountPaid || 0),
+      amountPaid: 0,
       purchaseType: isServiceMode ? "SERVICES" : "GOODS",
-      paymentAccountCode:
-        Number(amountPaid || 0) > 0 ? paymentAccountCode : null,
+      paymentAccountCode: null,
 
       items: validRows.map((row) => ({
         itemId: isServiceMode ? null : Number(row.itemId),
@@ -492,12 +484,10 @@ const CreatePurchase = () => {
     setPoNumber("");
     setSupplierInvoiceNumber("");
     setIssueDate(new Date().toISOString().split("T")[0]);
-    setDueDate("");
+    setPromiseDate("");
     setNotes("");
     setFreight("");
     setTaxAmount("");
-    setAmountPaid("");
-    setPaymentAccountCode("");
     setMessage("");
   };
 
@@ -633,7 +623,7 @@ const CreatePurchase = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div>
           <label className="block text-gray-700 font-medium">
             Supplier Invoice Number <span className="text-red-500">*</span>
@@ -658,6 +648,20 @@ const CreatePurchase = () => {
             value={issueDate}
             onChange={(e) => setIssueDate(e.target.value)}
             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+          />
+        </div>
+
+        <div>
+          <label className="block text-gray-700 font-medium">
+            Promise Date <span className="text-red-500">*</span>
+          </label>
+
+          <input
+            type="date"
+            value={promiseDate}
+            onChange={(e) => setPromiseDate(e.target.value)}
+            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+            required
           />
         </div>
       </div>
@@ -1019,64 +1023,9 @@ const CreatePurchase = () => {
         </div>
 
         <div className="w-full md:w-1/2 flex justify-between items-center">
-          <label className="text-gray-700 font-medium">Amount Paid:</label>
-
-          <input
-            type="number"
-            className="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            placeholder="0.00"
-            value={amountPaid}
-            onChange={(e) => setAmountPaid(e.target.value)}
-            min="0"
-            step="0.01"
-          />
-        </div>
-
-        {Number(amountPaid || 0) > 0 && (
-          <div className="w-full md:w-1/2 flex justify-between items-center">
-            <label className="text-gray-700 font-medium">
-              Payment Account <span className="text-red-500">*</span>
-            </label>
-
-            <select
-              value={paymentAccountCode}
-              onChange={(e) => setPaymentAccountCode(e.target.value)}
-              className="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            >
-              <option value="">Select Account</option>
-
-              {accounts.map((account, index) => (
-                <option
-                  key={account.id || account.accountCode || index}
-                  value={account.accountCode}
-                >
-                  {getAccountLabel(account)}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <div className="w-full md:w-1/2 flex justify-between items-center">
           <span className="text-gray-700 font-medium">Balance Due:</span>
-          <span className="text-gray-900">Rs. {balanceDue.toFixed(2)}</span>
+          <span className="text-gray-900 font-semibold">Rs. {balanceDue.toFixed(2)}</span>
         </div>
-
-        {balanceDue > 0 && (
-          <div className="w-full md:w-1/2 flex justify-between items-center">
-            <label className="block text-gray-700 font-medium">
-              Promised Date <span className="text-red-500">*</span>
-            </label>
-
-            <input
-              type="date"
-              className="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              required
-            />
-          </div>
-        )}
       </div>
 
       <div className="flex justify-end space-x-2">

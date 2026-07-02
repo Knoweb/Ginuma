@@ -31,6 +31,8 @@ public class PurchaseOrderRequestDto {
 
     private LocalDate dueDate;
 
+    private LocalDate promiseDate;
+
     private String notes;
 
     @Valid

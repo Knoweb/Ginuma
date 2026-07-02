@@ -57,6 +57,57 @@ public class ProjectService {
                 .toList();
     }
 
+    public ProjectResponseDto getProjectById(Integer companyId, Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
+
+        if (!project.getCompany().getCompanyId().equals(companyId)) {
+            throw new RuntimeException("Project does not belong to this company");
+        }
+
+        return convertToDto(project);
+    }
+
+    @Transactional
+    public ProjectResponseDto updateProject(Integer companyId, Long projectId, ProjectRequestDto request) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
+
+        if (!project.getCompany().getCompanyId().equals(companyId)) {
+            throw new RuntimeException("Project does not belong to this company");
+        }
+
+        Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Customer not found with id: " + request.getCustomerId()));
+
+        if (!customer.getCompany().getCompanyId().equals(companyId)) {
+            throw new RuntimeException("Selected customer does not belong to this company");
+        }
+
+        project.setCode(request.getProjectCode());
+        project.setName(request.getProjectName());
+        project.setStartDate(request.getStartDate());
+        project.setWorkingStatus(request.getWorkingStatus());
+        project.setPriority(request.getPriority());
+        project.setDescription(request.getDescription());
+        project.setCustomer(customer);
+
+        Project updatedProject = projectRepository.save(project);
+        return convertToDto(updatedProject);
+    }
+
+    @Transactional
+    public void deleteProject(Integer companyId, Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Project not found with id: " + projectId));
+
+        if (!project.getCompany().getCompanyId().equals(companyId)) {
+            throw new RuntimeException("Project does not belong to this company");
+        }
+
+        projectRepository.delete(project);
+    }
+
     private ProjectResponseDto convertToDto(Project project) {
         return ProjectResponseDto.builder()
                 .id(project.getId())

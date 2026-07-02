@@ -55,23 +55,8 @@ public class PurchaseOrderService {
             throw new AccessDeniedException("Supplier does not belong to your company");
         }
 
-        BigDecimal amountPaid = valueOrZero(request.getAmountPaid());
-
+        BigDecimal amountPaid = BigDecimal.ZERO;
         Account paymentAccount = null;
-
-        if (amountPaid.compareTo(BigDecimal.ZERO) > 0) {
-            if (request.getPaymentAccountCode() == null ||
-                    request.getPaymentAccountCode().isBlank()) {
-                throw new IllegalArgumentException(
-                        "Payment account is required when amount paid is greater than zero"
-                );
-            }
-
-            paymentAccount = accountRepo.findByAccountCodeAndCompany_CompanyId(
-                    request.getPaymentAccountCode(),
-                    companyId
-            ).orElseThrow(() -> new ResourceNotFoundException("Invalid payment account code"));
-        }
 
         PurchaseOrder po = new PurchaseOrder();
         po.setSupplier(supplier);
@@ -79,7 +64,8 @@ public class PurchaseOrderService {
         po.setSupplierInvoiceNumber(request.getSupplierInvoiceNumber());
         po.setPoNumber(request.getPoNumber());
         po.setIssueDate(request.getIssueDate());
-        po.setDueDate(request.getDueDate());
+        po.setDueDate(request.getPromiseDate() != null ? request.getPromiseDate() : request.getDueDate());
+        po.setPromiseDate(request.getPromiseDate());
         po.setNotes(request.getNotes());
         po.setPaymentAccount(paymentAccount);
         po.setAmountPaid(amountPaid);
@@ -359,6 +345,7 @@ public class PurchaseOrderService {
         dto.setSupplierName(po.getSupplier().getSupplierName());
         dto.setSupplierInvoiceNumber(po.getSupplierInvoiceNumber());
         dto.setIssueDate(po.getIssueDate());
+        dto.setPromiseDate(po.getPromiseDate());
         dto.setNotes(po.getNotes());
         dto.setSubtotal(po.getSubtotal());
         dto.setFreight(po.getFreight());

@@ -13,6 +13,10 @@ import {
   FiHash,
   FiEye,
 } from "react-icons/fi";
+import { apiUrl } from "../../utils/api";
+import Alert from "../Alert/Alert";
+import EditProjectModal from "./EditProjectModal";
+import ViewProjectModal from "./ViewProjectModal";
 
 const AllProjects = () => {
   const navigate = useNavigate();
@@ -21,6 +25,10 @@ const AllProjects = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   const fetchProjects = async () => {
     try {
@@ -39,7 +47,7 @@ const AllProjects = () => {
       }
 
       const response = await fetch(
-        `http://localhost:8081/api/companies/${companyId}/projects`,
+        `${apiUrl}/api/companies/${companyId}/projects`,
         {
           method: "GET",
           headers: {
@@ -143,18 +151,55 @@ const AllProjects = () => {
   };
 
   const handleView = (project) => {
-    console.log("View project:", project);
-    alert("View function is not created yet.");
+    setSelectedProject(project);
+    setIsViewModalOpen(true);
   };
 
   const handleEdit = (project) => {
-    console.log("Edit project:", project);
-    alert("Edit function is not created yet.");
+    setSelectedProject(project);
+    setIsEditModalOpen(true);
   };
 
-  const handleDelete = (project) => {
-    console.log("Delete project:", project);
-    alert("Delete function is not created yet.");
+  const handleEditSuccess = (updatedProject) => {
+    setProjects((prev) =>
+      prev.map((p) => (p.id === updatedProject.id ? updatedProject : p))
+    );
+  };
+
+  const handleDelete = async (project) => {
+    const result = await Alert.confirm(
+      "Are you sure you want to permanently delete this project record?",
+      "Delete",
+      "Cancel"
+    );
+    if (result.isConfirmed) {
+      try {
+        const companyId = sessionStorage.getItem("companyId");
+        const token = sessionStorage.getItem("auth_token");
+
+        const response = await fetch(
+          `${apiUrl}/api/companies/${companyId}/projects/${project.id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || "Failed to delete project.");
+        }
+
+        Alert.success("Project deleted successfully!");
+        setProjects((prev) => prev.filter((p) => p.id !== project.id));
+      } catch (err) {
+        console.error("Error deleting project:", err);
+        Alert.error(err.message || "Failed to delete project.");
+      }
+    }
   };
 
   if (loading) {
@@ -376,6 +421,27 @@ const AllProjects = () => {
             Showing {filteredProjects.length} of {projects.length} projects
           </div>
         </div>
+      )}
+
+      {isViewModalOpen && selectedProject && (
+        <ViewProjectModal
+          project={selectedProject}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setSelectedProject(null);
+          }}
+        />
+      )}
+
+      {isEditModalOpen && selectedProject && (
+        <EditProjectModal
+          project={selectedProject}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedProject(null);
+          }}
+          onSuccess={handleEditSuccess}
+        />
       )}
     </div>
   );

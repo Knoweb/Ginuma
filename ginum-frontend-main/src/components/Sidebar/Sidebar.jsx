@@ -46,7 +46,7 @@ const Sidebar = ({ isVisible }) => {
       className={`bg-gray-50 min-h-screen px-1.5 w-72 fixed left-0 top-0 
             transition-transform duration-700 ${
               isVisible ? "translate-x-0" : "-translate-x-full"
-            } max-h-screen overflow-y-auto`}
+            } max-h-screen overflow-y-auto z-50`}
     >
       <div className="sticky top-0 shadow px-10 bg-gray-50 z-10 py-3">
         <a href="/">
