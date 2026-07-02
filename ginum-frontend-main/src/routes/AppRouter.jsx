@@ -130,7 +130,7 @@ function AppRouter() {
             <Route path="new" element={<AddAccountForm />} />
           </Route>
           <Route path="bank">
-            <Route index element={<Navigate to="spend-money" replace />} />
+            <Route index element={<Navigate to="reconsilation" replace />} />
             <Route path="reconsilation" element={<BankReconsilation />} />
             <Route
               path="spend-money"

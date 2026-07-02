@@ -175,7 +175,7 @@ export const navItems = [
   },
   {
     id: "bank",
-    path: "/bank",
+    path: "/bank/reconsilation",
     label: "Bank Statement",
     icon: FaUniversity,
     subItems: [

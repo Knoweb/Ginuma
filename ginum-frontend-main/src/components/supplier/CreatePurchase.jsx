@@ -1,10 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { MdOutlineCancel, MdAddCircleOutline } from "react-icons/md";
-import { FaTimes } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import {
+  FiFileText,
+  FiUser,
+  FiCalendar,
+  FiPlusCircle,
+  FiTrash2,
+  FiRefreshCw,
+  FiArrowLeft,
+  FiFilePlus,
+  FiInfo,
+  FiPercent,
+} from "react-icons/fi";
+import { FaSpinner, FaTimes } from "react-icons/fa";
 import AddAccountForm from "../account/AddAccountForm";
 import NewProjectForm from "../projects/NewProjectForm";
+import { apiUrl } from "../../utils/api";
+import Alert from "../Alert/Alert";
 
-const API_BASE_URL = "http://localhost:8081";
+const API_BASE_URL = apiUrl;
 
 const emptyRow = {
   itemId: "",
@@ -18,16 +32,17 @@ const emptyRow = {
 };
 
 const CreatePurchase = () => {
+  const navigate = useNavigate();
+
   const [isServiceMode, setIsServiceMode] = useState(false);
   const [rows, setRows] = useState([{ ...emptyRow }]);
 
   const [selectedSupplier, setSelectedSupplier] = useState("");
   const [poNumber, setPoNumber] = useState("");
   const [supplierInvoiceNumber, setSupplierInvoiceNumber] = useState("");
-  const [issueDate, setIssueDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [issueDate, setIssueDate] = useState(new Date().toISOString().split("T")[0]);
   const [dueDate, setDueDate] = useState("");
+  const [promiseDate, setPromiseDate] = useState("");
   const [notes, setNotes] = useState("");
 
   const [suppliers, setSuppliers] = useState([]);
@@ -54,18 +69,15 @@ const CreatePurchase = () => {
   const [freight, setFreight] = useState("");
   const [taxAmount, setTaxAmount] = useState("");
   const [total, setTotal] = useState(0);
-  const [promiseDate, setPromiseDate] = useState("");
   const [balanceDue, setBalanceDue] = useState(0);
 
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
 
   const getCompanyId = () => sessionStorage.getItem("companyId");
   const getToken = () => sessionStorage.getItem("auth_token");
 
   const getAuthHeaders = () => {
     const token = getToken();
-
     return {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
@@ -74,7 +86,6 @@ const CreatePurchase = () => {
 
   const getJsonHeaders = () => {
     const token = getToken();
-
     return {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
@@ -85,11 +96,9 @@ const CreatePurchase = () => {
   const checkAuth = () => {
     const companyId = getCompanyId();
     const token = getToken();
-
     if (!companyId || !token) {
       throw new Error("Missing company ID or auth token. Please login again.");
     }
-
     return companyId;
   };
 
@@ -101,7 +110,6 @@ const CreatePurchase = () => {
     if (Array.isArray(data?.items)) return data.items;
     if (Array.isArray(data?.projects)) return data.projects;
     if (Array.isArray(data?.accounts)) return data.accounts;
-
     return [];
   };
 
@@ -126,13 +134,11 @@ const CreatePurchase = () => {
   };
 
   const getItemId = (item) => item.itemId || item.id;
-
   const getProjectId = (project) => project.id || project.projectId;
 
   const getAccountLabel = (account) => {
     const code = account.accountCode || "";
     const name = account.accountName || account.name || "Unnamed Account";
-
     return code ? `${code} - ${name}` : name;
   };
 
@@ -140,10 +146,7 @@ const CreatePurchase = () => {
     const newSubtotal = rows.reduce((sum, row) => {
       return sum + (Number(row.amount) || 0);
     }, 0);
-
-    const newTotal =
-      newSubtotal + (Number(freight) || 0) + (Number(taxAmount) || 0);
-
+    const newTotal = newSubtotal + (Number(freight) || 0) + (Number(taxAmount) || 0);
     setSubtotal(newSubtotal);
     setTotal(newTotal);
     setBalanceDue(newTotal);
@@ -167,28 +170,18 @@ const CreatePurchase = () => {
     try {
       setIsLoadingSuppliers(true);
       setSuppliersError("");
-
       const companyId = checkAuth();
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/suppliers/companies/${companyId}/active`,
-        {
-          method: "GET",
-          headers: getAuthHeaders(),
-        }
-      );
-
+      const response = await fetch(`${API_BASE_URL}/api/suppliers/companies/${companyId}/active`, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || "Failed to load suppliers.");
       }
-
       const data = await response.json();
-        console.log("Suppliers API Response:", data);
-        console.log("First Supplier Object:", data[0]);
-
-        const supplierList = extractArray(data);
-        setSuppliers(supplierList);
+      const supplierList = extractArray(data);
+      setSuppliers(supplierList);
     } catch (error) {
       console.error("Error fetching suppliers:", error);
       setSuppliersError("Failed to load suppliers.");
@@ -202,26 +195,17 @@ const CreatePurchase = () => {
     try {
       setIsLoadingAccounts(true);
       setAccountsError("");
-
       const companyId = checkAuth();
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/companies/${companyId}/accounts`,
-        {
-          method: "GET",
-          headers: getAuthHeaders(),
-        }
-      );
-
+      const response = await fetch(`${API_BASE_URL}/api/companies/${companyId}/accounts`, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || "Failed to load accounts.");
       }
-
       const data = await response.json();
-      console.log("Accounts API Response:", data);
-
-      setAccounts(extractArray(data));
+      setAccounts(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching accounts:", error);
       setAccountsError("Failed to load accounts.");
@@ -235,26 +219,17 @@ const CreatePurchase = () => {
     try {
       setIsLoadingProjects(true);
       setProjectsError("");
-
       const companyId = checkAuth();
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/companies/${companyId}/projects`,
-        {
-          method: "GET",
-          headers: getAuthHeaders(),
-        }
-      );
-
+      const response = await fetch(`${API_BASE_URL}/api/companies/${companyId}/projects`, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || "Failed to load projects.");
       }
-
       const data = await response.json();
-      console.log("Projects API Response:", data);
-
-      setProjects(extractArray(data));
+      setProjects(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching projects:", error);
       setProjectsError("Failed to load projects.");
@@ -268,26 +243,18 @@ const CreatePurchase = () => {
     try {
       setIsLoadingItems(true);
       setItemsError("");
-
       const companyId = checkAuth();
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/companies/${companyId}/items`,
-        {
-          method: "GET",
-          headers: getAuthHeaders(),
-        }
-      );
-
+      const response = await fetch(`${API_BASE_URL}/api/companies/${companyId}/items`, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || "Failed to load items.");
       }
-
       const data = await response.json();
-      console.log("Items API Response:", data);
-
-      setItems(extractArray(data));
+      const itemList = extractArray(data);
+      setItems(itemList);
     } catch (error) {
       console.error("Error fetching items:", error);
       setItemsError("Failed to load items.");
@@ -308,11 +275,9 @@ const CreatePurchase = () => {
     if (isServiceMode) {
       return Number(row.amount || 0).toFixed(2);
     }
-
     const quantity = Number(row.quantity) || 0;
     const unitPrice = Number(row.unitPrice) || 0;
     const discount = Number(row.discount) || 0;
-
     const discountedPrice = unitPrice * (1 - discount / 100);
     return (quantity * discountedPrice).toFixed(2);
   };
@@ -321,7 +286,6 @@ const CreatePurchase = () => {
     if (isServiceMode) {
       return row.description || row.accountCode || row.amount || row.projectId;
     }
-
     return (
       row.itemId ||
       row.description ||
@@ -336,7 +300,6 @@ const CreatePurchase = () => {
 
   const handleRowChange = (index, field, value) => {
     const updatedRows = [...rows];
-
     let updatedRow = {
       ...updatedRows[index],
       [field]: value,
@@ -346,7 +309,6 @@ const CreatePurchase = () => {
       const selectedItem = items.find(
         (item) => String(getItemId(item)) === String(value)
       );
-
       if (selectedItem) {
         updatedRow = {
           ...updatedRow,
@@ -372,17 +334,14 @@ const CreatePurchase = () => {
     if (index === rows.length - 1 && shouldAddNewRow(updatedRow)) {
       updatedRows.push({ ...emptyRow });
     }
-
     setRows(updatedRows);
   };
 
   const removeRow = (index) => {
     const updatedRows = rows.filter((_, i) => i !== index);
-
     if (updatedRows.length === 0) {
       updatedRows.push({ ...emptyRow });
     }
-
     setRows(updatedRows);
   };
 
@@ -395,7 +354,6 @@ const CreatePurchase = () => {
           Number(row.amount) > 0
         );
       }
-
       return (
         row.itemId &&
         row.accountCode &&
@@ -407,75 +365,90 @@ const CreatePurchase = () => {
   };
 
   const validatePurchaseOrder = () => {
-    const supplierId = parseInt(selectedSupplier, 10);
-
-    if (!selectedSupplier || Number.isNaN(supplierId)) {
-      setMessage("Please select a valid supplier.");
+    if (!selectedSupplier) {
+      Alert.error("Please select a supplier.");
       return false;
     }
-
     if (!poNumber.trim()) {
-      setMessage("Please enter purchase order number.");
+      Alert.error("Please enter the purchase order number.");
       return false;
     }
-
-    if (!supplierInvoiceNumber.trim()) {
-      setMessage("Please enter supplier invoice number.");
-      return false;
-    }
-
     if (!issueDate) {
-      setMessage("Please select issue date.");
+      Alert.error("Please select the order date.");
       return false;
     }
-
+    if (!dueDate) {
+      Alert.error("Please select the due date.");
+      return false;
+    }
     if (!promiseDate) {
-      setMessage("Please select promise date.");
+      Alert.error("Please select the promise date.");
       return false;
     }
-
     const validRows = getValidRows();
-
     if (validRows.length === 0) {
-      setMessage("Please add at least one valid item or service row.");
+      Alert.error("Please add at least one valid item or service line.");
       return false;
     }
-
-    setMessage("");
     return true;
   };
 
   const buildPayload = () => {
+    const companyId = checkAuth();
     const validRows = getValidRows();
-
-    const payload = {
-      supplierId: parseInt(selectedSupplier, 10),
-      supplierInvoiceNumber: supplierInvoiceNumber.trim(),
+    return {
+      supplierId: Number(selectedSupplier),
       poNumber: poNumber.trim(),
-      issueDate,
-      dueDate: promiseDate || null,
-      promiseDate: promiseDate || null,
+      supplierInvoiceNumber: supplierInvoiceNumber.trim() || null,
+      issueDate: issueDate,
+      dueDate: dueDate,
+      promiseDate: promiseDate,
       notes: notes.trim(),
-
-      freight: Number(freight || 0),
-      taxAmount: Number(taxAmount || 0),
-      amountPaid: 0,
-      purchaseType: isServiceMode ? "SERVICES" : "GOODS",
-      paymentAccountCode: null,
-
+      salesType: isServiceMode ? "SERVICES" : "GOODS",
+      companyId: Number(companyId),
+      freight: freight ? Number(freight) : 0,
+      taxAmount: taxAmount ? Number(taxAmount) : 0,
       items: validRows.map((row) => ({
         itemId: isServiceMode ? null : Number(row.itemId),
         description: row.description.trim(),
+        accountCode: row.accountCode,
         quantity: isServiceMode ? 1 : Number(row.quantity),
         unitPrice: isServiceMode ? Number(row.amount) : Number(row.unitPrice),
-        discount: Number(row.discount || 0),
-        amount: Number(row.amount || 0),
-        accountCode: row.accountCode,
+        discountPercent: Number(row.discount || 0),
         projectId: row.projectId ? Number(row.projectId) : null,
+        itemType: isServiceMode ? "SERVICE" : "GOODS",
       })),
     };
+  };
 
-    return payload;
+  const handleSavePurchaseOrder = async () => {
+    try {
+      if (!validatePurchaseOrder()) return;
+      setSaving(true);
+
+      const companyId = checkAuth();
+      const payload = buildPayload();
+
+      const response = await fetch(`${API_BASE_URL}/api/purchase-orders/company/${companyId}`, {
+        method: "POST",
+        headers: getJsonHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Purchase order save failed.");
+      }
+
+      Alert.success("Purchase order saved successfully!");
+      resetForm();
+      navigate("/supplier/purchase/all");
+    } catch (error) {
+      console.error(error);
+      Alert.error(error.message || "Purchase order save failed.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const resetForm = () => {
@@ -484,52 +457,11 @@ const CreatePurchase = () => {
     setPoNumber("");
     setSupplierInvoiceNumber("");
     setIssueDate(new Date().toISOString().split("T")[0]);
+    setDueDate("");
     setPromiseDate("");
     setNotes("");
     setFreight("");
     setTaxAmount("");
-    setMessage("");
-  };
-
-  const handleSavePurchaseOrder = async () => {
-    try {
-      if (!validatePurchaseOrder()) return;
-
-      setSaving(true);
-      setMessage("");
-
-      const companyId = checkAuth();
-      const payload = buildPayload();
-
-      console.log("Purchase Order Payload:", payload);
-
-      if (!payload.supplierId || Number.isNaN(payload.supplierId)) {
-        throw new Error("Supplier ID is missing. Please select supplier again.");
-      }
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/${companyId}/purchase-orders`,
-        {
-          method: "POST",
-          headers: getJsonHeaders(),
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Purchase order save error:", errorText);
-        throw new Error(errorText || "Purchase order save failed.");
-      }
-
-      setMessage("Purchase order saved successfully!");
-      resetForm();
-    } catch (error) {
-      console.error("Cannot save purchase order:", error);
-      setMessage(error.message || "Purchase order save failed.");
-    } finally {
-      setSaving(false);
-    }
   };
 
   const closeAccountModal = () => {
@@ -548,497 +480,457 @@ const CreatePurchase = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-4 sm:p-6 my-4 sm:mt-6">
-      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
-        Create Purchase Order
-      </h2>
+    <div className="p-6 bg-gray-50 min-h-screen space-y-6 max-w-full overflow-x-hidden">
+      {/* Header section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200">
+        <div>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+            <FiFileText className="text-blue-600" />
+            Create Purchase Order
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Create and save a new purchase order bill or expense invoice
+          </p>
+        </div>
+        <button
+          onClick={() => navigate("/supplier/purchase/all")}
+          className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+        >
+          <FiArrowLeft /> Cancel & Exit
+        </button>
+      </div>
 
-      {message && (
-        <div
-          className={`mb-4 px-4 py-3 rounded-lg ${
-            message.includes("successfully")
-              ? "bg-green-100 text-green-700 border border-green-300"
-              : "bg-red-100 text-red-700 border border-red-300"
+      {/* Segment Mode Switch */}
+      <div className="flex bg-gray-200/60 p-1.5 rounded-xl w-fit border border-gray-300/40">
+        <button
+          type="button"
+          onClick={() => {
+            setIsServiceMode(false);
+            setRows([{ ...emptyRow }]);
+          }}
+          className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer ${
+            !isServiceMode ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"
           }`}
         >
-          {message}
-        </div>
-      )}
+          Goods / Items Mode
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setIsServiceMode(true);
+            setRows([{ ...emptyRow }]);
+          }}
+          className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer ${
+            isServiceMode ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          Services Mode
+        </button>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div>
-          <label className="block text-gray-700 font-medium">
-            Supplier <span className="text-red-500">*</span>
-          </label>
+      {/* Meta Card */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
+        <h3 className="text-md font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-3">
+          <FiUser className="text-blue-500" />
+          Supplier & Bill Information
+        </h3>
 
-          <select
-            value={selectedSupplier}
-            onChange={(e) => {
-              console.log("Selected supplier id:", e.target.value);
-              setSelectedSupplier(e.target.value);
-            }}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            disabled={isLoadingSuppliers}
-          >
-            <option value="">Select a supplier</option>
-
-            {isLoadingSuppliers ? (
-              <option value="" disabled>
-                Loading suppliers...
-              </option>
-            ) : suppliersError ? (
-              <option value="" disabled>
-                {suppliersError}
-              </option>
-            ) : suppliers.length === 0 ? (
-              <option value="" disabled>
-                No suppliers found
-              </option>
-            ) : (
-              suppliers.map((supplier, index) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
+          {/* Supplier */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Supplier Name <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={selectedSupplier}
+              onChange={(e) => setSelectedSupplier(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all cursor-pointer"
+              disabled={isLoadingSuppliers}
+            >
+              <option value="">Select Supplier</option>
+              {suppliers.map((supplier, index) => {
                 const supplierId = getSupplierId(supplier);
-
                 return (
                   <option key={supplierId || index} value={supplierId}>
                     {getSupplierName(supplier)}
                   </option>
                 );
-              })
-            )}
-          </select>
-        </div>
+              })}
+            </select>
+          </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium">
-            Purchase Order Number <span className="text-red-500">*</span>
-          </label>
+          {/* PO Number */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              PO Number <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={poNumber}
+              onChange={(e) => setPoNumber(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+              placeholder="e.g. PO-000001"
+            />
+          </div>
 
-          <input
-            type="text"
-            value={poNumber}
-            onChange={(e) => setPoNumber(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            placeholder="PO-000001"
-          />
+          {/* Supplier Invoice Number */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Supplier Invoice No
+            </label>
+            <input
+              type="text"
+              value={supplierInvoiceNumber}
+              onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+              placeholder="e.g. INV-123"
+            />
+          </div>
+
+          {/* Order Date */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Order Date <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={issueDate}
+              onChange={(e) => setIssueDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+            />
+          </div>
+
+          {/* Due Date */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Due Date <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+            />
+          </div>
+
+          {/* Promise Date */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Promise Date <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              value={promiseDate}
+              onChange={(e) => setPromiseDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div>
-          <label className="block text-gray-700 font-medium">
-            Supplier Invoice Number <span className="text-red-500">*</span>
-          </label>
-
-          <input
-            type="text"
-            value={supplierInvoiceNumber}
-            onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            placeholder="Supplier Invoice Number"
-          />
-        </div>
-
-        <div>
-          <label className="block text-gray-700 font-medium">
-            Issue Date <span className="text-red-500">*</span>
-          </label>
-
-          <input
-            type="date"
-            value={issueDate}
-            onChange={(e) => setIssueDate(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-          />
-        </div>
-
-        <div>
-          <label className="block text-gray-700 font-medium">
-            Promise Date <span className="text-red-500">*</span>
-          </label>
-
-          <input
-            type="date"
-            value={promiseDate}
-            onChange={(e) => setPromiseDate(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            required
-          />
-        </div>
-      </div>
-
-      <div className="flex space-x-4 mb-6">
-        <label className="flex items-center">
-          <input
-            type="radio"
-            name="mode"
-            value="item"
-            checked={!isServiceMode}
-            onChange={() => {
-              setIsServiceMode(false);
-              setRows([{ ...emptyRow }]);
-            }}
-            className="form-radio h-4 w-4 text-blue-600"
-          />
-          <span className="ml-2 text-gray-700">Items</span>
-        </label>
-
-        <label className="flex items-center">
-          <input
-            type="radio"
-            name="mode"
-            value="service"
-            checked={isServiceMode}
-            onChange={() => {
-              setIsServiceMode(true);
-              setRows([{ ...emptyRow }]);
-            }}
-            className="form-radio h-4 w-4 text-blue-600"
-          />
-          <span className="ml-2 text-gray-700">Services</span>
-        </label>
-      </div>
-
-      <div className="mb-6 overflow-x-auto">
-        <table className="w-full rounded-lg">
-          <thead>
-            <tr className="bg-gray-100 text-gray-700 text-sm">
-              {!isServiceMode && (
-                <th className="p-2">
-                  Item <span className="text-red-500">*</span>
+      {/* Ledger Items Table */}
+      <div className="bg-white shadow-sm rounded-2xl border border-gray-200 overflow-hidden w-full max-w-full">
+        <div className="overflow-x-auto w-full max-w-full">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                {!isServiceMode && (
+                  <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[200px]">
+                    Item <span className="text-red-500">*</span>
+                    <button
+                      type="button"
+                      onClick={fetchItems}
+                      className="text-blue-500 hover:text-blue-700 ml-1.5 cursor-pointer"
+                      title="Refresh Items"
+                    >
+                      <FiRefreshCw className="h-3.5 w-3.5 inline" />
+                    </button>
+                  </th>
+                )}
+                <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  Description <span className="text-red-500">*</span>
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[200px]">
+                  Account <span className="text-red-500">*</span>
                   <button
                     type="button"
-                    onClick={() => setShowItemModal(true)}
-                    className="text-blue-600 hover:text-blue-700 ml-1"
+                    onClick={() => setShowAccountModal(true)}
+                    className="ml-1.5 text-blue-500 hover:text-blue-700 cursor-pointer"
+                    title="Add Account"
                   >
-                    <MdAddCircleOutline className="h-5 w-5 inline" />
+                    <FiPlusCircle className="h-3.5 w-3.5 inline" />
                   </button>
                 </th>
-              )}
-
-              <th className="p-2">
-                Description <span className="text-red-500">*</span>
-              </th>
-
-              <th className="p-2">
-                Account <span className="text-red-500">*</span>
-                <button
-                  type="button"
-                  onClick={() => setShowAccountModal(true)}
-                  className="ml-1 text-blue-600 hover:text-blue-700"
-                >
-                  <MdAddCircleOutline className="h-5 w-5 inline" />
-                </button>
-              </th>
-
-              {!isServiceMode && (
-                <>
-                  <th className="p-2">
-                    No of Units <span className="text-red-500">*</span>
-                  </th>
-
-                  <th className="p-2">
-                    Unit Price <span className="text-red-500">*</span>
-                  </th>
-
-                  <th className="p-2">Discount (%)</th>
-                </>
-              )}
-
-              <th className="p-2">
-                Amount (Rs.) <span className="text-red-500">*</span>
-              </th>
-
-              <th className="p-2">
-                Project
-                <button
-                  type="button"
-                  onClick={() => setShowProjectModal(true)}
-                  className="ml-1 text-blue-600 hover:text-blue-700"
-                >
-                  <MdAddCircleOutline className="h-5 w-5 inline" />
-                </button>
-              </th>
-
-              <th className="p-2"></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {rows.map((row, index) => (
-              <tr key={index}>
                 {!isServiceMode && (
-                  <td className="p-2">
-                    <select
-                      value={row.itemId}
-                      onChange={(e) =>
-                        handleRowChange(index, "itemId", e.target.value)
-                      }
-                      className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                      disabled={isLoadingItems}
-                    >
-                      <option value="">Select Item</option>
+                  <>
+                    <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap w-24">
+                      Units <span className="text-red-500">*</span>
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap w-36">
+                      Unit Price <span className="text-red-500">*</span>
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap w-24">
+                      Discount (%)
+                    </th>
+                  </>
+                )}
+                <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap w-40">
+                  Amount (Rs.) <span className="text-red-500">*</span>
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[160px]">
+                  Project
+                  <button
+                    type="button"
+                    onClick={() => setShowProjectModal(true)}
+                    className="ml-1.5 text-blue-500 hover:text-blue-700 cursor-pointer"
+                    title="Add Project"
+                  >
+                    <FiPlusCircle className="h-3.5 w-3.5 inline" />
+                  </button>
+                </th>
+                <th className="px-2 py-3 w-12"></th>
+              </tr>
+            </thead>
 
-                      {isLoadingItems ? (
-                        <option value="" disabled>
-                          Loading items...
-                        </option>
-                      ) : itemsError ? (
-                        <option value="" disabled>
-                          {itemsError}
-                        </option>
-                      ) : items.length === 0 ? (
-                        <option value="" disabled>
-                          No items available
-                        </option>
-                      ) : (
-                        items.map((item, itemIndex) => {
+            <tbody className="divide-y divide-gray-100 bg-white">
+              {rows.map((row, index) => (
+                <tr key={index} className="hover:bg-gray-50/20">
+                  {/* Item (Goods Mode) */}
+                  {!isServiceMode && (
+                    <td className="p-2 whitespace-nowrap">
+                      <select
+                        value={row.itemId}
+                        onChange={(e) => handleRowChange(index, "itemId", e.target.value)}
+                        className="w-full px-2 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 cursor-pointer"
+                        disabled={isLoadingItems}
+                      >
+                        <option value="">Select Item</option>
+                        {items.map((item) => {
                           const itemId = getItemId(item);
-
                           return (
-                            <option key={itemId || itemIndex} value={itemId}>
-                              {item.itemCode
-                                ? `${item.itemCode} - ${item.name}`
-                                : item.name}
+                            <option key={itemId} value={itemId}>
+                              {item.itemCode ? `${item.itemCode} - ${item.name}` : item.name}
                             </option>
                           );
-                        })
-                      )}
-                    </select>
+                        })}
+                      </select>
+                    </td>
+                  )}
+
+                  {/* Description */}
+                  <td className="p-2">
+                    <input
+                      type="text"
+                      className="w-full px-2.5 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
+                      placeholder="Line Description"
+                      value={row.description}
+                      onChange={(e) => handleRowChange(index, "description", e.target.value)}
+                    />
                   </td>
-                )}
 
-                <td className="p-2">
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                    placeholder="Description"
-                    value={row.description}
-                    onChange={(e) =>
-                      handleRowChange(index, "description", e.target.value)
-                    }
-                  />
-                </td>
-
-                <td className="p-2">
-                  <select
-                    value={row.accountCode}
-                    onChange={(e) =>
-                      handleRowChange(index, "accountCode", e.target.value)
-                    }
-                    className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                    disabled={isLoadingAccounts}
-                  >
-                    <option value="">Select Account</option>
-
-                    {isLoadingAccounts ? (
-                      <option value="" disabled>
-                        Loading accounts...
-                      </option>
-                    ) : accountsError ? (
-                      <option value="" disabled>
-                        {accountsError}
-                      </option>
-                    ) : accounts.length === 0 ? (
-                      <option value="" disabled>
-                        No accounts available
-                      </option>
-                    ) : (
-                      accounts.map((account, accountIndex) => (
+                  {/* Account */}
+                  <td className="p-2 whitespace-nowrap">
+                    <select
+                      value={row.accountCode}
+                      onChange={(e) => handleRowChange(index, "accountCode", e.target.value)}
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 cursor-pointer"
+                      disabled={isLoadingAccounts}
+                    >
+                      <option value="">Select Account</option>
+                      {accounts.map((account, accountIndex) => (
                         <option
                           key={account.id || account.accountCode || accountIndex}
                           value={account.accountCode}
                         >
                           {getAccountLabel(account)}
                         </option>
-                      ))
-                    )}
-                  </select>
-                </td>
+                      ))}
+                    </select>
+                  </td>
 
-                {!isServiceMode && (
-                  <>
-                    <td className="p-2">
-                      <input
-                        type="number"
-                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        value={row.quantity}
-                        onChange={(e) =>
-                          handleRowChange(index, "quantity", e.target.value)
-                        }
-                        min="0"
-                        step="1"
-                      />
-                    </td>
+                  {/* Units, Price, Discount (Goods Mode) */}
+                  {!isServiceMode && (
+                    <>
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          value={row.quantity}
+                          onChange={(e) => handleRowChange(index, "quantity", e.target.value)}
+                          min="0"
+                          step="1"
+                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 text-right"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          value={row.unitPrice}
+                          onChange={(e) => handleRowChange(index, "unitPrice", e.target.value)}
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 text-right"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          value={row.discount}
+                          onChange={(e) => handleRowChange(index, "discount", e.target.value)}
+                          min="0"
+                          max="100"
+                          step="1"
+                          placeholder="%"
+                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 text-right"
+                        />
+                      </td>
+                    </>
+                  )}
 
-                    <td className="p-2">
-                      <input
-                        type="number"
-                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        value={row.unitPrice}
-                        onChange={(e) =>
-                          handleRowChange(index, "unitPrice", e.target.value)
-                        }
-                        min="0"
-                        step="0.01"
-                      />
-                    </td>
+                  {/* Amount */}
+                  <td className="p-2">
+                    <input
+                      type="number"
+                      value={row.amount}
+                      onChange={(e) => handleRowChange(index, "amount", e.target.value)}
+                      readOnly={!isServiceMode}
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                      className="w-full px-2.5 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 text-right bg-gray-50/50 read-only:bg-gray-100/40"
+                    />
+                  </td>
 
-                    <td className="p-2">
-                      <input
-                        type="number"
-                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                        placeholder="%"
-                        value={row.discount}
-                        onChange={(e) =>
-                          handleRowChange(index, "discount", e.target.value)
-                        }
-                        min="0"
-                        max="100"
-                        step="1"
-                      />
-                    </td>
-                  </>
-                )}
-
-                <td className="p-2">
-                  <input
-                    type="number"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                    placeholder="Amount"
-                    value={row.amount}
-                    onChange={(e) =>
-                      handleRowChange(index, "amount", e.target.value)
-                    }
-                    readOnly={!isServiceMode}
-                    min="0"
-                    step="0.01"
-                  />
-                </td>
-
-                <td className="p-2">
-                  <select
-                    value={row.projectId}
-                    onChange={(e) =>
-                      handleRowChange(index, "projectId", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-                    disabled={isLoadingProjects}
-                  >
-                    <option value="">Select project</option>
-
-                    {isLoadingProjects ? (
-                      <option value="" disabled>
-                        Loading projects...
-                      </option>
-                    ) : projectsError ? (
-                      <option value="" disabled>
-                        {projectsError}
-                      </option>
-                    ) : projects.length === 0 ? (
-                      <option value="" disabled>
-                        No projects available
-                      </option>
-                    ) : (
-                      projects.map((project, projectIndex) => {
+                  {/* Project */}
+                  <td className="p-2 whitespace-nowrap">
+                    <select
+                      value={row.projectId}
+                      onChange={(e) => handleRowChange(index, "projectId", e.target.value)}
+                      className="w-full px-2 py-1.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 cursor-pointer"
+                      disabled={isLoadingProjects}
+                    >
+                      <option value="">Select Project</option>
+                      {projects.map((project, projectIndex) => {
                         const projectId = getProjectId(project);
-
                         return (
                           <option key={projectId || projectIndex} value={projectId}>
-                            {project.code
-                              ? `${project.code} - ${project.name}`
-                              : project.name}
+                            {project.code ? `${project.code} - ${project.name}` : project.name}
                           </option>
                         );
-                      })
+                      })}
+                    </select>
+                  </td>
+
+                  {/* Remove Button */}
+                  <td className="p-2 text-center">
+                    {index !== rows.length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeRow(index)}
+                        className="text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                        title="Remove Line"
+                      >
+                        <FiTrash2 />
+                      </button>
                     )}
-                  </select>
-                </td>
-
-                <td className="p-2">
-                  {index !== rows.length - 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeRow(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <MdOutlineCancel className="h-5 w-5" />
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mb-6">
-        <label className="block text-gray-700 font-medium">Notes</label>
-
-        <textarea
-          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-          rows={3}
-          placeholder="Notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-      </div>
-
-      <div className="flex flex-col items-end gap-4 mb-6">
-        <div className="w-full md:w-1/2 flex justify-between items-center">
-          <span className="text-gray-700 font-medium">Subtotal:</span>
-          <span className="text-gray-900">Rs. {subtotal.toFixed(2)}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        <div className="w-full md:w-1/2 flex justify-between items-center">
-          <label className="text-gray-700 font-medium">Freight:</label>
-
-          <input
-            type="number"
-            className="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            placeholder="0.00"
-            value={freight}
-            onChange={(e) => setFreight(e.target.value)}
-            min="0"
-            step="0.01"
+      {/* Notes and Totals Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Notes Card */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
+          <label className="block text-sm font-semibold text-gray-700">Order Notes / Terms</label>
+          <textarea
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none"
+            rows={4}
+            placeholder="Add general terms, supplier terms or payment details..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
           />
         </div>
 
-        <div className="w-full md:w-1/2 flex justify-between items-center">
-          <label className="text-gray-700 font-medium">Tax:</label>
+        {/* Totals Summary Card */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-4">
+          <h4 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2">Financial Breakdown</h4>
 
-          <input
-            type="number"
-            className="w-1/2 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
-            placeholder="0.00"
-            value={taxAmount}
-            onChange={(e) => setTaxAmount(e.target.value)}
-            min="0"
-            step="0.01"
-          />
-        </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center text-sm text-gray-600">
+              <span>Subtotal:</span>
+              <span className="font-semibold text-gray-800">Rs. {subtotal.toFixed(2)}</span>
+            </div>
 
-        <div className="w-full md:w-1/2 flex justify-between items-center">
-          <span className="text-gray-700 font-medium">Total:</span>
-          <span className="text-gray-900">Rs. {total.toFixed(2)}</span>
-        </div>
+            <div className="flex justify-between items-center text-sm text-gray-600">
+              <label className="font-semibold text-gray-700">Freight Charge:</label>
+              <input
+                type="number"
+                className="w-36 px-2.5 py-1 border border-gray-300 rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
+                placeholder="0.00"
+                value={freight}
+                onChange={(e) => setFreight(e.target.value)}
+                min="0"
+                step="0.01"
+              />
+            </div>
 
-        <div className="w-full md:w-1/2 flex justify-between items-center">
-          <span className="text-gray-700 font-medium">Balance Due:</span>
-          <span className="text-gray-900 font-semibold">Rs. {balanceDue.toFixed(2)}</span>
+            <div className="flex justify-between items-center text-sm text-gray-600">
+              <label className="font-semibold text-gray-700">Tax Amount:</label>
+              <input
+                type="number"
+                className="w-36 px-2.5 py-1 border border-gray-300 rounded-lg text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
+                placeholder="0.00"
+                value={taxAmount}
+                onChange={(e) => setTaxAmount(e.target.value)}
+                min="0"
+                step="0.01"
+              />
+            </div>
+
+            <div className="flex justify-between items-center border-t border-gray-100 pt-2.5 text-sm text-gray-900">
+              <span className="font-bold">Total:</span>
+              <span className="font-extrabold text-blue-700">Rs. {total.toFixed(2)}</span>
+            </div>
+
+            <div className="flex justify-between items-center border-t border-gray-100 pt-2.5 text-sm text-gray-900">
+              <span className="font-bold">Balance Due:</span>
+              <span className="font-extrabold text-red-600">Rs. {balanceDue.toFixed(2)}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex justify-end space-x-2">
+      {/* Save Button */}
+      <div className="flex justify-end gap-3 pb-6">
+        <button
+          type="button"
+          onClick={() => navigate("/supplier/purchase/all")}
+          className="px-6 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-bold transition-all cursor-pointer"
+          disabled={saving}
+        >
+          Cancel
+        </button>
         <button
           type="button"
           onClick={handleSavePurchaseOrder}
           disabled={saving}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-500/10 cursor-pointer disabled:bg-blue-400"
         >
-          {saving ? "Saving..." : "Save"}
+          {saving ? (
+            <>
+              <FaSpinner className="animate-spin" /> Saving Order...
+            </>
+          ) : (
+            "Save Purchase Order"
+          )}
         </button>
       </div>
 
+      {/* Account Modal */}
       {showAccountModal && (
         <div
           className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`}
@@ -1047,17 +939,17 @@ const CreatePurchase = () => {
           <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 p-2 rounded-lg max-h-[90vh] overflow-y-auto relative">
             <button
               type="button"
-              className="absolute top-2 right-2 text-black-600 text-xl"
+              className="absolute top-2 right-2 text-black-600 text-xl cursor-pointer hover:text-red-500 transition-colors z-10"
               onClick={closeAccountModal}
             >
               <FaTimes />
             </button>
-
             <AddAccountForm />
           </div>
         </div>
       )}
 
+      {/* Project Modal */}
       {showProjectModal && (
         <div
           className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`}
@@ -1066,43 +958,12 @@ const CreatePurchase = () => {
           <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 p-2 rounded-lg max-h-[90vh] overflow-y-auto relative">
             <button
               type="button"
-              className="absolute top-2 right-2 text-black-600 text-xl"
+              className="absolute top-2 right-2 text-black-600 text-xl cursor-pointer hover:text-red-500 transition-colors z-10"
               onClick={closeProjectModal}
             >
               <FaTimes />
             </button>
-
             <NewProjectForm />
-          </div>
-        </div>
-      )}
-
-      {showItemModal && (
-        <div
-          className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-500 ${modalTransition}`}
-          onClick={(e) => handleModalClick(e, setShowItemModal)}
-        >
-          <div className="bg-white w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 p-6 rounded-lg max-h-[90vh] overflow-y-auto relative">
-            <button
-              type="button"
-              className="absolute top-2 right-2 text-black-600 text-xl"
-              onClick={closeItemModal}
-            >
-              <FaTimes />
-            </button>
-
-            <h3 className="text-lg font-semibold mb-4">Items</h3>
-            <p className="text-gray-600 mb-4">
-              Add items from Inventory Dashboard, then refresh this page.
-            </p>
-
-            <button
-              type="button"
-              onClick={closeItemModal}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-            >
-              Refresh Items
-            </button>
           </div>
         </div>
       )}
