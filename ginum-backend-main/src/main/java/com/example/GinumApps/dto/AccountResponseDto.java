@@ -13,6 +13,7 @@ public class AccountResponseDto {
     private AccountType accountType;
     private BigDecimal currentBalance;
     private String accountCode;
+    private Boolean active;
 
     // Bank-specific fields (nullable)
 //    private String bankName;

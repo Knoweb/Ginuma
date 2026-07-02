@@ -1,5 +1,6 @@
 package com.example.GinumApps.controller;
 
+import com.example.GinumApps.dto.AccountEditRequestDto;
 import com.example.GinumApps.dto.AccountRequestDto;
 import com.example.GinumApps.dto.AccountResponseDto;
 import com.example.GinumApps.model.Account;
@@ -40,6 +41,47 @@ public class AccountController {
             @PathVariable Integer companyId) {
         List<AccountResponseDto> accounts = accountService.getAccountsByCompany(companyId);
         return ResponseEntity.ok(accounts);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<AccountResponseDto>> getActiveAccountsByCompany(
+            @PathVariable Integer companyId) {
+        List<AccountResponseDto> accounts = accountService.getActiveAccountsByCompany(companyId);
+        return ResponseEntity.ok(accounts);
+    }
+
+    @PutMapping("/{accountId}")
+    public ResponseEntity<?> updateAccount(
+            @PathVariable Integer companyId,
+            @PathVariable Long accountId,
+            @Valid @RequestBody AccountEditRequestDto request) {
+        try {
+            AccountResponseDto updatedAccount = accountService.updateAccount(companyId, accountId, request);
+            return ResponseEntity.ok(updatedAccount);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", ex.getMessage()));
+        } catch (jakarta.persistence.EntityNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", ex.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{accountId}/active")
+    public ResponseEntity<?> toggleAccountActiveStatus(
+            @PathVariable Integer companyId,
+            @PathVariable Long accountId,
+            @RequestParam boolean active) {
+        try {
+            AccountResponseDto updatedAccount = accountService.toggleAccountActiveStatus(companyId, accountId, active);
+            return ResponseEntity.ok(updatedAccount);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", ex.getMessage()));
+        } catch (jakarta.persistence.EntityNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", ex.getMessage()));
+        }
     }
 
 }

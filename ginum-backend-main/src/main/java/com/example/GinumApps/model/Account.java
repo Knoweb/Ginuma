@@ -51,6 +51,9 @@ public class Account {
     @Column(precision = 19, scale = 2)
     private BigDecimal currentBalance;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private Boolean active = true;
+
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
     @ToString.Exclude

@@ -57,7 +57,7 @@ const CreateGeneralJournalTransaction = () => {
         setAccountsError(null);
         const companyId = sessionStorage.getItem("companyId");
         if (!companyId) throw new Error("Company ID not found");
-        const response = await api.get(`/api/companies/${companyId}/accounts`);
+        const response = await api.get(`/api/companies/${companyId}/accounts/active`);
         let accountsData = response.data || response;
         if (response?.data?.data && Array.isArray(response.data.data)) accountsData = response.data.data;
         if (!Array.isArray(accountsData)) throw new Error("Invalid format");
