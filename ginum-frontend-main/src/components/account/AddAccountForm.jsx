@@ -104,7 +104,7 @@ const AddAccountForm = () => {
           <FiBook className="text-blue-600 text-lg" />
         </div>
         <div>
-          <h2 className="text-lg font-extrabold text-gray-900">New Account</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">New Account</h2>
           <p className="text-xs text-gray-500 mt-0.5">Add a new chart of account entry</p>
         </div>
       </div>

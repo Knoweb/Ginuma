@@ -53,7 +53,7 @@ const AllCompanies = () => {
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen flex flex-col">
-      <h1 className="text-4xl font-bold mb-8">All Companies</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">All Companies</h1>
       <div className="overflow-x-auto flex-grow">
         <table className="w-full bg-white shadow-lg rounded-lg overflow-hidden">
           <thead>
@@ -121,7 +121,7 @@ const AllCompanies = () => {
             >
               &times;
             </button>
-            <h2 className="text-2xl font-semibold mb-4">Change Privilege Level</h2>
+            <h2 className="section-title mb-4">Change Privilege Level</h2>
             <label className="block mb-4">
               <span className="text-gray-700">Select Privilege Level</span>
               <select
@@ -153,7 +153,7 @@ const AllCompanies = () => {
             >
               &times;
             </button>
-            <h2 className="text-2xl font-semibold mb-4">Change Company Status</h2>
+            <h2 className="section-title mb-4">Change Company Status</h2>
             <label className="block mb-4">
               <span className="text-gray-700">Select Status</span>
               <select

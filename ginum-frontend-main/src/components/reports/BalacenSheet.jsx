@@ -148,7 +148,7 @@ const BalanceSheet = () => {
           
           {/* ASSETS SECTION */}
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-300 pb-2 mb-4 uppercase">Assets</h2>
+            <h2 className="section-title border-b-2 border-gray-300 pb-2 mb-4 uppercase">Assets</h2>
             <table className="w-full">
               <tbody>
                 {reportData.assets.length > 0 ? (
@@ -173,7 +173,7 @@ const BalanceSheet = () => {
 
           {/* LIABILITIES SECTION */}
           <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-300 pb-2 mb-4 uppercase">Liabilities</h2>
+            <h2 className="section-title border-b-2 border-gray-300 pb-2 mb-4 uppercase">Liabilities</h2>
             <table className="w-full">
               <tbody>
                 {reportData.liabilities.length > 0 ? (
@@ -198,7 +198,7 @@ const BalanceSheet = () => {
 
           {/* EQUITY SECTION */}
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-800 border-b-2 border-gray-300 pb-2 mb-4 uppercase">Equity</h2>
+            <h2 className="section-title border-b-2 border-gray-300 pb-2 mb-4 uppercase">Equity</h2>
             <table className="w-full">
               <tbody>
                 {reportData.equity.length > 0 ? (

@@ -172,131 +172,131 @@ const AddDesignationForm = ({
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
-        <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-          <FiTag className="text-purple-600 text-lg" />
-        </div>
-        <div>
-          <h2 className="text-lg font-extrabold text-gray-900">
-            {mode === "edit" ? "Edit Designation" : "Add Designation"}
-          </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            {mode === "edit" ? "Update designation details" : "Create a new role designation"}
-          </p>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="p-6 space-y-5">
-        {/* Department */}
-        <div>
-          <label className={labelClass}>
-            Department <span className="text-red-500">*</span>
-          </label>
-          {isFetchingDepartments ? (
-            <div className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-sm text-gray-500">
-              <FaSpinner className="animate-spin text-blue-500" />
-              Loading departments...
+          {/* Header */}
+          <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
+            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+              <FiTag className="text-purple-600 text-lg" />
             </div>
-          ) : (
-            <select
-              value={selectedDepartment}
-              onChange={(e) => {
-                setSelectedDepartment(e.target.value);
-                setErrors((prev) => ({ ...prev, department: "" }));
-              }}
-              disabled={isLoading}
-              className={`${inputClass} ${errors.department ? "border-red-400" : ""}`}
-            >
-              <option value="">Select Department</option>
-              {departments.map((dept, index) => {
-                const optionKey = String(getDepartmentId(dept) || dept.code || index);
-                const optionValue = String(getDepartmentId(dept) || dept.code || "");
-                return (
-                  <option key={optionKey} value={optionValue}>
-                    {dept.name} ({dept.code})
-                  </option>
-                );
-              })}
-            </select>
-          )}
-          {errors.department && (
-            <p className="text-red-500 text-xs mt-1">{errors.department}</p>
-          )}
-          {mode !== "edit" && (
-            <button
-              type="button"
-              onClick={() => setShowDepartmentModal(true)}
-              className="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-1.5 mt-2 cursor-pointer"
-            >
-              <FaPlusCircle />
-              Add New Department
-            </button>
-          )}
-        </div>
-
-        {/* Designation Name */}
-        <div>
-          <label className={labelClass}>
-            Designation Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={designationName}
-            onChange={(e) => {
-              setDesignationName(e.target.value);
-              setErrors((prev) => ({ ...prev, designationName: "" }));
-            }}
-            disabled={isLoading}
-            placeholder="e.g. Senior Developer"
-            className={`${inputClass} ${errors.designationName ? "border-red-400" : ""}`}
-          />
-          {errors.designationName && (
-            <p className="text-red-500 text-xs mt-1">{errors.designationName}</p>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
-          {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={isLoading}
-              className="px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-semibold text-sm transition-colors disabled:opacity-50 cursor-pointer"
-            >
-              Cancel
-            </button>
-          )}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm disabled:bg-blue-300 disabled:cursor-not-allowed cursor-pointer"
-          >
-            {isLoading && <FaSpinner className="animate-spin" />}
-            {isLoading ? "Saving..." : mode === "edit" ? "Update" : "Save Designation"}
-          </button>
-        </div>
-      </form>
-
-      {/* Department Modal */}
-      {showDepartmentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-          <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 max-h-[90vh] overflow-y-auto relative">
-            <button
-              type="button"
-              className="absolute top-4 right-4 text-gray-600 text-xl z-10 hover:text-red-500 transition-colors cursor-pointer"
-              onClick={() => setShowDepartmentModal(false)}
-            >
-              <FaTimes />
-            </button>
-            <AddDepartmentForm
-              onSuccess={handleNewDepartment}
-              onCancel={() => setShowDepartmentModal(false)}
-            />
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {mode === "edit" ? "Edit Designation" : "Add Designation"}
+              </h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {mode === "edit" ? "Update designation details" : "Create a new role designation"}
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            {/* Department */}
+            <div>
+              <label className={labelClass}>
+                Department <span className="text-red-500">*</span>
+              </label>
+              {isFetchingDepartments ? (
+                <div className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-sm text-gray-500">
+                  <FaSpinner className="animate-spin text-blue-500" />
+                  Loading departments...
+                </div>
+              ) : (
+                <select
+                  value={selectedDepartment}
+                  onChange={(e) => {
+                    setSelectedDepartment(e.target.value);
+                    setErrors((prev) => ({ ...prev, department: "" }));
+                  }}
+                  disabled={isLoading}
+                  className={`${inputClass} ${errors.department ? "border-red-400" : ""}`}
+                >
+                  <option value="">Select Department</option>
+                  {departments.map((dept, index) => {
+                    const optionKey = String(getDepartmentId(dept) || dept.code || index);
+                    const optionValue = String(getDepartmentId(dept) || dept.code || "");
+                    return (
+                      <option key={optionKey} value={optionValue}>
+                        {dept.name} ({dept.code})
+                      </option>
+                    );
+                  })}
+                </select>
+              )}
+              {errors.department && (
+                <p className="text-red-500 text-xs mt-1">{errors.department}</p>
+              )}
+              {mode !== "edit" && (
+                <button
+                  type="button"
+                  onClick={() => setShowDepartmentModal(true)}
+                  className="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-1.5 mt-2 cursor-pointer"
+                >
+                  <FaPlusCircle />
+                  Add New Department
+                </button>
+              )}
+            </div>
+
+            {/* Designation Name */}
+            <div>
+              <label className={labelClass}>
+                Designation Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={designationName}
+                onChange={(e) => {
+                  setDesignationName(e.target.value);
+                  setErrors((prev) => ({ ...prev, designationName: "" }));
+                }}
+                disabled={isLoading}
+                placeholder="e.g. Senior Developer"
+                className={`${inputClass} ${errors.designationName ? "border-red-400" : ""}`}
+              />
+              {errors.designationName && (
+                <p className="text-red-500 text-xs mt-1">{errors.designationName}</p>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+              {onCancel && (
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  disabled={isLoading}
+                  className="px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-semibold text-sm transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm disabled:bg-blue-300 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isLoading && <FaSpinner className="animate-spin" />}
+                {isLoading ? "Saving..." : mode === "edit" ? "Update" : "Save Designation"}
+              </button>
+            </div>
+          </form>
+
+          {/* Department Modal */}
+          {showDepartmentModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+              <div className="w-11/12 sm:w-3/4 md:w-1/2 lg:w-2/5 xl:w-1/3 max-h-[90vh] overflow-y-auto relative">
+                <button
+                  type="button"
+                  className="absolute top-4 right-4 text-gray-600 text-xl z-10 hover:text-red-500 transition-colors cursor-pointer"
+                  onClick={() => setShowDepartmentModal(false)}
+                >
+                  <FaTimes />
+                </button>
+                <AddDepartmentForm
+                  onSuccess={handleNewDepartment}
+                  onCancel={() => setShowDepartmentModal(false)}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -392,7 +392,7 @@
 
 //   return (
 //     <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-lg p-4 sm:p-6 mt-4 sm:mt-6">
-//       <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
+//       <h2 className="section-title mb-4 sm:mb-6">
 //         {type === "spend" ? "Spend Money Transaction" : "Receive Money Transaction"}
 //       </h2>
 

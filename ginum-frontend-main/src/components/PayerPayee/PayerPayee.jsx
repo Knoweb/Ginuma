@@ -15,7 +15,7 @@ const PayerPayee = ({ onClose, allowedTabs = ["customer", "supplier", "employee"
   return (
     <div className="bg-white rounded-lg shadow-xl w-full overflow-hidden">
       <div className="flex justify-between items-center border-b p-4 bg-gray-50">
-        <h2 className="text-xl font-semibold">Create New Contact</h2>
+        <h2 className="section-title">Create New Contact</h2>
       </div>
 
       <div className="border-b">

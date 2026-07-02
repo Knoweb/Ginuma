@@ -191,9 +191,9 @@ const CreateGeneralJournalTransaction = () => {
             <MdSwapHoriz className="text-blue-600 text-2xl" />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
               General Journal Entry
-            </h1>
+            </h2>
             <p className="text-sm text-gray-500 mt-0.5">
               Record a manual double-entry accounting transaction
             </p>

@@ -227,7 +227,7 @@ const Depreciation = () => {
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
             <FaCalculator className="text-blue-600" />
             Asset Depreciation
           </h1>

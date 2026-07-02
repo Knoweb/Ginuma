@@ -24,7 +24,7 @@ const CompanyProfile = () => {
               src="https://knowebsolutions.com/wp-content/uploads/2024/06/2-01-1.png"
               alt="Company Logo"
             />
-            <h2 className="mt-4 text-xl font-semibold text-gray-900 hover:text-gray-700 transition">
+            <h2 className="section-title mt-4 hover:text-gray-700 transition">
               Knoweb PVT LTD
             </h2>
             <p className="text-gray-500 text-sm text-center flex items-center gap-1">

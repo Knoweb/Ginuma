@@ -81,7 +81,7 @@ const ViewProjectModal = ({ project, onClose }) => {
             {/* Title / Code */}
             <div>
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Project Name</span>
-              <h2 className="text-xl font-bold text-gray-900 mt-0.5">{project.name || "-"}</h2>
+              <h2 className="section-title mt-0.5">{project.name || "-"}</h2>
               <div className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                 <FiHash size={14} />
                 <span>{project.code || "-"}</span>

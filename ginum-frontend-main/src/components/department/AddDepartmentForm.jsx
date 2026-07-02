@@ -125,7 +125,7 @@ const AddDepartmentForm = ({
           <FiGrid className="text-indigo-600 text-lg" />
         </div>
         <div>
-          <h2 className="text-lg font-extrabold text-gray-900">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
             {mode === "edit" ? "Edit Department" : "Add Department"}
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">

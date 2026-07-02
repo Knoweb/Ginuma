@@ -367,7 +367,7 @@ function AllSales() {
               <FaTimes />
             </button>
 
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            <h2 className="section-title mb-4">
               Sales Order Details
             </h2>
 

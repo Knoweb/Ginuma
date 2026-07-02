@@ -206,7 +206,7 @@ const AddEmployeeForm = ({ onClose }) => {
           <FiUsers className="text-blue-600 text-xl" />
         </div>
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">New Employee</h1>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">New Employee</h2>
           <p className="text-sm text-gray-500 mt-0.5">Add a new employee to the company</p>
         </div>
       </div>

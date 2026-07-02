@@ -222,7 +222,7 @@ function BankReconsilation() {
       {/* Header Row */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-gray-200">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-2.5 tracking-tight">
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2.5">
             <MdAccountBalanceWallet className="text-blue-600" />
             Bank Reconciliation
           </h1>

@@ -193,10 +193,10 @@ export default function AddSupplierForm({ onClose }) {
       {!onClose && (
         <div className="flex justify-between items-center pb-4 border-b border-gray-200">
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
               <FiUser className="text-blue-600" />
               Create Supplier
-            </h1>
+            </h2>
             <p className="text-sm text-gray-500 mt-1">
               Add a new supplier to system contacts and purchases ledger
             </p>

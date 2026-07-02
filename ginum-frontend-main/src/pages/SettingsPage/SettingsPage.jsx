@@ -51,7 +51,7 @@ const SettingsPage = () => {
         <div className="mt-6 p-3">
           {activeSection === "company" && (
             <div>
-              <h2 className="text-xl font-semibold mb-2">
+              <h2 className="section-title mb-2">
                 Company Information
               </h2>
               <p className="text-gray-600">Manage your company details here.</p>
@@ -60,7 +60,7 @@ const SettingsPage = () => {
 
           {activeSection === "taxes" && (
             <div>
-              <h2 className="text-xl font-semibold mb-2">Taxes</h2>
+              <h2 className="section-title mb-2">Taxes</h2>
               <p className="text-gray-600">
                 Configure tax settings for your business.
               </p>
@@ -69,7 +69,7 @@ const SettingsPage = () => {
 
           {activeSection === "advanced" && (
             <div>
-              <h2 className="text-xl font-semibold mb-2">Advanced Settings</h2>
+              <h2 className="section-title mb-2">Advanced Settings</h2>
               <p className="text-gray-600 mb-3">
                 Manage advanced configurations.
               </p>

@@ -375,7 +375,7 @@ const SuppliersList = () => {
     <>
       <div className="p-6 bg-gray-50 min-h-screen">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Suppliers</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Suppliers</h1>
 
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
             <div className="relative">
@@ -591,7 +591,7 @@ const SuppliersList = () => {
               <FaTimes />
             </button>
 
-            <h2 className="text-xl font-bold text-gray-900 mb-5">
+            <h2 className="section-title mb-5">
               Edit Supplier
             </h2>
 
@@ -731,7 +731,7 @@ const SuppliersList = () => {
               <FaTimes />
             </button>
 
-            <h2 className="text-xl font-bold text-gray-900 mb-3">
+            <h2 className="section-title mb-3">
               Delete Supplier
             </h2>
 

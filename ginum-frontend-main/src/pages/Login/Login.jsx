@@ -84,7 +84,7 @@ const Login = () => {
 
           {/* Login heading and sign-up link */}
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
               Sign in to your account
             </h2>
             <p className="mt-2 text-sm text-gray-500">

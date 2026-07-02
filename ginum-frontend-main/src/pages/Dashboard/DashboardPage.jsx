@@ -6,7 +6,7 @@ import { Chart as ChartJS } from "chart.js/auto";
 const FinanceStats = ({ revenue, expenses, profit, prevRevenue, prevExpenses, prevProfit }) => {
   return (
     <div className="rounded-lg ">
-      <h2 className="text- font-semibold text-gray-500 mb-1">Last 30 Days</h2>
+      <h2 className="section-title mb-1">Last 30 Days</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard title="Total Revenue" value={revenue} previous={prevRevenue} color="text-green-600" />
         <StatCard title="Total Expenses" value={expenses} previous={prevExpenses} color="text-red-500" />
@@ -122,7 +122,7 @@ const DashboardPage = () => {
        {/* Finance Stats Section */}
        <FinanceStats revenue={120000} prevRevenue={110000} expenses={45000} prevExpenses={40000} profit={75000} prevProfit={70000} />
 
-       <h2 className="font-semibold text-gray-500">Finance Stats</h2>
+       <h2 className="section-title">Finance Stats</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
           <h3 className="text-lg font-semibold mb-4">Revenue and Expenses Overview</h3>

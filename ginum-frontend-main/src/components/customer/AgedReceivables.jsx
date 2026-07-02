@@ -435,7 +435,7 @@ export default function AgedReceivables() {
       {/* Header section */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-gray-200">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Aged Receivables</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Aged Receivables</h1>
           <p className="text-sm text-gray-500 mt-1">
             Track and manage outstanding customer balances across aging periods
           </p>

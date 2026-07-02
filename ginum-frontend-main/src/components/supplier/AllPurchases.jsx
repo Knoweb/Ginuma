@@ -214,7 +214,7 @@ function AllPurchases() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-3xl font-bold text-gray-800">
               All Purchase Orders
             </h1>
             <p className="text-gray-500 mt-1">
@@ -396,7 +396,7 @@ function AllPurchases() {
               <FaTimes />
             </button>
 
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            <h2 className="section-title mb-4">
               Purchase Order Details
             </h2>
 

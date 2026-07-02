@@ -21,7 +21,7 @@ const CompanyRequests = () => {
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-4xl font-bold mb-8">Company Requests</h1>
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Company Requests</h1>
       <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
         <thead>
           <tr className="bg-gray-200 text-left">
