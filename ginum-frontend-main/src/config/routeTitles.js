@@ -9,7 +9,7 @@ const routeTitles = [
   { pattern: /^\/employee\/all$/, title: "Employee Details | Ginum" },
 
   // Department Routes
-  { pattern: /^\/department\/all$/, title: "All Departments | Ginum" },
+  { pattern: /^\/department\/all$/, title: "Organization Setup | Ginum" },
   { pattern: /^\/department\/new$/, title: "New Department | Ginum" },
   { pattern: /^\/department\/designation$/, title: "New Designation | Ginum" },
 

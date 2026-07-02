@@ -1,173 +1,242 @@
-import React, { useState } from "react";
-import api from "../../utils/api";
+import React, { useEffect, useState } from "react";
+import { apiUrl } from "../../utils/api";
 import Alert from "../../components/Alert/Alert";
+import { FaSpinner } from "react-icons/fa";
 
-const AddDepartmentForm = ({ onSuccess }) => {
-  // Get company ID and token from session storage
-  const companyId = sessionStorage.getItem("companyId");
-  const token = sessionStorage.getItem("auth_token");
-
+const AddDepartmentForm = ({
+  onSuccess,
+  onCancel,
+  initialData = null,
+  mode = "create",
+}) => {
   const [formData, setFormData] = useState({
     name: "",
-    code: ""
+    code: "",
   });
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [networkError, setNetworkError] = useState(null);
+
+  const getCompanyId = () => sessionStorage.getItem("companyId");
+  const getToken = () => sessionStorage.getItem("auth_token");
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || "",
+        code: initialData.code || "",
+      });
+    }
+  }, [initialData]);
+
+  const getAuthHeaders = () => {
+    const token = getToken();
+
+    return {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+  };
+
+  const extractResponse = async (response) => {
+    const text = await response.text();
+
+    if (!text) return null;
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
+  };
+
+  const getDepartmentId = (department) => {
+    return department?.id || department?.departmentId || "";
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: value 
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
     }));
-    // Clear errors when user types
+
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: "" }));
-    }
-    if (networkError) {
-      setNetworkError(null);
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Department Name is required";
-    if (!formData.code.trim()) newErrors.code = "Department Code is required";
-    
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Department Name is required";
+    }
+
+    if (!formData.code.trim()) {
+      newErrors.code = "Department Code is required";
+    }
+
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
-    setIsLoading(true);
-    setNetworkError(null);
-    
+    const companyId = getCompanyId();
+    const token = getToken();
+
+    if (!companyId || !token) {
+      Alert.error("Session expired. Please login again.");
+      return;
+    }
+
     try {
-      const response = await api.post(
-        `/api/${companyId}/departments`,
-        {
-          name: formData.name.trim(),
-          code: formData.code.trim()
-        }
+      setIsLoading(true);
+
+      const payload = {
+        name: formData.name.trim(),
+        code: formData.code.trim(),
+      };
+
+      const isEdit = mode === "edit" && initialData;
+      const departmentId = getDepartmentId(initialData);
+
+      const url = isEdit
+        ? `${apiUrl}/api/${companyId}/departments/${departmentId}`
+        : `${apiUrl}/api/${companyId}/departments`;
+
+      const response = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+
+      const data = await extractResponse(response);
+
+      if (!response.ok) {
+        const message =
+          data?.message ||
+          data?.error ||
+          data ||
+          "Failed to save department.";
+        throw new Error(message);
+      }
+
+      const savedDepartment = data?.data || data || payload;
+
+      Alert.success(
+        isEdit
+          ? "Department updated successfully."
+          : "Department added successfully."
       );
 
-      // Use department name from response in success message
-      Alert.success(`Department "${response.name}" added successfully!`);
-      
-      // Reset form
-      setFormData({
-        name: "",
-        code: ""
-      });
-      
-      // Call success callback if provided
+      if (!isEdit) {
+        setFormData({
+          name: "",
+          code: "",
+        });
+      }
+
+      setErrors({});
+
       if (onSuccess) {
-        onSuccess(response);
+        onSuccess(savedDepartment);
       }
-      
     } catch (err) {
-      // Handle different types of errors
-      if (err.message === "Network Error") {
-        setNetworkError("Unable to connect to server. Please check your internet connection.");
-      } else if (err.response) {
-        // Server responded with error status
-        const errorMessage = err.response.data?.message || 
-                           err.response.data?.error ||
-                           "Failed to add department. Please try again.";
-        Alert.error(errorMessage);
-        
-        // Handle field-specific errors from API if available
-        if (err.response.data?.errors) {
-          setErrors(err.response.data.errors);
-        }
-      } else {
-        // Other errors (timeout, etc.)
-        setNetworkError("An unexpected error occurred. Please try again later.");
-      }
-      console.error("API Error:", err);
+      console.error("Department save error:", err);
+      Alert.error(err.message || "Failed to save department.");
     } finally {
       setIsLoading(false);
     }
   };
+
   return (
     <div className="flex items-center justify-center p-4">
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-7 flex flex-col">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Add Department
+          {mode === "edit" ? "Edit Department" : "Add Department"}
         </h2>
+
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-gray-700">
+            <label className="block text-gray-700 mb-1">
               Department Name <span className="text-red-500">*</span>
             </label>
+
             <input
               type="text"
               name="name"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.name ? "border-red-500" : "border-gray-300"
+              }`}
               value={formData.name}
               onChange={handleChange}
               disabled={isLoading}
+              placeholder="Enter department name"
             />
+
             {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
             )}
           </div>
+
           <div>
-            <label className="block text-gray-700">
+            <label className="block text-gray-700 mb-1">
               Department Code <span className="text-red-500">*</span>
             </label>
+
             <input
               type="text"
               name="code"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                errors.code ? "border-red-500" : "border-gray-300"
+              }`}
               value={formData.code}
               onChange={handleChange}
               disabled={isLoading}
+              placeholder="Enter department code"
             />
+
             {errors.code && (
-              <p className="text-red-500 text-sm">{errors.code}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.code}</p>
             )}
           </div>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 ${
-              isLoading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center">
-                <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Saving...
-              </span>
-            ) : (
-              "Save"
+
+          <div className="flex justify-end gap-3 pt-4">
+            {onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isLoading}
+                className="px-4 py-2 rounded-lg bg-gray-500 hover:bg-gray-600 text-white disabled:bg-gray-300"
+              >
+                Cancel
+              </button>
             )}
-          </button>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 flex items-center gap-2"
+            >
+              {isLoading && <FaSpinner className="animate-spin" />}
+              {isLoading
+                ? "Saving..."
+                : mode === "edit"
+                ? "Update"
+                : "Save"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

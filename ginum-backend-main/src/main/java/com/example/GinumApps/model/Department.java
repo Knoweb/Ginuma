@@ -20,8 +20,11 @@ public class Department {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Column(nullable = false )
+    @Column(nullable = false)
     private String code;
+
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
 
     @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)

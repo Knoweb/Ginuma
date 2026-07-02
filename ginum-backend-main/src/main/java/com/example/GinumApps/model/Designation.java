@@ -19,6 +19,9 @@ public class Designation {
     @Column(nullable = false, unique = true, length = 50)
     private String name;
 
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
+
     @ManyToOne
     @JoinColumn(name = "department_id", nullable = false)
     @JsonIgnore

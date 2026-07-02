@@ -11,4 +11,10 @@ public interface DesignationRepository extends JpaRepository<Designation, Intege
     Optional<Designation> findById(Integer integer);
 
     List<Designation> findByDepartment_Id(Integer id);
+    List<Designation> findByDepartment_Company_CompanyId(Integer companyId);
+    List<Designation> findByDepartment_Company_CompanyIdAndActiveTrue(Integer companyId);
+
+    default List<Designation> findByCompany_CompanyId(Integer companyId) {
+        return findByDepartment_Company_CompanyId(companyId);
+    }
 }

@@ -50,7 +50,7 @@ export const navItems = [
       {
         id: "all-department",
         path: "/department/all",
-        label: "All Departments",
+        label: "Organization Setup",
       },
       {
         id: "new-department",
