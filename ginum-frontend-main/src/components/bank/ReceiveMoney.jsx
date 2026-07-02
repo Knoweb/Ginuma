@@ -81,7 +81,7 @@ const ReceiveMoney = () => {
 
       try {
         const [accRes, custRes, soRes] = await Promise.all([
-          fetch(`${apiUrl}/api/companies/${companyId}/accounts`, {
+          fetch(`${apiUrl}/api/companies/${companyId}/accounts/active`, {
             headers: getAuthHeaders(),
           }),
           fetch(`${apiUrl}/api/customers/companies/${companyId}`, {

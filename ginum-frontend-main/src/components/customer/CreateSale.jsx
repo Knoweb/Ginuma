@@ -159,7 +159,7 @@ const CreateSaleOrder = () => {
       setIsLoadingAccounts(true);
       setAccountsError("");
       const companyId = checkAuth();
-      const response = await fetch(`${API_BASE_URL}/api/companies/${companyId}/accounts`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${companyId}/accounts/active`, {
         method: "GET",
         headers: getAuthHeaders(),
       });

@@ -1,5 +1,6 @@
 package com.example.GinumApps.service;
 
+import com.example.GinumApps.dto.AccountEditRequestDto;
 import com.example.GinumApps.dto.AccountRequestDto;
 import com.example.GinumApps.dto.AccountResponseDto;
 import com.example.GinumApps.enums.AccountType;
@@ -114,6 +115,60 @@ public class AccountService {
                 .collect(Collectors.toList());
     }
 
+    public List<AccountResponseDto> getActiveAccountsByCompany(Integer companyId) {
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new EntityNotFoundException("Company not found"));
+
+        return accountRepository.findByCompany_CompanyId(companyId).stream()
+                .filter(account -> account.getActive() != null && account.getActive())
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public AccountResponseDto updateAccount(Integer companyId, Long accountId, AccountEditRequestDto request) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
+
+        if (!account.getCompany().getCompanyId().equals(companyId)) {
+            throw new IllegalArgumentException("Account does not belong to the specified company");
+        }
+
+        String normalizedName = normalizeName(request.getAccountName());
+        String normalizedSubAccount = request.getSubAccountName() != null ?
+                normalizeName(request.getSubAccountName()) : "";
+
+        // Check if name is changed and conflicts with existing
+        if ((!normalizedName.equals(account.getNormalizedName()) || !normalizedSubAccount.equals(account.getNormalizedSubAccount()))
+            && accountRepository.existsByNormalizedNameAndNormalizedSubAccountAndCompany_CompanyId(normalizedName, normalizedSubAccount, companyId)) {
+            throw new IllegalArgumentException("Account name already exists for this company");
+        }
+
+        account.setAccountName(request.getAccountName());
+        account.setNormalizedName(normalizedName);
+        account.setSubAccountName(request.getSubAccountName());
+        account.setNormalizedSubAccount(normalizedSubAccount);
+        
+        // Note: we don't recalculate accountCode based on new accountType here, 
+        // to avoid invalidating existing code references, unless specifically requested.
+        account.setAccountType(request.getAccountType());
+
+        return convertToDto(accountRepository.save(account));
+    }
+
+    @Transactional
+    public AccountResponseDto toggleAccountActiveStatus(Integer companyId, Long accountId, boolean active) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found"));
+
+        if (!account.getCompany().getCompanyId().equals(companyId)) {
+            throw new IllegalArgumentException("Account does not belong to the specified company");
+        }
+
+        account.setActive(active);
+        return convertToDto(accountRepository.save(account));
+    }
+
     private AccountResponseDto convertToDto(Account account) {
         AccountResponseDto dto = new AccountResponseDto();
         dto.setId(account.getId());
@@ -122,6 +177,7 @@ public class AccountService {
         dto.setAccountType(account.getAccountType());
         dto.setCurrentBalance(account.getCurrentBalance());
         dto.setAccountCode(account.getAccountCode());
+        dto.setActive(account.getActive());
 
 //        if (account instanceof BankAccount) {
 //            BankAccount bankAccount = (BankAccount) account;

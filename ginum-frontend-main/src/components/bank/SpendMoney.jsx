@@ -83,7 +83,7 @@ const SpendMoney = () => {
 
       try {
         const [accRes, supRes, poRes] = await Promise.all([
-          fetch(`${apiUrl}/api/companies/${companyId}/accounts`, {
+          fetch(`${apiUrl}/api/companies/${companyId}/accounts/active`, {
             headers: getAuthHeaders(),
           }),
           fetch(`${apiUrl}/api/suppliers/companies/${companyId}/active`, {
