@@ -45,8 +45,7 @@ public class PurchaseOrderService {
 
     public PurchaseOrderResponseDto createPurchaseOrder(
             PurchaseOrderRequestDto request,
-            Integer companyId
-    ) {
+            Integer companyId) {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
 
@@ -93,8 +92,7 @@ public class PurchaseOrderService {
             List<PurchaseOrderItemRequestDto> items,
             PurchaseOrder po,
             Company company,
-            PurchaseType purchaseType
-    ) {
+            PurchaseType purchaseType) {
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Purchase order must have at least one line item");
         }
@@ -102,10 +100,8 @@ public class PurchaseOrderService {
         for (PurchaseOrderItemRequestDto itemRequest : items) {
             Account account = accountRepo.findByAccountCodeAndCompany_CompanyId(
                     itemRequest.getAccountCode(),
-                    company.getCompanyId()
-            ).orElseThrow(() ->
-                    new EntityNotFoundException("Account not found: " + itemRequest.getAccountCode())
-            );
+                    company.getCompanyId()).orElseThrow(
+                            () -> new EntityNotFoundException("Account not found: " + itemRequest.getAccountCode()));
 
             Item item = null;
 
@@ -116,19 +112,16 @@ public class PurchaseOrderService {
 
                 item = itemRepository.findByItemIdAndCompany_CompanyId(
                         itemRequest.getItemId(),
-                        company.getCompanyId()
-                ).orElseThrow(() ->
-                        new EntityNotFoundException("Item not found: " + itemRequest.getItemId())
-                );
+                        company.getCompanyId())
+                        .orElseThrow(() -> new EntityNotFoundException("Item not found: " + itemRequest.getItemId()));
             }
 
             Project project = null;
 
             if (itemRequest.getProjectId() != null) {
                 project = projectRepo.findById(itemRequest.getProjectId())
-                        .orElseThrow(() ->
-                                new EntityNotFoundException("Project not found: " + itemRequest.getProjectId())
-                        );
+                        .orElseThrow(
+                                () -> new EntityNotFoundException("Project not found: " + itemRequest.getProjectId()));
 
                 if (!project.getCompany().getCompanyId().equals(company.getCompanyId())) {
                     throw new AccessDeniedException("Project does not belong to your company");
@@ -154,8 +147,7 @@ public class PurchaseOrderService {
             BigDecimal lineAmount = unitPrice
                     .multiply(BigDecimal.valueOf(quantity))
                     .multiply(BigDecimal.ONE.subtract(
-                            discountPercent.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
-                    ));
+                            discountPercent.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)));
 
             PurchaseOrderLineItem lineItem = new PurchaseOrderLineItem();
             lineItem.setPurchaseOrder(po);
@@ -170,8 +162,7 @@ public class PurchaseOrderService {
             lineItem.setItemType(
                     purchaseType == PurchaseType.GOODS
                             ? LineItemType.GOODS
-                            : LineItemType.SERVICE
-            );
+                            : LineItemType.SERVICE);
 
             po.getItems().add(lineItem);
         }
@@ -201,7 +192,21 @@ public class PurchaseOrderService {
         Company company = po.getCompany();
         Account apAccount = company.getAccountsPayableAccount();
         if (apAccount == null) {
-            throw new IllegalStateException("Accounts Payable account not found. Please create or select an Accounts Payable account first.");
+            apAccount = accountRepo.findByAccountCodeAndCompany_CompanyId("2100", company.getCompanyId())
+                    .orElseGet(() -> {
+                        Account newAp = new Account();
+                        newAp.setAccountName("Accounts Payable");
+                        newAp.setNormalizedName("ACCOUNTSPAYABLE");
+                        newAp.setSubAccountName("");
+                        newAp.setAccountType(AccountType.LIABILITY_ACCOUNTS_PAYABLE);
+                        newAp.setCurrentBalance(BigDecimal.ZERO);
+                        newAp.setCompany(company);
+                        newAp.setAccountCode("2100");
+                        return accountRepo.save(newAp);
+                    });
+            company.setAccountsPayableAccount(apAccount);
+            companyRepository.save(company);
+            po.setCompany(company);
         }
 
         JournalEntryDto entryDto = new JournalEntryDto();
@@ -223,56 +228,43 @@ public class PurchaseOrderService {
                     item.getAccount().getAccountCode(),
                     lineTotal,
                     true,
-                    item.getDescription()
-            ));
+                    item.getDescription()));
         }
 
-        if (po.getFreight().compareTo(BigDecimal.ZERO) > 0) {
-            if (po.getCompany().getFreightAccount() == null) {
-                throw new IllegalStateException("Freight Expenses account not found. Please create or select a Freight account first.");
-            }
+        if (po.getFreight().compareTo(BigDecimal.ZERO) > 0 &&
+                po.getCompany().getFreightAccount() != null) {
             entryDto.getLines().add(new JournalEntryLineDto(
                     po.getCompany().getFreightAccount().getAccountCode(),
                     po.getFreight(),
                     true,
-                    "Freight charges"
-            ));
+                    "Freight charges"));
         }
 
-        if (po.getTaxAmount().compareTo(BigDecimal.ZERO) > 0) {
-            if (po.getCompany().getTaxAccount() == null) {
-                throw new IllegalStateException("Tax Payable account not found. Please create or select a Tax account first.");
-            }
+        if (po.getTaxAmount().compareTo(BigDecimal.ZERO) > 0 &&
+                po.getCompany().getTaxAccount() != null) {
             entryDto.getLines().add(new JournalEntryLineDto(
                     po.getCompany().getTaxAccount().getAccountCode(),
                     po.getTaxAmount(),
                     true,
-                    "Purchase tax"
-            ));
+                    "Purchase tax"));
         }
 
-        if (po.getAmountPaid().compareTo(BigDecimal.ZERO) > 0) {
-            if (po.getPaymentAccount() == null) {
-                throw new IllegalStateException("Payment account not found. Please select a payment account.");
-            }
+        if (po.getAmountPaid().compareTo(BigDecimal.ZERO) > 0 &&
+                po.getPaymentAccount() != null) {
             entryDto.getLines().add(new JournalEntryLineDto(
                     po.getPaymentAccount().getAccountCode(),
                     po.getAmountPaid(),
                     false,
-                    "Payment for PO #" + po.getId()
-            ));
+                    "Payment for PO #" + po.getId()));
         }
 
-        if (po.getBalanceDue().compareTo(BigDecimal.ZERO) > 0) {
-            if (po.getCompany().getAccountsPayableAccount() == null) {
-                throw new IllegalStateException("Accounts Payable account not found. Please create or select an Accounts Payable account first.");
-            }
+        if (po.getBalanceDue().compareTo(BigDecimal.ZERO) > 0 &&
+                po.getCompany().getAccountsPayableAccount() != null) {
             entryDto.getLines().add(new JournalEntryLineDto(
                     po.getCompany().getAccountsPayableAccount().getAccountCode(),
                     po.getBalanceDue(),
                     false,
-                    "Payable to " + po.getSupplier().getSupplierName()
-            ));
+                    "Payable to " + po.getSupplier().getSupplierName()));
         }
 
         journalEntryService.createJournalEntry(entryDto);
@@ -310,8 +302,8 @@ public class PurchaseOrderService {
 
         Account paymentAccount = accountRepo.findByAccountCodeAndCompany_CompanyId(
                 request.getPaymentAccountCode(),
-                request.getCompanyId()
-        ).orElseThrow(() -> new ResourceNotFoundException("Invalid payment account code"));
+                request.getCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid payment account code"));
 
         po.setAmountPaid(po.getAmountPaid().add(request.getAmount()));
         po.setBalanceDue(po.getBalanceDue().subtract(request.getAmount()));
@@ -321,54 +313,51 @@ public class PurchaseOrderService {
         Transaction transaction = new Transaction();
         transaction.setReferenceNumber(po.getPoNumber());
         transaction.setDate(LocalDate.now().toString());
-        transaction.setDescription("Spend Money - " + po.getSupplier().getSupplierName() + " (PO: " + po.getPoNumber() + ")");
+        transaction.setDescription(
+                "Spend Money - " + po.getSupplier().getSupplierName() + " (PO: " + po.getPoNumber() + ")");
         transaction.setTotalDebit(0.0);
         transaction.setTotalCredit(request.getAmount().doubleValue());
         transaction.setCompany(po.getCompany());
-        
+
         transaction.setPayeeType("Supplier");
         transaction.setPayeeId(po.getSupplier().getId().intValue());
         transaction.setPayeeName(po.getSupplier().getSupplierName());
         transaction.setPaymentCategory("Supplier Payment");
         transaction.setPaymentMethod("Bank Transfer");
         transaction.setPaymentAccountCode(request.getPaymentAccountCode());
-        
+
         transactionRepo.save(transaction);
 
         if (savedPO.getBalanceDue().compareTo(BigDecimal.ZERO) > 0) {
             createAgingSnapshot(savedPO);
         }
 
-        if (po.getCompany().getAccountsPayableAccount() == null) {
-            throw new IllegalStateException("Accounts Payable account not found. Please create or select an Accounts Payable account first.");
+        if (po.getCompany().getAccountsPayableAccount() != null) {
+            JournalEntryDto journal = new JournalEntryDto();
+            journal.setEntryType(JournalEntryType.PAYMENT);
+            journal.setEntryDate(LocalDate.now());
+            journal.setJournalTitle("PO Payment");
+            journal.setReferenceNo(po.getSupplierInvoiceNumber());
+            journal.setCompanyId(request.getCompanyId());
+            journal.setDescription("Payment for PO #" + po.getId());
+
+            List<JournalEntryLineDto> lines = new ArrayList<>();
+
+            lines.add(new JournalEntryLineDto(
+                    paymentAccount.getAccountCode(),
+                    request.getAmount(),
+                    false,
+                    "Payment from account for PO"));
+
+            lines.add(new JournalEntryLineDto(
+                    po.getCompany().getAccountsPayableAccount().getAccountCode(),
+                    request.getAmount(),
+                    true,
+                    "Reduce payable for PO"));
+
+            journal.setLines(lines);
+            journalEntryService.createJournalEntry(journal);
         }
-
-        JournalEntryDto journal = new JournalEntryDto();
-        journal.setEntryType(JournalEntryType.PAYMENT);
-        journal.setEntryDate(LocalDate.now());
-        journal.setJournalTitle("PO Payment");
-        journal.setReferenceNo(po.getSupplierInvoiceNumber());
-        journal.setCompanyId(request.getCompanyId());
-        journal.setDescription("Payment for PO #" + po.getId());
-
-        List<JournalEntryLineDto> lines = new ArrayList<>();
-
-        lines.add(new JournalEntryLineDto(
-                paymentAccount.getAccountCode(),
-                request.getAmount(),
-                false,
-                "Payment from account for PO"
-        ));
-
-        lines.add(new JournalEntryLineDto(
-                po.getCompany().getAccountsPayableAccount().getAccountCode(),
-                request.getAmount(),
-                true,
-                "Reduce payable for PO"
-        ));
-
-        journal.setLines(lines);
-        journalEntryService.createJournalEntry(journal);
     }
 
     private PurchaseOrderResponseDto convertToDto(PurchaseOrder po) {
@@ -394,8 +383,7 @@ public class PurchaseOrderService {
                 po.getItems()
                         .stream()
                         .map(this::convertItemToDto)
-                        .collect(Collectors.toList())
-        );
+                        .collect(Collectors.toList()));
 
         return dto;
     }

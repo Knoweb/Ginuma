@@ -373,6 +373,10 @@ const CreatePurchase = () => {
       Alert.error("Please enter the purchase order number.");
       return false;
     }
+    if (!supplierInvoiceNumber.trim()) {
+      Alert.error("Supplier invoice number is required.");
+      return false;
+    }
     if (!issueDate) {
       Alert.error("Please select the order date.");
       return false;
@@ -404,7 +408,7 @@ const CreatePurchase = () => {
       dueDate: dueDate,
       promiseDate: promiseDate,
       notes: notes.trim(),
-      salesType: isServiceMode ? "SERVICES" : "GOODS",
+      purchaseType: isServiceMode ? "SERVICES" : "GOODS",
       companyId: Number(companyId),
       freight: freight ? Number(freight) : 0,
       taxAmount: taxAmount ? Number(taxAmount) : 0,
@@ -414,9 +418,9 @@ const CreatePurchase = () => {
         accountCode: row.accountCode,
         quantity: isServiceMode ? 1 : Number(row.quantity),
         unitPrice: isServiceMode ? Number(row.amount) : Number(row.unitPrice),
-        discountPercent: Number(row.discount || 0),
+        discount: Number(row.discount || 0),
+        amount: Number(row.amount || 0),
         projectId: row.projectId ? Number(row.projectId) : null,
-        itemType: isServiceMode ? "SERVICE" : "GOODS",
       })),
     };
   };
@@ -436,8 +440,26 @@ const CreatePurchase = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Purchase order save failed.");
+        let errorMessage = "Purchase order save failed.";
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.errors && Array.isArray(errorData.errors)) {
+            // Spring Boot validation errors array
+            errorMessage = errorData.errors.map(err => err.defaultMessage).join(", ");
+          } else if (typeof errorData === 'string') {
+            errorMessage = errorData;
+          }
+        } catch (e) {
+          // Fallback to text if not JSON
+          const text = await response.text();
+          if (text) {
+             // Avoid showing raw HTML stack traces
+             errorMessage = text.includes("<html") ? "An internal server error occurred." : text;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       Alert.success("Purchase order saved successfully!");
@@ -500,33 +522,7 @@ const CreatePurchase = () => {
         </button>
       </div>
 
-      {/* Segment Mode Switch */}
-      <div className="flex bg-gray-200/60 p-1.5 rounded-xl w-fit border border-gray-300/40">
-        <button
-          type="button"
-          onClick={() => {
-            setIsServiceMode(false);
-            setRows([{ ...emptyRow }]);
-          }}
-          className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer ${
-            !isServiceMode ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Goods / Items Mode
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setIsServiceMode(true);
-            setRows([{ ...emptyRow }]);
-          }}
-          className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer ${
-            isServiceMode ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Services Mode
-        </button>
-      </div>
+
 
       {/* Meta Card */}
       <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
@@ -576,7 +572,7 @@ const CreatePurchase = () => {
           {/* Supplier Invoice Number */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Supplier Invoice No
+              Supplier Invoice No <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -585,6 +581,24 @@ const CreatePurchase = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
               placeholder="e.g. INV-123"
             />
+          </div>
+
+          {/* Purchase Type */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Purchase Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={isServiceMode ? "SERVICES" : "GOODS"}
+              onChange={(e) => {
+                setIsServiceMode(e.target.value === "SERVICES");
+                setRows([{ ...emptyRow }]);
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all cursor-pointer"
+            >
+              <option value="GOODS">GOODS</option>
+              <option value="SERVICES">SERVICES</option>
+            </select>
           </div>
 
           {/* Order Date */}
