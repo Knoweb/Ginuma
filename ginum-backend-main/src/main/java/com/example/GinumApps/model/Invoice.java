@@ -1,7 +1,10 @@
 package com.example.GinumApps.model;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Entity
+@Data
 public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

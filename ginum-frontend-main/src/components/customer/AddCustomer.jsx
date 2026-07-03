@@ -18,24 +18,24 @@ import {
 import { FaSpinner } from "react-icons/fa";
 import Alert from "../Alert/Alert";
 
-export default function AddCustomerForm({ onClose }) {
+export default function AddCustomerForm({ onClose, initialData }) {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    name: "",
-    phone_no: "",
-    email: "",
-    nic_no: "",
-    customer_type: "",
-    tin_no: "",
-    vat: "",
+    name: initialData?.name || "",
+    phone_no: initialData?.phoneNo || "",
+    email: initialData?.email || "",
+    nic_no: initialData?.nicNo || "",
+    customer_type: initialData?.customerType || "",
+    tin_no: initialData?.tinNo || "",
+    vat: initialData?.vat || "",
     br_document: null,
-    swift_no: "",
-    billing_address: "",
-    delivery_address: "",
-    currencyId: "1",
-    discount: "",
-    tax: "INCLUSIVE",
+    swift_no: initialData?.swiftNo || "",
+    billing_address: initialData?.billingAddress || "",
+    delivery_address: initialData?.deliveryAddress || "",
+    currencyId: initialData?.currency?.id ? String(initialData.currency.id) : "1",
+    discount: initialData?.discountPercentage !== undefined && initialData?.discountPercentage !== null ? String(initialData.discountPercentage) : "",
+    tax: initialData?.tax || "INCLUSIVE",
   });
 
   const [errors, setErrors] = useState({});
@@ -170,20 +170,25 @@ export default function AddCustomerForm({ onClose }) {
     try {
       setLoading(true);
 
-      const response = await fetch("http://localhost:8081/api/customers", {
-        method: "POST",
+      const isEdit = !!initialData?.id;
+      const url = isEdit 
+        ? `http://localhost:8081/api/customers/${initialData.id}`
+        : "http://localhost:8081/api/customers";
+
+      const response = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: multipartData,
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Error creating customer:", errorText);
-        Alert.error("Customer registration failed. Please verify credentials.");
+        console.error(`Error ${isEdit ? 'updating' : 'creating'} customer:`, errorText);
+        Alert.error(`Customer ${isEdit ? 'update' : 'registration'} failed. Please verify fields.`);
         return;
       }
 
-      Alert.success("Customer saved successfully!");
+      Alert.success(`Customer ${isEdit ? 'updated' : 'saved'} successfully!`);
       resetForm();
       if (onClose) {
         onClose();
@@ -206,10 +211,10 @@ export default function AddCustomerForm({ onClose }) {
           <div>
             <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
               <FiUser className="text-blue-600" />
-              Create Customer
+              {initialData ? "Edit Customer" : "Create Customer"}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              Add a new customer to system contacts and ledger
+              {initialData ? "Update customer details" : "Add a new customer to system contacts and ledger"}
             </p>
           </div>
           <button
@@ -244,9 +249,8 @@ export default function AddCustomerForm({ onClose }) {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Enter customer or company name"
-                    className={`w-full pl-10 pr-4 py-2 border ${
-                      errors.name ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                    } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all`}
+                    className={`w-full pl-10 pr-4 py-2 border ${errors.name ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
+                      } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all`}
                   />
                 </div>
                 {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
@@ -264,9 +268,8 @@ export default function AddCustomerForm({ onClose }) {
                     value={formData.phone_no}
                     onChange={handleChange}
                     placeholder="+94 77 123 4567"
-                    className={`w-full pl-10 pr-4 py-2 border ${
-                      errors.phone_no ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                    } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all`}
+                    className={`w-full pl-10 pr-4 py-2 border ${errors.phone_no ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
+                      } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all`}
                   />
                 </div>
                 {errors.phone_no && <p className="text-red-500 text-xs mt-1">{errors.phone_no}</p>}
@@ -284,9 +287,8 @@ export default function AddCustomerForm({ onClose }) {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="name@domain.com"
-                    className={`w-full pl-10 pr-4 py-2 border ${
-                      errors.email ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                    } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all`}
+                    className={`w-full pl-10 pr-4 py-2 border ${errors.email ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
+                      } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all`}
                   />
                 </div>
                 {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
@@ -300,9 +302,8 @@ export default function AddCustomerForm({ onClose }) {
                   name="customer_type"
                   value={formData.customer_type}
                   onChange={handleChange}
-                  className={`w-full px-3 py-2 border ${
-                    errors.customer_type ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                  } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all cursor-pointer`}
+                  className={`w-full px-3 py-2 border ${errors.customer_type ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
+                    } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all cursor-pointer`}
                 >
                   <option value="">Select Type</option>
                   <option value="INDIVIDUAL">Individual</option>
@@ -474,9 +475,8 @@ export default function AddCustomerForm({ onClose }) {
                   onChange={handleChange}
                   rows="3"
                   placeholder="Enter invoice/billing address details"
-                  className={`w-full px-4 py-2.5 border ${
-                    errors.billing_address ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                  } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all`}
+                  className={`w-full px-4 py-2.5 border ${errors.billing_address ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
+                    } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all`}
                 />
                 {errors.billing_address && <p className="text-red-500 text-xs mt-1">{errors.billing_address}</p>}
               </div>
@@ -491,9 +491,8 @@ export default function AddCustomerForm({ onClose }) {
                   onChange={handleChange}
                   rows="3"
                   placeholder="Enter goods delivery/shipping address details"
-                  className={`w-full px-4 py-2.5 border ${
-                    errors.delivery_address ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                  } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all`}
+                  className={`w-full px-4 py-2.5 border ${errors.delivery_address ? "border-red-500 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
+                    } rounded-xl text-sm focus:outline-none focus:ring-2 focus:border-blue-500 outline-none transition-all`}
                 />
                 {errors.delivery_address && <p className="text-red-500 text-xs mt-1">{errors.delivery_address}</p>}
               </div>
@@ -549,10 +548,10 @@ export default function AddCustomerForm({ onClose }) {
           >
             {loading ? (
               <>
-                <FaSpinner className="animate-spin" /> Saving Customer...
+                <FaSpinner className="animate-spin" /> {initialData ? "Updating Customer..." : "Saving Customer..."}
               </>
             ) : (
-              "Save Customer"
+              initialData ? "Update Customer" : "Save Customer"
             )}
           </button>
         </div>

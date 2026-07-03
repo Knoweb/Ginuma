@@ -1,4 +1,5 @@
 import React from "react";
+import { FiPower } from "react-icons/fi";
 import {
   Package,
   Pencil,
@@ -65,6 +66,7 @@ const InventoryTable = ({
   onEditItem,
   onOpenStock,
   onDeleteItem,
+  onToggleActive,
 }) => {
   if (filteredItems.length === 0) {
     return (
@@ -239,9 +241,22 @@ const InventoryTable = ({
 
                       <button
                         type="button"
+                        onClick={() => onToggleActive(item)}
+                        className={`p-2 rounded-lg transition-colors ${
+                          item.active === false
+                            ? "text-emerald-600 hover:bg-emerald-50"
+                            : "text-red-600 hover:bg-red-50"
+                        }`}
+                        title={item.active === false ? "Activate" : "Deactivate"}
+                      >
+                        <FiPower size={18} />
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => onDeleteItem(item)}
                         className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg"
-                        title="Deactivate"
+                        title="Delete"
                       >
                         <Trash2 size={16} />
                       </button>

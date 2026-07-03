@@ -59,13 +59,26 @@ const AddEmployeeForm = ({ onClose }) => {
       if (!companyId || !token) return;
       setIsLoadingDepartments(true);
       try {
-        const response = await fetch(`${apiUrl}/api/${companyId}/departments`, {
+        const response = await fetch(`${apiUrl}/api/${companyId}/departments/active`, {
           method: "GET",
           headers: getAuthHeaders(),
         });
         const data = await response.json();
         const deptData = data?.data || data || [];
-        if (Array.isArray(deptData)) setDepartments(deptData);
+        const activeDepartments = deptData.filter((item) => {
+          if (item.active === undefined || item.active === null) return true;
+          return item.active === true;
+        });
+        
+        if (Array.isArray(activeDepartments)) {
+          setDepartments(activeDepartments);
+          setFormData(prev => {
+             if (prev.departmentId && !activeDepartments.some(d => d.id == prev.departmentId)) {
+                 return { ...prev, departmentId: "", designationId: "" };
+             }
+             return prev;
+          });
+        }
       } catch (err) {
         Alert.error("Failed to load departments");
         setDepartments([]);
@@ -89,7 +102,19 @@ const AddEmployeeForm = ({ onClose }) => {
       if (response.status === 204) { setDesignations([]); return; }
       const data = await response.json();
       const designationsData = Array.isArray(data) ? data : Array.isArray(data?.data) ? data.data : [];
-      setDesignations(designationsData);
+      
+      const activeDesignations = designationsData.filter((item) => {
+        if (item.active === undefined || item.active === null) return true;
+        return item.active === true;
+      });
+      
+      setDesignations(activeDesignations);
+      setFormData(prev => {
+          if (prev.designationId && !activeDesignations.some(d => d.id == prev.designationId)) {
+              return { ...prev, designationId: "" };
+          }
+          return prev;
+      });
     } catch (error) {
       console.error("Error fetching designations:", error);
       if (!error.message.includes("Unexpected end of JSON input")) Alert.error("Failed to load designations");
@@ -188,14 +213,20 @@ const AddEmployeeForm = ({ onClose }) => {
   };
 
   const handleDepartmentAdded = (newDepartment) => {
-    setDepartments([...departments, newDepartment]);
-    setFormData((prev) => ({ ...prev, departmentId: newDepartment.id }));
+    const isActive = newDepartment.active === undefined || newDepartment.active === null || newDepartment.active === true;
+    if (isActive) {
+      setDepartments([...departments, newDepartment]);
+      setFormData((prev) => ({ ...prev, departmentId: newDepartment.id }));
+    }
     setShowDepartmentModal(false);
   };
 
   const handleDesignationAdded = (newDesignation) => {
-    setDesignations([...designations, newDesignation]);
-    setFormData((prev) => ({ ...prev, designationId: newDesignation.id }));
+    const isActive = newDesignation.active === undefined || newDesignation.active === null || newDesignation.active === true;
+    if (isActive) {
+      setDesignations([...designations, newDesignation]);
+      setFormData((prev) => ({ ...prev, designationId: newDesignation.id }));
+    }
     setShowDesignationModal(false);
   };
 

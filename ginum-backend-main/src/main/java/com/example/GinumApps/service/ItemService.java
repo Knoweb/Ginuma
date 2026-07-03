@@ -110,9 +110,27 @@ public class ItemService {
     public void deleteItem(Integer companyId, Long itemId) {
         Item item = getItem(companyId, itemId);
 
-        // Soft delete
-        item.setActive(false);
-        itemRepository.save(item);
+        long stockUsage = itemRepository.countStockUsage(itemId);
+        long salesUsage = itemRepository.countSalesUsage(itemId);
+        long purchaseUsage = itemRepository.countPurchaseUsage(itemId);
+
+        boolean isUsed = (stockUsage > 0 || salesUsage > 0 || purchaseUsage > 0);
+
+        if (isUsed) {
+            throw new IllegalStateException("This item is already used in transactions and cannot be deleted. You can deactivate it instead.");
+        }
+
+        // Hard delete
+        stockTransactionRepository.deleteByItem_ItemId(itemId);
+        itemRepository.delete(item);
+    }
+
+    @Transactional
+    public ItemDto updateItemActiveStatus(Integer companyId, Long itemId, Boolean active) {
+        Item item = getItem(companyId, itemId);
+        item.setActive(active);
+        Item savedItem = itemRepository.save(item);
+        return toDto(savedItem);
     }
 
     @Transactional

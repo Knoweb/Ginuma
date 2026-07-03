@@ -45,12 +45,26 @@ public class ItemController {
     }
 
     @DeleteMapping("/{itemId}")
-    public ResponseEntity<Void> deleteItem(
+    public ResponseEntity<?> deleteItem(
             @PathVariable Integer companyId,
             @PathVariable Long itemId
     ) {
-        itemService.deleteItem(companyId, itemId);
-        return ResponseEntity.noContent().build();
+        try {
+            itemService.deleteItem(companyId, itemId);
+            return ResponseEntity.ok(java.util.Map.of("message", "Item deleted successfully."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{itemId}/active")
+    public ResponseEntity<ItemDto> updateItemActiveStatus(
+            @PathVariable Integer companyId,
+            @PathVariable Long itemId,
+            @RequestParam Boolean active
+    ) {
+        ItemDto updatedItem = itemService.updateItemActiveStatus(companyId, itemId, active);
+        return ResponseEntity.ok(updatedItem);
     }
 
     @PostMapping("/{itemId}/stock/add")

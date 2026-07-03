@@ -19,4 +19,13 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             Integer companyId,
             Long itemId
     );
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(st) FROM StockTransaction st WHERE st.item.itemId = :itemId AND st.notes != 'Opening stock'")
+    long countStockUsage(@org.springframework.data.repository.query.Param("itemId") Long itemId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(soi) FROM SalesOrderLineItem soi WHERE soi.item.itemId = :itemId")
+    long countSalesUsage(@org.springframework.data.repository.query.Param("itemId") Long itemId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(poi) FROM PurchaseOrderLineItem poi WHERE poi.item.itemId = :itemId")
+    long countPurchaseUsage(@org.springframework.data.repository.query.Param("itemId") Long itemId);
 }

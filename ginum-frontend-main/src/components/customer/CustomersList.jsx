@@ -11,8 +11,11 @@ import {
   FiHome,
   FiTag,
   FiRefreshCw,
+  FiX,
 } from "react-icons/fi";
 import { apiUrl } from "../../utils/api";
+import Alert from "../Alert/Alert";
+import AddCustomerForm from "./AddCustomer";
 
 const CustomersList = () => {
   const navigate = useNavigate();
@@ -21,6 +24,11 @@ const CustomersList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
 
   const getToken = () => {
     return (
@@ -122,21 +130,69 @@ const CustomersList = () => {
       .replace(/\b\w/g, (char) => char.toUpperCase());
   };
 
-  const handleEdit = (customer) => {
-    console.log("Edit customer:", customer);
-
-    // Later, when backend sends customerId/id, use:
-    // navigate(`/customers/edit/${customer.customerId}`);
-    alert("Edit function needs customer ID from backend.");
+  const handleEdit = async (customer) => {
+    const companyId = getCompanyId();
+    const token = getToken();
+    
+    try {
+      const response = await fetch(`${apiUrl}/api/customers/${customer.customerId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error("Failed to load customer details");
+      const fullCustomerData = await response.json();
+      setSelectedCustomer(fullCustomerData);
+      setModalOpen(true);
+    } catch (err) {
+      Alert.error("Could not fetch full customer data for editing.");
+    }
   };
 
-  const handleDelete = (customer) => {
-    if (window.confirm("Are you sure you want to delete this customer?")) {
-      console.log("Delete customer:", customer);
+  const confirmDelete = (customer) => {
+    setCustomerToDelete(customer);
+    setDeleteModalOpen(true);
+  };
 
-      // Later, create DELETE backend endpoint and call it here.
-      alert("Delete function needs backend delete API.");
+  const executeDelete = async () => {
+    if (!customerToDelete) return;
+    const customer = customerToDelete;
+    const companyId = getCompanyId();
+    const token = getToken();
+
+    try {
+      const response = await fetch(
+        `${apiUrl}/api/customers/${customer.customerId}?companyId=${companyId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        if (errorData && errorData.message) {
+          throw new Error(errorData.message);
+        }
+        throw new Error("Failed to delete customer");
+      }
+
+      Alert.success("Customer deleted successfully!");
+      setDeleteModalOpen(false);
+      setCustomerToDelete(null);
+      fetchCustomers();
+    } catch (err) {
+      console.error("Delete customer error:", err);
+      Alert.error(err.message || "Failed to delete customer");
+      setDeleteModalOpen(false);
+      setCustomerToDelete(null);
     }
+  };
+
+  const closeEditModal = () => {
+    setModalOpen(false);
+    setSelectedCustomer(null);
+    fetchCustomers();
   };
 
   if (loading) {
@@ -342,7 +398,7 @@ const CustomersList = () => {
 
                         <button
                           type="button"
-                          onClick={() => handleDelete(customer)}
+                          onClick={() => confirmDelete(customer)}
                           className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50 transition-colors"
                           title="Delete"
                         >
@@ -358,6 +414,54 @@ const CustomersList = () => {
 
           <div className="bg-gray-50 px-6 py-3 text-sm text-gray-600">
             Showing {filteredCustomers.length} of {customers.length} customers
+          </div>
+        </div>
+      )}
+
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl p-4">
+            <button
+              type="button"
+              onClick={closeEditModal}
+              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 z-10 p-2 rounded-full hover:bg-gray-100"
+            >
+              <FiX size={24} />
+            </button>
+            <AddCustomerForm 
+              onClose={closeEditModal} 
+              initialData={selectedCustomer} 
+            />
+          </div>
+        </div>
+      )}
+
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Delete Customer</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this customer?
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setCustomerToDelete(null);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={executeDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -48,4 +48,35 @@ public class CustomerController {
         List<CustomerSummaryDto> customers = customerService.getCustomersByCompanyId(companyId);
         return ResponseEntity.ok(customers);
     }
+
+    @PutMapping(value = "/{customerId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Customer> updateCustomer(
+            @PathVariable Long customerId,
+            @RequestPart("customer") @Valid CustomerDto customerDto,
+            @RequestPart(value = "businessRegistration", required = false) MultipartFile file) throws IOException {
+
+        if (file != null && !file.isEmpty()) {
+            customerDto.setBusinessRegistration(file);
+        }
+
+        Customer updatedCustomer = customerService.updateCustomer(customerId, customerDto);
+        return ResponseEntity.ok(updatedCustomer);
+    }
+
+    @DeleteMapping("/{customerId}")
+    public ResponseEntity<?> deleteCustomer(
+            @PathVariable Long customerId,
+            @RequestParam Integer companyId) {
+        try {
+            customerService.deleteCustomer(companyId, customerId);
+            return ResponseEntity.ok(java.util.Map.of("message", "Customer deleted successfully."));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{customerId}")
+    public ResponseEntity<Customer> getCustomer(@PathVariable Long customerId) {
+        return ResponseEntity.ok(customerService.getCustomerById(customerId));
+    }
 }

@@ -319,12 +319,11 @@ const InventoryDashboard = () => {
     } catch (err) {
       console.error("Stock update error:", err);
       showToast("error", "Stock update failed.");
-    } finally {
       setStockSaving(false);
     }
   };
 
-  const handleDeactivateItem = async () => {
+  const handleDeleteItem = async () => {
     if (!deletingItem?.itemId) {
       showToast("error", "Item ID is missing.");
       return;
@@ -344,18 +343,51 @@ const InventoryDashboard = () => {
       );
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        if (errorData && errorData.message) {
+          throw new Error(errorData.message);
+        }
         const errorText = await response.text();
-        throw new Error(errorText || "Item deactivate failed.");
+        throw new Error(errorText || "Item delete failed.");
       }
 
-      showToast("success", "Item deactivated successfully!");
+      const data = await response.json().catch(() => null);
+      let msg = "Item deleted successfully.";
+      if (data && data.message) msg = data.message;
+
+      showToast("success", msg);
       closeDeleteModal();
       fetchItems();
     } catch (err) {
-      console.error("Item deactivate error:", err);
-      showToast("error", "Item deactivate failed.");
+      console.error("Item delete error:", err);
+      showToast("error", err.message || "Item delete failed.");
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleToggleActiveItem = async (item) => {
+    try {
+      const companyId = checkAuth();
+      const newStatus = item.active === false ? true : false;
+      
+      const response = await fetch(
+        `${API_BASE_URL}/api/companies/${companyId}/items/${item.itemId}/active?active=${newStatus}`,
+        {
+          method: "PATCH",
+          headers: getAuthHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update active status");
+      }
+
+      showToast("success", `Item ${newStatus ? "activated" : "deactivated"} successfully!`);
+      fetchItems();
+    } catch (err) {
+      console.error("Status update error:", err);
+      showToast("error", "Failed to update item status.");
     }
   };
 
@@ -452,6 +484,7 @@ const InventoryDashboard = () => {
           onEditItem={openEditModal}
           onOpenStock={openStockModal}
           onDeleteItem={openDeleteModal}
+          onToggleActive={handleToggleActiveItem}
         />
       </div>
 
@@ -483,7 +516,7 @@ const InventoryDashboard = () => {
         item={deletingItem}
         deleting={deleting}
         onClose={closeDeleteModal}
-        onConfirm={handleDeactivateItem}
+        onConfirm={handleDeleteItem}
       />
     </>
   );
