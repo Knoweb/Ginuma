@@ -48,10 +48,10 @@ public class CompanyRegistrationDto {
     private String companyFactoryAddress;
 
     @NotNull
-    private String countryName;
+    private Integer countryId;
 
     @NotNull
-    private String currencyCode;
+    private Integer currencyId;
 
     @NotBlank @Email @Size(max = 30)
     private String email;

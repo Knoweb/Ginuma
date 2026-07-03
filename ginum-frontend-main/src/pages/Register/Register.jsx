@@ -30,8 +30,8 @@ const Register = () => {
     mobileNo: "",
     registeredAddress: "",
     factoryAddress: "",
-    country: "",
-    currency: "",
+    countryId: "",
+    currencyId: "",
     email: "",
     website: "",
     password: "",
@@ -51,8 +51,8 @@ const Register = () => {
     if (!formData.phoneNo) newErrors.phoneNo = "Phone No. is required";
     if (!formData.registeredAddress)
       newErrors.registeredAddress = "Registered Address is required";
-    if (!formData.country) newErrors.country = "Country is required";
-    if (!formData.currency) newErrors.currency = "Currency is required";
+    if (!formData.countryId) newErrors.country = "Country is required";
+    if (!formData.currencyId) newErrors.currency = "Currency is required";
     if (!formData.email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -90,8 +90,8 @@ const Register = () => {
       formDataToSend.append("companyCategory", formData.companyCategory);
       formDataToSend.append("phoneNo", formData.phoneNo);
       formDataToSend.append("companyRegisteredAddress", formData.registeredAddress);
-      formDataToSend.append("countryName", formData.country);
-      formDataToSend.append("currencyCode", formData.currency);
+      formDataToSend.append("countryId", formData.countryId);
+      formDataToSend.append("currencyId", formData.currencyId);
       formDataToSend.append("email", formData.email);
       formDataToSend.append("password", formData.password);
       formDataToSend.append("dateJoined", new Date().toISOString().split("T")[0]);
@@ -142,6 +142,38 @@ const Register = () => {
       // Clear VAT No. if user selects "No"
       setFormData({ ...formData, vatNo: "" });
     }
+  };
+
+  const handleCountryChange = (e) => {
+    const selectedCountryId = e.target.value;
+    const selectedCountry = countries.find(c => c.id.toString() === selectedCountryId);
+    let newCurrencyId = formData.currencyId;
+
+    if (selectedCountry) {
+        if (selectedCountry.defaultCurrencyId) {
+            newCurrencyId = selectedCountry.defaultCurrencyId.toString();
+        } else {
+            const fallbackMap = {
+                "Sri Lanka": "LKR",
+                "United States": "USD",
+                "United Kingdom": "GBP",
+                "Australia": "AUD"
+            };
+            const fallbackCode = fallbackMap[selectedCountry.name];
+            if (fallbackCode) {
+                const fallbackCurrency = currencies.find(c => c.code === fallbackCode);
+                if (fallbackCurrency) {
+                    newCurrencyId = fallbackCurrency.id.toString();
+                }
+            }
+        }
+    }
+
+    setFormData({
+        ...formData,
+        countryId: selectedCountryId,
+        currencyId: newCurrencyId
+    });
   };
 
   const COMPANY_CATEGORIES = [
@@ -436,14 +468,14 @@ const Register = () => {
                 <div className="text-red-500 text-sm">{countryError}</div>
               ) : (
                 <select
-                  name="country"
+                  name="countryId"
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  value={formData.country}
-                  onChange={handleChange}
+                  value={formData.countryId}
+                  onChange={handleCountryChange}
                 >
                   <option value="">Select Country</option>
                   {countries.map((country) => (
-                    <option key={country.id} value={country.name}>
+                    <option key={country.id} value={country.id}>
                       {country.name}
                     </option>
                   ))}
@@ -466,14 +498,14 @@ const Register = () => {
                 <div className="text-red-500 text-sm">{currencyError}</div>
               ) : (
                 <select
-                  name="currency"
+                  name="currencyId"
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  value={formData.currency}
+                  value={formData.currencyId}
                   onChange={handleChange}
                 >
                   <option value="">Select Currency</option>
                   {currencies.map((currency) => (
-                    <option key={currency.id} value={currency.code}>
+                    <option key={currency.id} value={currency.id}>
                       {currency.name} ({currency.code})
                     </option>
                   ))}

@@ -54,13 +54,13 @@ public class CompanyService {
         SubscriptionPackage subscriptionPackageEntity = subscriptionPackageRepository.findById(dto.getPackageId())
                 .orElseThrow(() -> new EntityNotFoundException("Package not found with ID: " + dto.getPackageId()));
 
-        // Fetch the Country entity based on the provided country name
-        Country countryEntity = countryRepository.findByName(dto.getCountryName())
-                .orElseThrow(() -> new EntityNotFoundException("Country not found: " + dto.getCountryName()));
+        // Fetch the Country entity based on the provided country ID
+        Country countryEntity = countryRepository.findById(dto.getCountryId())
+                .orElseThrow(() -> new EntityNotFoundException("Country not found: " + dto.getCountryId()));
 
-        // Fetch the Currency entity based on the provided currency name
-        Currency currencyEntity = currencyRepository.findByCode(dto.getCurrencyCode())
-                .orElseThrow(() -> new EntityNotFoundException("Currency not found: " + dto.getCurrencyCode()));
+        // Fetch the Currency entity based on the provided currency ID
+        Currency currencyEntity = currencyRepository.findById(dto.getCurrencyId())
+                .orElseThrow(() -> new EntityNotFoundException("Currency not found: " + dto.getCurrencyId()));
 
 
         // Map DTO to Company entity

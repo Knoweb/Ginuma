@@ -20,6 +20,9 @@ public class Currency {
     @Column(nullable = false, length = 50)
     private String name; // Example: US Dollar, Euro, British Pound
 
+    @Column(length = 10)
+    private String symbol; // Example: $, €, £
+
     @OneToMany(mappedBy = "currency", cascade = CascadeType.ALL)
     @JsonManagedReference
     @JsonIgnore

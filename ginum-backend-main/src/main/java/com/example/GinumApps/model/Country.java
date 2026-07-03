@@ -17,6 +17,10 @@ public class Country {
     @Column(nullable = false, length = 50, unique = true)
     private String name;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "default_currency_id")
+    private Currency defaultCurrency;
+
     @OneToMany(mappedBy = "country", cascade = CascadeType.ALL)
     @JsonManagedReference
     @JsonIgnore
