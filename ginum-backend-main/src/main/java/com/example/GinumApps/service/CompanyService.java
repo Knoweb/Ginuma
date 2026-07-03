@@ -103,8 +103,7 @@ public class CompanyService {
 
         Company savedCompany = companyRepository.save(company);
 
-        // Initialize default accounts
-        initializeDefaultAccounts(savedCompany);
+        // Default accounts are no longer auto-created per requirement
 
         return savedCompany;
     }
@@ -114,28 +113,6 @@ public class CompanyService {
     }
 
 
-    private void initializeDefaultAccounts(Company company) {
-        Account freight = createDefaultAccount(company, "Freight Expenses", AccountType.EXPENSE, "5100");
-        Account tax = createDefaultAccount(company, "Tax Payable", AccountType.LIABILITY_OTHER_LIABILITY, "5200");
-        Account payable = createDefaultAccount(company, "Accounts Payable", AccountType.LIABILITY_ACCOUNTS_PAYABLE, "2100");
-        Account receivable = createDefaultAccount(company, "Accounts Receivable", AccountType.ASSET_ACCOUNT_RECEIVABLE, "1100");
-
-        company.setFreightAccount(freight);
-        company.setTaxAccount(tax);
-        company.setAccountsPayableAccount(payable);
-        company.setAccountsReceivableAccount(receivable);
-        companyRepository.save(company);
-    }
-
-    private Account createDefaultAccount(Company company, String name, AccountType type, String code) {
-        AccountRequestDto dto = new AccountRequestDto();
-        dto.setAccountName(name);
-        dto.setAccountType(type);
-        dto.setAccountCode(code);
-        dto.setCurrentBalance(BigDecimal.ZERO);
-
-        return accountService.createAccount(company.getCompanyId(), dto);
-    }
 
     public List<CompanyResponseDto> getAllCompanies() {
         List<Company> companies = companyRepository.findAll();

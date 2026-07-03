@@ -178,21 +178,7 @@ public class SalesOrderService {
         Company company = order.getCompany();
         Account arAccount = company.getAccountsReceivableAccount();
         if (arAccount == null) {
-            arAccount = accountRepo.findByAccountCodeAndCompany_CompanyId("1100", company.getCompanyId())
-                    .orElseGet(() -> {
-                        Account newAr = new Account();
-                        newAr.setAccountName("Accounts Receivable");
-                        newAr.setNormalizedName("ACCOUNTSRECEIVABLE");
-                        newAr.setSubAccountName("");
-                        newAr.setAccountType(AccountType.ASSET_ACCOUNT_RECEIVABLE);
-                        newAr.setCurrentBalance(BigDecimal.ZERO);
-                        newAr.setCompany(company);
-                        newAr.setAccountCode("1100");
-                        return accountRepo.save(newAr);
-                    });
-            company.setAccountsReceivableAccount(arAccount);
-            companyRepo.save(company);
-            order.setCompany(company);
+            throw new IllegalStateException("Accounts Receivable account not found. Please create or select an Accounts Receivable account first.");
         }
 
         JournalEntryDto journal = new JournalEntryDto();
@@ -218,7 +204,10 @@ public class SalesOrderService {
             ));
         }
 
-        if (order.getAmountPaid().compareTo(BigDecimal.ZERO) > 0 && order.getPaymentAccount() != null) {
+        if (order.getAmountPaid().compareTo(BigDecimal.ZERO) > 0) {
+            if (order.getPaymentAccount() == null) {
+                throw new IllegalStateException("Payment account not found. Please select a payment account.");
+            }
             lines.add(new JournalEntryLineDto(
                     order.getPaymentAccount().getAccountCode(),
                     order.getAmountPaid(),
@@ -289,34 +278,36 @@ public class SalesOrderService {
         transaction.setCompany(order.getCompany());
         transactionRepo.save(transaction);
 
-        if (order.getCompany().getAccountsReceivableAccount() != null) {
-            JournalEntryDto journal = new JournalEntryDto();
-            journal.setEntryType(JournalEntryType.RECEIPT);
-            journal.setEntryDate(LocalDate.now());
-            journal.setJournalTitle("Sales Payment");
-            journal.setReferenceNo(order.getSoNumber());
-            journal.setCompanyId(request.getCompanyId());
-            journal.setDescription("Payment received for SO #" + order.getId());
-
-            List<JournalEntryLineDto> lines = new ArrayList<>();
-
-            lines.add(new JournalEntryLineDto(
-                    paymentAccount.getAccountCode(),
-                    request.getAmount(),
-                    true,
-                    "Customer payment received"
-            ));
-
-            lines.add(new JournalEntryLineDto(
-                    order.getCompany().getAccountsReceivableAccount().getAccountCode(),
-                    request.getAmount(),
-                    false,
-                    "Reduce receivable from customer"
-            ));
-
-            journal.setLines(lines);
-            journalService.createJournalEntry(journal);
+        if (order.getCompany().getAccountsReceivableAccount() == null) {
+            throw new IllegalStateException("Accounts Receivable account not found. Please create or select an Accounts Receivable account first.");
         }
+
+        JournalEntryDto journal = new JournalEntryDto();
+        journal.setEntryType(JournalEntryType.RECEIPT);
+        journal.setEntryDate(LocalDate.now());
+        journal.setJournalTitle("Sales Payment");
+        journal.setReferenceNo(order.getSoNumber());
+        journal.setCompanyId(request.getCompanyId());
+        journal.setDescription("Payment received for SO #" + order.getId());
+
+        List<JournalEntryLineDto> lines = new ArrayList<>();
+
+        lines.add(new JournalEntryLineDto(
+                paymentAccount.getAccountCode(),
+                request.getAmount(),
+                true,
+                "Customer payment received"
+        ));
+
+        lines.add(new JournalEntryLineDto(
+                order.getCompany().getAccountsReceivableAccount().getAccountCode(),
+                request.getAmount(),
+                false,
+                "Reduce receivable from customer"
+        ));
+
+        journal.setLines(lines);
+        journalService.createJournalEntry(journal);
     }
 
     private SalesOrderResponseDto convertToDto(SalesOrder order) {
