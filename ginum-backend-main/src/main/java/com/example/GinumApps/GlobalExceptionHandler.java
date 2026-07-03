@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.IOException;
@@ -14,6 +15,11 @@ import java.util.ConcurrentModificationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<String> handleEntityNotFound(EntityNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 
     @ExceptionHandler(CompanyExistsException.class)
     public ResponseEntity<String> handleCompanyExists(CompanyExistsException ex) {

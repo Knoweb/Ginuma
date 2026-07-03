@@ -11,6 +11,16 @@ const inputClass =
 
 const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5";
 
+const Field = ({ label, error, required, children }) => (
+  <div>
+    <label className={labelClass}>
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    {children}
+    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+  </div>
+);
+
 const AddEmployeeForm = ({ onClose }) => {
   const companyId = sessionStorage.getItem("companyId");
   const token = sessionStorage.getItem("auth_token");
@@ -110,6 +120,7 @@ const AddEmployeeForm = ({ onClose }) => {
     if (!formData.mobileNo.trim()) newErrors.mobileNo = "Mobile number is required";
     if (!formData.email.trim()) newErrors.email = "Email is required";
     else if (!/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = "Email is invalid";
+    if (!formData.address.trim()) newErrors.address = "Address is required";
     if (!formData.departmentId) newErrors.departmentId = "Department is required";
     if (!formData.designationId) newErrors.designationId = designations.length === 0 ? "No designations for this department" : "Designation is required";
     setErrors(newErrors);
@@ -133,7 +144,7 @@ const AddEmployeeForm = ({ onClose }) => {
         gender: formData.gender,
         designationId: formData.designationId ? Number(formData.designationId) : null,
         departmentId: formData.departmentId ? Number(formData.departmentId) : null,
-        address: formData.address.trim() || null,
+        address: formData.address.trim(),
         mobileNo: formData.mobileNo.trim(),
         dob: formatDate(formData.dob),
         nic: formData.nic.trim(),
@@ -188,15 +199,6 @@ const AddEmployeeForm = ({ onClose }) => {
     setShowDesignationModal(false);
   };
 
-  const Field = ({ label, error, required, children }) => (
-    <div>
-      <label className={labelClass}>
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      {children}
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
-    </div>
-  );
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -269,10 +271,10 @@ const AddEmployeeForm = ({ onClose }) => {
                 placeholder="e.g. john@company.com" className={`${inputClass} ${errors.email ? "border-red-400" : ""}`} />
             </Field>
             <div className="sm:col-span-2">
-              <Field label="Address">
+              <Field label="Address" required error={errors.address}>
                 <textarea name="address" value={formData.address} onChange={handleChange} disabled={isSubmitting}
                   placeholder="Full residential address" rows="2"
-                  className={`${inputClass} resize-none`} />
+                  className={`${inputClass} resize-none ${errors.address ? "border-red-400" : ""}`} />
               </Field>
             </div>
           </div>

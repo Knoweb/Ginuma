@@ -2,8 +2,10 @@ package com.example.GinumApps.config;
 
 import com.example.GinumApps.model.Country;
 import com.example.GinumApps.model.Currency;
+import com.example.GinumApps.model.SubscriptionPackage;
 import com.example.GinumApps.repository.CountryRepository;
 import com.example.GinumApps.repository.CurrencyRepository;
+import com.example.GinumApps.repository.SubscriptionPackageRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,8 +16,17 @@ import java.util.Optional;
 public class DatabaseSeeder {
 
     @Bean
-    public CommandLineRunner initDatabase(CountryRepository countryRepository, CurrencyRepository currencyRepository) {
+    public CommandLineRunner initDatabase(CountryRepository countryRepository, CurrencyRepository currencyRepository, SubscriptionPackageRepository subscriptionPackageRepository) {
         return args -> {
+            // Seed Subscription Package
+            Optional<SubscriptionPackage> existingPackage = subscriptionPackageRepository.findById(1);
+            if (existingPackage.isEmpty()) {
+                SubscriptionPackage basicPackage = new SubscriptionPackage();
+                basicPackage.setPackageName("Basic Package");
+                basicPackage.setDescription("Default basic subscription package");
+                subscriptionPackageRepository.save(basicPackage);
+            }
+
             Currency lkr = seedCurrency(currencyRepository, "LKR", "Sri Lankan Rupee", "Rs.");
             Currency usd = seedCurrency(currencyRepository, "USD", "US Dollar", "$");
             Currency gbp = seedCurrency(currencyRepository, "GBP", "British Pound", "£");

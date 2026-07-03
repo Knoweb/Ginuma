@@ -50,9 +50,10 @@ public class CompanyService {
             throw new DuplicateEntityException("Company registration number already exists");
         }
 
-        // Fetch the Package entity based on the provided packageId
-        SubscriptionPackage subscriptionPackageEntity = subscriptionPackageRepository.findById(dto.getPackageId())
-                .orElseThrow(() -> new EntityNotFoundException("Package not found with ID: " + dto.getPackageId()));
+        // Fetch the Package entity based on the provided packageId or use default (ID 1)
+        Integer reqPackageId = dto.getPackageId() != null ? dto.getPackageId() : 1;
+        SubscriptionPackage subscriptionPackageEntity = subscriptionPackageRepository.findById(reqPackageId)
+                .orElseThrow(() -> new EntityNotFoundException("Package not found with ID: " + reqPackageId));
 
         // Fetch the Country entity based on the provided country ID
         Country countryEntity = countryRepository.findById(dto.getCountryId())

@@ -65,6 +65,5 @@ public class CompanyRegistrationDto {
     @NotNull
     private LocalDate dateJoined;
 
-    @NotNull
     private Integer packageId;
 }

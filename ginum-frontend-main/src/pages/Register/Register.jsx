@@ -5,6 +5,20 @@ import api from "../../utils/api";
 import { useNavigate } from "react-router-dom";
 import Alert from "../../components/Alert/Alert"; 
 
+const COMPANY_CATEGORIES = [
+  { value: "EDUCATION_AND_EDTECH", label: "Education and EdTech" },
+  { value: "FINANCE", label: "Finance" },
+  { value: "CREATIVE_AND_DESIGN", label: "Creative and Design" },
+  { value: "REAL_ESTATE_AND_PROPERTY_MANAGEMENT", label: "Real Estate and Property Management" },
+  { value: "CONSTRUCTION_AND_ENGINEERING", label: "Construction and Engineering" },
+  { value: "HOSPITALITY_AND_TOURISM", label: "Hospitality and Tourism" },
+  { value: "IT_AND_TECHNOLOGY", label: "IT and Technology" },
+  { value: "MARKETING_AND_E_COMMERCE", label: "Marketing and E-Commerce" },
+  { value: "MANUFACTURING_AND_LOGISTICS", label: "Manufacturing and Logistics" },
+  { value: "HEALTHCARE_AND_LIFE_SCIENCES", label: "Healthcare and Life Sciences" },
+  { value: "PROFESSIONAL_SERVICES", label: "Professional Services" }
+];
+
 const Register = () => {
   const navigate = useNavigate();
   const [currencies, setCurrencies] = useState([]);
@@ -95,7 +109,6 @@ const Register = () => {
       formDataToSend.append("email", formData.email);
       formDataToSend.append("password", formData.password);
       formDataToSend.append("dateJoined", new Date().toISOString().split("T")[0]);
-      formDataToSend.append("packageId", 1);
       formDataToSend.append("isVatRegistered", isVatRegistered);
 
       if (formData.registrationNo) formDataToSend.append("companyRegNo", formData.registrationNo);
@@ -129,66 +142,52 @@ const Register = () => {
   // Handle input changes
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: files ? files[0] : value,
-    });
+    }));
   };
 
   const handleVatRegistrationChange = (e) => {
     const isRegistered = e.target.value === "yes";
     setIsVatRegistered(isRegistered);
     if (!isRegistered) {
-      // Clear VAT No. if user selects "No"
-      setFormData({ ...formData, vatNo: "" });
+      setFormData((prev) => ({ ...prev, vatNo: "" }));
     }
   };
 
   const handleCountryChange = (e) => {
     const selectedCountryId = e.target.value;
     const selectedCountry = countries.find(c => c.id.toString() === selectedCountryId);
-    let newCurrencyId = formData.currencyId;
 
-    if (selectedCountry) {
-        if (selectedCountry.defaultCurrencyId) {
-            newCurrencyId = selectedCountry.defaultCurrencyId.toString();
-        } else {
-            const fallbackMap = {
-                "Sri Lanka": "LKR",
-                "United States": "USD",
-                "United Kingdom": "GBP",
-                "Australia": "AUD"
-            };
-            const fallbackCode = fallbackMap[selectedCountry.name];
-            if (fallbackCode) {
-                const fallbackCurrency = currencies.find(c => c.code === fallbackCode);
-                if (fallbackCurrency) {
-                    newCurrencyId = fallbackCurrency.id.toString();
-                }
-            }
-        }
-    }
-
-    setFormData({
-        ...formData,
-        countryId: selectedCountryId,
-        currencyId: newCurrencyId
+    setFormData((prev) => {
+      let newCurrencyId = prev.currencyId;
+      if (selectedCountry) {
+          if (selectedCountry.defaultCurrencyId) {
+              newCurrencyId = selectedCountry.defaultCurrencyId.toString();
+          } else {
+              const fallbackMap = {
+                  "Sri Lanka": "LKR",
+                  "United States": "USD",
+                  "United Kingdom": "GBP",
+                  "Australia": "AUD"
+              };
+              const fallbackCode = fallbackMap[selectedCountry.name];
+              if (fallbackCode) {
+                  const fallbackCurrency = currencies.find(c => c.code === fallbackCode);
+                  if (fallbackCurrency) {
+                      newCurrencyId = fallbackCurrency.id.toString();
+                  }
+              }
+          }
+      }
+      return {
+          ...prev,
+          countryId: selectedCountryId,
+          currencyId: newCurrencyId
+      };
     });
   };
-
-  const COMPANY_CATEGORIES = [
-    { value: "EDUCATION_AND_EDTECH", label: "Education and EdTech" },
-    { value: "FINANCE", label: "Finance" },
-    { value: "CREATIVE_AND_DESIGN", label: "Creative and Design" },
-    { value: "REAL_ESTATE_AND_PROPERTY_MANAGEMENT", label: "Real Estate and Property Management" },
-    { value: "CONSTRUCTION_AND_ENGINEERING", label: "Construction and Engineering" },
-    { value: "HOSPITALITY_AND_TOURISM", label: "Hospitality and Tourism" },
-    { value: "IT_AND_TECHNOLOGY", label: "IT and Technology" },
-    { value: "MARKETING_AND_E_COMMERCE", label: "Marketing and E-Commerce" },
-    { value: "MANUFACTURING_AND_LOGISTICS", label: "Manufacturing and Logistics" },
-    { value: "HEALTHCARE_AND_LIFE_SCIENCES", label: "Healthcare and Life Sciences" },
-    { value: "PROFESSIONAL_SERVICES", label: "Professional Services" }
-  ];
   
   // Fetch countries on component mount
   useEffect(() => {
@@ -275,6 +274,7 @@ const Register = () => {
 
     fetchCurrencies();
   }, []);
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-8 flex flex-col items-center">
