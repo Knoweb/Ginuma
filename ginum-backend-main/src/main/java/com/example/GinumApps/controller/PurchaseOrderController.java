@@ -4,6 +4,9 @@ import com.example.GinumApps.dto.PurchaseOrderRequestDto;
 import com.example.GinumApps.dto.PurchaseOrderResponseDto;
 import com.example.GinumApps.dto.PurchasePaymentRequestDto;
 import com.example.GinumApps.service.PurchaseOrderService;
+import com.example.GinumApps.validation.PurchaseOrderValidator;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,12 @@ import java.util.List;
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
+    private final PurchaseOrderValidator purchaseOrderValidator;
+
+    @InitBinder("purchaseOrderRequestDto")
+    protected void initBinder(WebDataBinder binder) {
+        binder.addValidators(purchaseOrderValidator);
+    }
 
     @GetMapping("/api/{companyId}/purchase-orders")
     public ResponseEntity<List<PurchaseOrderResponseDto>> getPurchaseOrdersByCompany(

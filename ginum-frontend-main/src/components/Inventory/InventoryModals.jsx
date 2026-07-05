@@ -129,11 +129,11 @@ export const ItemModal = ({
               <input
                 type="number"
                 min="0"
-                step="0.01"
+                step="any"
                 value={form.purchasePrice}
                 onChange={(e) => updateField("purchasePrice", e.target.value)}
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                placeholder="0.00"
+                placeholder="0"
               />
             </div>
 
@@ -144,11 +144,11 @@ export const ItemModal = ({
               <input
                 type="number"
                 min="0.01"
-                step="0.01"
+                step="any"
                 value={form.unitPrice}
                 onChange={(e) => updateField("unitPrice", e.target.value)}
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                placeholder="0.00"
+                placeholder="0"
                 required
               />
             </div>
@@ -160,7 +160,7 @@ export const ItemModal = ({
               <input
                 type="number"
                 min="0"
-                step="0.01"
+                step="1"
                 value={form.currentStock}
                 onChange={(e) => updateField("currentStock", e.target.value)}
                 disabled={modalMode === "edit"}
@@ -176,7 +176,7 @@ export const ItemModal = ({
               <input
                 type="number"
                 min="0"
-                step="0.01"
+                step="1"
                 value={form.reorderLevel}
                 onChange={(e) => updateField("reorderLevel", e.target.value)}
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"
@@ -309,8 +309,8 @@ export const StockModal = ({
           </label>
           <input
             type="number"
-            min="0.01"
-            step="0.01"
+            min="1"
+            step="1"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
             className="w-full border border-gray-300 rounded px-3 py-2"

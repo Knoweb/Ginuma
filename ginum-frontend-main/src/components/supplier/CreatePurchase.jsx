@@ -310,12 +310,17 @@ const CreatePurchase = () => {
         (item) => String(getItemId(item)) === String(value)
       );
       if (selectedItem) {
+        const purchasePrice = selectedItem.purchasePrice != null ? Number(selectedItem.purchasePrice) : 0;
         updatedRow = {
           ...updatedRow,
           itemId: getItemId(selectedItem),
           description: selectedItem.description || selectedItem.name || "",
-          unitPrice: selectedItem.purchasePrice || selectedItem.unitPrice || "",
+          unitPrice: purchasePrice > 0 ? purchasePrice : "",
         };
+
+        if (purchasePrice <= 0) {
+          Alert.error("Purchase price not available. Please enter unit price manually.");
+        }
       }
     }
 
@@ -389,9 +394,72 @@ const CreatePurchase = () => {
       Alert.error("Please select the promise date.");
       return false;
     }
-    const validRows = getValidRows();
-    if (validRows.length === 0) {
-      Alert.error("Please add at least one valid item or service line.");
+
+    let hasLine = false;
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const isLastRow = i === rows.length - 1;
+      const isCompletelyEmpty =
+        !row.itemId &&
+        !row.description?.trim() &&
+        !row.accountCode &&
+        !row.quantity &&
+        !row.unitPrice &&
+        !row.discount &&
+        !row.amount;
+      
+      if (isLastRow && isCompletelyEmpty) {
+        continue;
+      }
+
+      hasLine = true;
+
+      if (isServiceMode) {
+        if (!row.description?.trim()) {
+          Alert.error(`Line ${i + 1}: Description is required.`);
+          return false;
+        }
+        if (!row.accountCode) {
+          Alert.error(`Line ${i + 1}: Account is required.`);
+          return false;
+        }
+        const amt = Number(row.amount);
+        if (isNaN(amt) || amt <= 0) {
+          Alert.error(`Line ${i + 1}: Amount must be greater than zero.`);
+          return false;
+        }
+      } else {
+        if (!row.itemId) {
+          Alert.error(`Line ${i + 1}: Item is required.`);
+          return false;
+        }
+        if (!row.accountCode) {
+          Alert.error(`Line ${i + 1}: Account is required.`);
+          return false;
+        }
+        if (row.quantity === "" || row.quantity === null || row.quantity === undefined) {
+          Alert.error(`Line ${i + 1}: Quantity must be provided.`);
+          return false;
+        }
+        const qty = Number(row.quantity);
+        if (isNaN(qty) || qty <= 0) {
+          Alert.error(`Line ${i + 1}: Quantity must be greater than zero.`);
+          return false;
+        }
+        if (row.unitPrice === "" || row.unitPrice === null || row.unitPrice === undefined) {
+          Alert.error(`Line ${i + 1}: Please enter unit price for this item.`);
+          return false;
+        }
+        const price = Number(row.unitPrice);
+        if (isNaN(price) || price <= 0) {
+          Alert.error(`Line ${i + 1}: Unit Price must be greater than zero.`);
+          return false;
+        }
+      }
+    }
+
+    if (!hasLine) {
+      Alert.error("Please add at least one line item.");
       return false;
     }
     return true;
@@ -524,6 +592,34 @@ const CreatePurchase = () => {
 
 
 
+      {/* Segment Mode Switch */}
+      <div className="flex bg-gray-200/60 p-1.5 rounded-xl w-fit border border-gray-300/40">
+        <button
+          type="button"
+          onClick={() => {
+            setIsServiceMode(false);
+            setRows([{ ...emptyRow }]);
+          }}
+          className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer ${
+            !isServiceMode ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          Goods / Items Mode
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setIsServiceMode(true);
+            setRows([{ ...emptyRow }]);
+          }}
+          className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all cursor-pointer ${
+            isServiceMode ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900"
+          }`}
+        >
+          Services Mode
+        </button>
+      </div>
+
       {/* Meta Card */}
       <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
         <h3 className="text-md font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-3">
@@ -531,9 +627,9 @@ const CreatePurchase = () => {
           Supplier & Bill Information
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Supplier */}
-          <div className="md:col-span-2">
+          <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">
               Supplier Name <span className="text-red-500">*</span>
             </label>
@@ -583,23 +679,7 @@ const CreatePurchase = () => {
             />
           </div>
 
-          {/* Purchase Type */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-              Purchase Type <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={isServiceMode ? "SERVICES" : "GOODS"}
-              onChange={(e) => {
-                setIsServiceMode(e.target.value === "SERVICES");
-                setRows([{ ...emptyRow }]);
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all cursor-pointer"
-            >
-              <option value="GOODS">GOODS</option>
-              <option value="SERVICES">SERVICES</option>
-            </select>
-          </div>
+          {/* Purchase Type removed to match Segment Switch */}
 
           {/* Order Date */}
           <div>

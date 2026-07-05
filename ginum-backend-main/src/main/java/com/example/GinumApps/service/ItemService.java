@@ -211,6 +211,10 @@ public class ItemService {
         return value == null ? BigDecimal.ZERO : value;
     }
 
+    private Integer valueOrZero(Integer value) {
+        return value == null ? 0 : value;
+    }
+
     private String clean(String value) {
         return value == null ? null : value.trim();
     }

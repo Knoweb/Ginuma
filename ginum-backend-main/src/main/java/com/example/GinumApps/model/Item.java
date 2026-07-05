@@ -4,6 +4,7 @@ import com.example.GinumApps.enums.ItemType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -45,9 +46,9 @@ public class Item {
     @Column(precision = 19, scale = 2)
     private BigDecimal currentStock = BigDecimal.ZERO;
 
-    @DecimalMin(value = "0.00")
-    @Column(precision = 19, scale = 2)
-    private BigDecimal reorderLevel = BigDecimal.ZERO;
+    @Min(value = 0)
+    @Column
+    private Integer reorderLevel = 0;
 
     @Column(length = 20)
     private String unit;

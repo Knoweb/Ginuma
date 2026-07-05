@@ -43,6 +43,7 @@ public class PurchaseOrderService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public PurchaseOrderResponseDto createPurchaseOrder(
             PurchaseOrderRequestDto request,
             Integer companyId) {
@@ -78,6 +79,23 @@ public class PurchaseOrderService {
         calculateFinancials(po);
 
         PurchaseOrder savedPO = purchaseOrderRepo.save(po);
+
+        // Update inventory stock and purchase price for GOODS items
+        for (PurchaseOrderLineItem lineItem : savedPO.getItems()) {
+            if (lineItem.getItemType() == LineItemType.GOODS && lineItem.getItem() != null) {
+                Item item = lineItem.getItem();
+                BigDecimal currentStock = item.getCurrentStock() != null ? item.getCurrentStock() : BigDecimal.ZERO;
+                BigDecimal quantity = BigDecimal.valueOf(lineItem.getQuantity());
+                item.setCurrentStock(currentStock.add(quantity));
+                
+                // Update the item's purchase price to the latest cost
+                if (lineItem.getUnitPrice() != null && lineItem.getUnitPrice().compareTo(BigDecimal.ZERO) > 0) {
+                    item.setPurchasePrice(lineItem.getUnitPrice());
+                }
+
+                itemRepository.save(item);
+            }
+        }
 
         createJournalEntries(savedPO);
 

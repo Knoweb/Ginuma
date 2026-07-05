@@ -106,6 +106,17 @@ public class SalesOrderService {
                 ).orElseThrow(() ->
                         new ResourceNotFoundException("Item not found: " + itemRequest.getItemId())
                 );
+                
+                Integer quantity = itemRequest.getQuantity() != null ? itemRequest.getQuantity() : 1;
+                BigDecimal qtyDecimal = BigDecimal.valueOf(quantity);
+                BigDecimal currentStock = item.getCurrentStock() != null ? item.getCurrentStock() : BigDecimal.ZERO;
+                
+                if (currentStock.compareTo(qtyDecimal) < 0) {
+                    throw new IllegalArgumentException("Insufficient stock for item: " + item.getName());
+                }
+                
+                item.setCurrentStock(currentStock.subtract(qtyDecimal));
+                itemRepo.save(item);
             }
 
             Project project = null;
@@ -178,7 +189,7 @@ public class SalesOrderService {
         Company company = order.getCompany();
         Account arAccount = company.getAccountsReceivableAccount();
         if (arAccount == null) {
-            throw new IllegalStateException("Accounts Receivable account not found. Please create or select an Accounts Receivable account first.");
+            throw new IllegalArgumentException("Accounts Receivable account not found. Please create or select an Accounts Receivable account first in Company Settings or Chart of Accounts.");
         }
 
         JournalEntryDto journal = new JournalEntryDto();
@@ -279,7 +290,7 @@ public class SalesOrderService {
         transactionRepo.save(transaction);
 
         if (order.getCompany().getAccountsReceivableAccount() == null) {
-            throw new IllegalStateException("Accounts Receivable account not found. Please create or select an Accounts Receivable account first.");
+            throw new IllegalArgumentException("Accounts Receivable account not found. Please create or select an Accounts Receivable account first in Company Settings or Chart of Accounts.");
         }
 
         JournalEntryDto journal = new JournalEntryDto();

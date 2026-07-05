@@ -392,8 +392,25 @@ const CreateSaleOrder = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Sales order save failed.");
+        let errorMessage = "Sales order save failed.";
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.errors && Array.isArray(errorData.errors)) {
+            // Spring Boot validation errors array
+            errorMessage = errorData.errors.map(err => err.defaultMessage).join(", ");
+          } else if (typeof errorData === 'string') {
+            errorMessage = errorData;
+          }
+        } catch (e) {
+          // Fallback to text if not JSON
+          const text = await response.text();
+          if (text) {
+             errorMessage = text.includes("<html") ? "An internal server error occurred." : text;
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       Alert.success("Sales order saved successfully!");
