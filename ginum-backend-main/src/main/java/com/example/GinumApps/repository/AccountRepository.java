@@ -25,6 +25,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
             @Param("reservedCodes") List<String> reservedCodes
     );
     List<Account> findByCompany_CompanyId(Integer companyId);
+    
+    Optional<Account> findByAccountNameIgnoreCaseAndAccountTypeAndCompany_CompanyId(String accountName, AccountType accountType, Integer companyId);
 
     Optional<Account> findByAccountCodeAndCompany_CompanyId(String accountCode, Integer companyId);
 

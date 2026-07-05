@@ -310,18 +310,14 @@ const CreateSaleOrder = () => {
   const getValidRows = () => {
     return rows.filter((row) => {
       if (isServiceMode) {
-        return (
-          row.description.trim() &&
-          row.accountCode &&
-          Number(row.amount) > 0
-        );
+        return row.description.trim() || row.accountCode || Number(row.amount) > 0;
       }
       return (
-        row.itemId &&
-        row.accountCode &&
-        Number(row.quantity) > 0 &&
-        Number(row.unitPrice) > 0 &&
-        Number(row.amount) > 0
+        row.itemId ||
+        row.description.trim() ||
+        row.accountCode ||
+        Number(row.quantity) > 0 ||
+        Number(row.unitPrice) > 0
       );
     });
   };
@@ -343,9 +339,63 @@ const CreateSaleOrder = () => {
       Alert.error("Please select the due date.");
       return false;
     }
-    const validRows = getValidRows();
-    if (validRows.length === 0) {
-      Alert.error("Please add at least one valid item or service line.");
+
+    let hasLine = false;
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (isServiceMode) {
+        if (row.description.trim() || row.accountCode || Number(row.amount) > 0) {
+          hasLine = true;
+          if (!row.description.trim()) {
+            Alert.error(`Line ${i + 1}: Please enter a description.`);
+            return false;
+          }
+          if (!row.accountCode) {
+            Alert.error(`Line ${i + 1}: Please select an account.`);
+            return false;
+          }
+          if (Number(row.amount) <= 0) {
+            Alert.error(`Line ${i + 1}: Amount must be greater than zero.`);
+            return false;
+          }
+        }
+      } else {
+        if (
+          row.itemId ||
+          row.description.trim() ||
+          row.accountCode ||
+          Number(row.quantity) > 0 ||
+          Number(row.unitPrice) > 0
+        ) {
+          hasLine = true;
+          if (!row.itemId) {
+            Alert.error(`Line ${i + 1}: Please select an item.`);
+            return false;
+          }
+          if (!row.description.trim()) {
+            Alert.error(`Line ${i + 1}: Please enter a description.`);
+            return false;
+          }
+          if (!row.accountCode) {
+            Alert.error(`Line ${i + 1}: Please select an account.`);
+            return false;
+          }
+          const qty = Number(row.quantity);
+          if (isNaN(qty) || qty <= 0) {
+            Alert.error(`Line ${i + 1}: Quantity must be greater than zero.`);
+            return false;
+          }
+          const price = Number(row.unitPrice);
+          if (isNaN(price) || price <= 0) {
+            Alert.error(`Line ${i + 1}: Unit Price must be greater than zero.`);
+            return false;
+          }
+        }
+      }
+    }
+
+    if (!hasLine) {
+      Alert.error("Please add at least one line item.");
       return false;
     }
     return true;
@@ -377,6 +427,17 @@ const CreateSaleOrder = () => {
     };
   };
 
+  const resetForm = () => {
+    setSelectedCustomer("");
+    setSaleOrderNumber("");
+    setOrderDate(new Date().toISOString().split("T")[0]);
+    setDueDate("");
+    setNotes("");
+    setAmountPaid("");
+    setPaymentAccountCode("");
+    setRows([{ ...emptyRow }]);
+  };
+
   const handleSaveSaleOrder = async () => {
     try {
       if (!validateSaleOrder()) return;
@@ -392,24 +453,24 @@ const CreateSaleOrder = () => {
       });
 
       if (!response.ok) {
-        let errorMessage = "Sales order save failed.";
+        const responseText = await response.text();
+        let responseData = null;
+        
         try {
-          const errorData = await response.json();
-          if (errorData.message) {
-            errorMessage = errorData.message;
-          } else if (errorData.errors && Array.isArray(errorData.errors)) {
-            // Spring Boot validation errors array
-            errorMessage = errorData.errors.map(err => err.defaultMessage).join(", ");
-          } else if (typeof errorData === 'string') {
-            errorMessage = errorData;
-          }
+          responseData = responseText ? JSON.parse(responseText) : null;
         } catch (e) {
-          // Fallback to text if not JSON
-          const text = await response.text();
-          if (text) {
-             errorMessage = text.includes("<html") ? "An internal server error occurred." : text;
-          }
+          responseData = responseText;
         }
+        
+        const errorMessage =
+          responseData?.message ||
+          responseData?.error ||
+          responseData?.details ||
+          (responseData?.errors && Array.isArray(responseData.errors) ? responseData.errors.map(err => err.defaultMessage).join(", ") : null) ||
+          (typeof responseData === 'string' && !responseData.includes("<html") ? responseData : null) ||
+          (typeof responseText === 'string' && !responseText.includes("<html") ? responseText : null) ||
+          "Failed to save sale order. Please check required fields.";
+          
         throw new Error(errorMessage);
       }
 

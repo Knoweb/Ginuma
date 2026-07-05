@@ -185,12 +185,49 @@ public class SalesOrderService {
         }
     }
 
+    private Account getOrCreateAccountsReceivable(Company company) {
+        if (company.getAccountsReceivableAccount() != null) {
+            return company.getAccountsReceivableAccount();
+        }
+
+        // Try to find an existing one
+        Account existingAr = accountRepo.findByAccountNameIgnoreCaseAndAccountTypeAndCompany_CompanyId(
+                "Accounts Receivable", AccountType.ASSET_ACCOUNT_RECEIVABLE, company.getCompanyId()
+        ).orElse(null);
+
+        if (existingAr != null) {
+            company.setAccountsReceivableAccount(existingAr);
+            companyRepo.save(company);
+            return existingAr;
+        }
+
+        // Create a new one
+        Account newAr = new Account();
+        newAr.setAccountName("Accounts Receivable");
+        newAr.setAccountType(AccountType.ASSET_ACCOUNT_RECEIVABLE);
+        newAr.setCompany(company);
+        newAr.setNormalizedName("ACCOUNTS RECEIVABLE");
+        newAr.setNormalizedSubAccount("");
+
+        // Find next valid asset code (e.g., 1200)
+        String code = "1200";
+        while(accountRepo.findByAccountCodeAndCompany_CompanyId(code, company.getCompanyId()).isPresent()) {
+            code = String.valueOf(Integer.parseInt(code) + 1);
+        }
+        newAr.setAccountCode(code);
+        newAr.setActive(true);
+        newAr.setCurrentBalance(BigDecimal.ZERO);
+
+        Account savedAr = accountRepo.save(newAr);
+        company.setAccountsReceivableAccount(savedAr);
+        companyRepo.save(company);
+
+        return savedAr;
+    }
+
     private void createJournalEntries(SalesOrder order) {
         Company company = order.getCompany();
-        Account arAccount = company.getAccountsReceivableAccount();
-        if (arAccount == null) {
-            throw new IllegalArgumentException("Accounts Receivable account not found. Please create or select an Accounts Receivable account first in Company Settings or Chart of Accounts.");
-        }
+        Account arAccount = getOrCreateAccountsReceivable(company);
 
         JournalEntryDto journal = new JournalEntryDto();
         journal.setEntryType(JournalEntryType.SALE);
@@ -229,7 +266,7 @@ public class SalesOrderService {
 
         if (order.getBalanceDue().compareTo(BigDecimal.ZERO) > 0) {
             lines.add(new JournalEntryLineDto(
-                    order.getCompany().getAccountsReceivableAccount().getAccountCode(),
+                    arAccount.getAccountCode(),
                     order.getBalanceDue(),
                     true,
                     "Receivable from " + order.getCustomer().getName()
@@ -289,9 +326,7 @@ public class SalesOrderService {
         transaction.setCompany(order.getCompany());
         transactionRepo.save(transaction);
 
-        if (order.getCompany().getAccountsReceivableAccount() == null) {
-            throw new IllegalArgumentException("Accounts Receivable account not found. Please create or select an Accounts Receivable account first in Company Settings or Chart of Accounts.");
-        }
+        Account arAccount = getOrCreateAccountsReceivable(order.getCompany());
 
         JournalEntryDto journal = new JournalEntryDto();
         journal.setEntryType(JournalEntryType.RECEIPT);
@@ -311,7 +346,7 @@ public class SalesOrderService {
         ));
 
         lines.add(new JournalEntryLineDto(
-                order.getCompany().getAccountsReceivableAccount().getAccountCode(),
+                arAccount.getAccountCode(),
                 request.getAmount(),
                 false,
                 "Reduce receivable from customer"
