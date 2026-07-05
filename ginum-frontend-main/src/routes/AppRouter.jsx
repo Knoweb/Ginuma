@@ -57,6 +57,7 @@ import AgedPayables from "../components/supplier/AgedPayables";
 import AgedReceivables from "../components/customer/AgedReceivables";
 import InventoryDashboard from "../components/Inventory/InventoryDashboard";
 import Depreciation from "../components/depreciation/Depreciation";
+import RequestsPage from "../components/requests/RequestsPage";
 
 function AppRouter() {
   return (
@@ -180,6 +181,7 @@ function AppRouter() {
             <Route path="all" element={<InventoryDashboard  />} />
           </Route>
           <Route path="depreciation" element={<Depreciation />} />
+          <Route path="edit-requests" element={<RequestsPage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
