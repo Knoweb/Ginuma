@@ -7,7 +7,7 @@ import {
   FaFileInvoiceDollar,
 } from "react-icons/fa";
 
-const API_BASE_URL = "http://localhost:8081";
+import { apiUrl as API_BASE_URL } from "../../utils/api";
 
 function AllSales() {
   const [salesOrders, setSalesOrders] = useState([]);

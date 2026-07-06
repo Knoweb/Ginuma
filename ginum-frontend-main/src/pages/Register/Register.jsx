@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
+import { apiUrl } from "../../utils/api";
 import api from "../../utils/api";
 import { useNavigate } from "react-router-dom";
 import Alert from "../../components/Alert/Alert"; 
@@ -122,7 +123,7 @@ const Register = () => {
         formDataToSend.append("companyLogo", formData.companyLogo);
       }
 
-      const response = await axios.post("http://localhost:8081/api/companies/register", formDataToSend);
+      const response = await axios.post(`${apiUrl}/api/companies/register`, formDataToSend);
 
       Alert.success("Registration successful! Please log in.");
       setTimeout(() => {

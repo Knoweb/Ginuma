@@ -14,6 +14,7 @@ import {
   FiX
 } from "react-icons/fi";
 import Alert from "../../components/Alert/Alert";
+import { apiUrl } from "../../utils/api";
 
 const AllAccounts = () => {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ const AllAccounts = () => {
       }
 
       const response = await fetch(
-        `http://localhost:8081/api/companies/${companyId}/accounts`,
+        `${apiUrl}/api/companies/${companyId}/accounts`,
         {
           method: "GET",
           headers: {
@@ -141,7 +142,7 @@ const AllAccounts = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8081/api/companies/${companyId}/accounts/${currentEditAccount.id}`, {
+      const response = await fetch(`${apiUrl}/api/companies/${companyId}/accounts/${currentEditAccount.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -184,7 +185,7 @@ const AllAccounts = () => {
       }
 
       const newStatus = account.active === false ? true : false;
-      const response = await fetch(`http://localhost:8081/api/companies/${companyId}/accounts/${account.id}/active?active=${newStatus}`, {
+      const response = await fetch(`${apiUrl}/api/companies/${companyId}/accounts/${account.id}/active?active=${newStatus}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`

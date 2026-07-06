@@ -3,6 +3,7 @@ import usePageTitle from "../../hooks/usePageTitle"; // Custom hook to set the p
 import { FaEye, FaEyeSlash } from "react-icons/fa"; // Icons for showing/hiding password
 import api from "../../utils/api"; // Adjust the import path
 import axios from "axios";
+import { apiUrl } from "../../utils/api";
 import Alert from "../../components/Alert/Alert"; 
 
 const Login = () => {
@@ -19,7 +20,7 @@ const Login = () => {
 
     try {
       // api.post වෙනුවට axios.post භාවිතා කරන්න (Full URL එක දෙන්න)
-      const res = await axios.post("http://localhost:8081/api/auth/login", {
+      const res = await axios.post(`${apiUrl}/api/auth/login`, {
         email,
         password,
       });

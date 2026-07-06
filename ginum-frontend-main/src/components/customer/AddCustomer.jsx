@@ -17,6 +17,7 @@ import {
 } from "react-icons/fi";
 import { FaSpinner } from "react-icons/fa";
 import Alert from "../Alert/Alert";
+import { apiUrl } from "../../utils/api";
 
 export default function AddCustomerForm({ onClose, initialData }) {
   const navigate = useNavigate();
@@ -172,8 +173,8 @@ export default function AddCustomerForm({ onClose, initialData }) {
 
       const isEdit = !!initialData?.id;
       const url = isEdit 
-        ? `http://localhost:8081/api/customers/${initialData.id}`
-        : "http://localhost:8081/api/customers";
+        ? `${apiUrl}/api/customers/${initialData.id}`
+        : `${apiUrl}/api/customers`;
 
       const response = await fetch(url, {
         method: isEdit ? "PUT" : "POST",
