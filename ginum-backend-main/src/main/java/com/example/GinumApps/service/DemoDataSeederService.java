@@ -19,6 +19,9 @@ public class DemoDataSeederService {
     private final CompanyRepository companyRepository;
     private final AppUserRepository appUserRepository;
     private final AppUserService appUserService;
+    private final EmployeeRepository employeeRepository;
+    private final DepartmentRepository departmentRepository;
+    private final DesignationRepository designationRepository;
     private final AccountService accountService;
     private final AccountRepository accountRepository;
     private final JournalEntryService journalEntryService;
@@ -56,14 +59,53 @@ public class DemoDataSeederService {
         if (appUserRepository.findByEmail(email).isPresent()) {
             return "userAlreadyExists";
         }
-        AppUserRequestDto userDto = new AppUserRequestDto();
-        userDto.setEmail(email);
-        userDto.setPassword("Demo@2026");
-        userDto.setRole("ROLE_ADMIN");
         try {
+            Department dept = departmentRepository.findAll().stream()
+                .filter(d -> d.getCompany().getCompanyId().equals(company.getCompanyId()))
+                .findFirst().orElseGet(() -> {
+                    Department d = new Department();
+                    d.setName("Administration");
+                    d.setCode("ADM");
+                    d.setCompany(company);
+                    d.setActive(true);
+                    return departmentRepository.save(d);
+                });
+
+            Designation desig = designationRepository.findAll().stream()
+                .filter(d -> d.getName().equals("Demo Manager"))
+                .findFirst().orElseGet(() -> {
+                    Designation d = new Designation();
+                    d.setName("Demo Manager");
+                    d.setDepartment(dept);
+                    d.setActive(true);
+                    return designationRepository.save(d);
+                });
+
+            Employee emp = employeeRepository.findByEmailAndCompanyCompanyId(email, company.getCompanyId())
+                .orElseGet(() -> {
+                    Employee e = new Employee();
+                    e.setFirstName("Madam");
+                    e.setLastName("Demo User");
+                    e.setEmail(email);
+                    e.setMobileNo("0770000000");
+                    e.setDepartment(dept);
+                    e.setDesignation(desig);
+                    e.setCompany(company);
+                    e.setDateAdded(LocalDate.now());
+                    e.setGender("FEMALE");
+                    e.setAddress("Colombo");
+                    e.setNic("000000000V");
+                    return employeeRepository.save(e);
+                });
+
+            AppUserRequestDto userDto = new AppUserRequestDto();
+            userDto.setEmail(email);
+            userDto.setPassword("Demo@2026");
+            userDto.setRole("COMPANY");
             appUserService.createUser(company.getCompanyId(), userDto);
             return "userCreated";
         } catch (Exception e) {
+            e.printStackTrace();
             return "error: " + e.getMessage();
         }
     }
@@ -142,10 +184,8 @@ public class DemoDataSeederService {
             lines.add(createJELine(company, "Bank Loan", new BigDecimal("4000000"), false));
             lines.add(createJELine(company, "VAT Payable", new BigDecimal("100000"), false));
             lines.add(createJELine(company, "Share Capital", new BigDecimal("15000000"), false));
-            lines.add(createJELine(company, "Retained Earnings", new BigDecimal("2750000"), false));
-            lines.add(createJELine(company, "Accumulated Depreciation - Building", new BigDecimal("1000000"), false));
-            lines.add(createJELine(company, "Accumulated Depreciation - Machinery", new BigDecimal("1000000"), false));
-            lines.add(createJELine(company, "Accumulated Depreciation - Furniture", new BigDecimal("100000"), false));
+            lines.add(createJELine(company, "Retained Earnings", new BigDecimal("4850000"), false));
+            // Removed accumulated depreciation to prevent negative balances in assets.
 
             dto.setLines(lines);
 
@@ -284,11 +324,11 @@ public class DemoDataSeederService {
                     .filter(i -> i.getName().equals("Raw Material")).findFirst().orElse(null);
 
             if (rawSupplier != null && rawItem != null) {
-                count += createPOIfNotExists(existing, company, rawSupplier.getId(), "SUP-001", "PO-DEMO-1", LocalDate.of(2026, 1, 8), rawItem.getItemId(), 10, new BigDecimal("120000"));
-                count += createPOIfNotExists(existing, company, rawSupplier.getId(), "SUP-002", "PO-DEMO-2", LocalDate.of(2026, 1, 15), rawItem.getItemId(), 3, new BigDecimal("100000"));
+                count += createPOIfNotExists(existing, company, rawSupplier.getId(), "SUP-001", "PO-DEMO-1", LocalDate.of(2026, 1, 8), rawItem.getItemId(), 10, new BigDecimal("120000"), PurchaseType.GOODS);
+                count += createPOIfNotExists(existing, company, rawSupplier.getId(), "SUP-002", "PO-DEMO-2", LocalDate.of(2026, 1, 15), rawItem.getItemId(), 3, new BigDecimal("100000"), PurchaseType.GOODS);
             }
             if (packSupplier != null && rawItem != null) {
-                count += createPOIfNotExists(existing, company, packSupplier.getId(), "SUP-003", "PO-DEMO-3", LocalDate.of(2026, 1, 23), rawItem.getItemId(), 2, new BigDecimal("100000"));
+                count += createPOIfNotExists(existing, company, packSupplier.getId(), "SUP-003", "PO-DEMO-3", LocalDate.of(2026, 1, 23), rawItem.getItemId(), 2, new BigDecimal("100000"), PurchaseType.GOODS);
             }
         } catch (Exception e) {
             return "purchaseOrdersSkipped or error: " + e.getMessage();
@@ -296,7 +336,7 @@ public class DemoDataSeederService {
         return "purchaseOrdersCreated: " + count;
     }
 
-    private int createPOIfNotExists(List<PurchaseOrderResponseDto> existing, Company company, Long supplierId, String supInvNo, String poNo, LocalDate date, Long itemId, int qty, BigDecimal unitPrice) {
+    private int createPOIfNotExists(List<PurchaseOrderResponseDto> existing, Company company, Long supplierId, String supInvNo, String poNo, LocalDate date, Long itemId, int qty, BigDecimal unitPrice, PurchaseType pType) {
         if (existing.stream().anyMatch(po -> poNo.equals(po.getPurchaseOrderNumber()))) {
             return 0;
         }
@@ -307,6 +347,7 @@ public class DemoDataSeederService {
             dto.setPoNumber(poNo);
             dto.setIssueDate(date);
             dto.setDueDate(date.plusDays(30));
+            dto.setPurchaseType(pType);
 
             PurchaseOrderItemRequestDto itemDto = new PurchaseOrderItemRequestDto();
             itemDto.setItemId(itemId);
@@ -345,11 +386,11 @@ public class DemoDataSeederService {
                     .filter(i -> i.getName().equals("Chair")).findFirst().orElse(null);
 
             if (crCustomer != null && chair != null) {
-                count += createSOIfNotExists(existing, company, crCustomer.getCustomerId(), "SO-DEMO-1", LocalDate.of(2026, 1, 13), chair.getItemId(), 115, new BigDecimal("13043.48"));
-                count += createSOIfNotExists(existing, company, crCustomer.getCustomerId(), "SO-DEMO-3", LocalDate.of(2026, 1, 30), chair.getItemId(), 153, new BigDecimal("13071.90"));
+                count += createSOIfNotExists(existing, company, crCustomer.getCustomerId(), "SO-DEMO-1", LocalDate.of(2026, 1, 13), chair.getItemId(), 115, new BigDecimal("13043.48"), SalesType.GOODS);
+                count += createSOIfNotExists(existing, company, crCustomer.getCustomerId(), "SO-DEMO-3", LocalDate.of(2026, 1, 30), chair.getItemId(), 153, new BigDecimal("13071.90"), SalesType.GOODS);
             }
             if (cashCustomer != null && chair != null) {
-                count += createSOIfNotExists(existing, company, cashCustomer.getCustomerId(), "SO-DEMO-2", LocalDate.of(2026, 1, 21), chair.getItemId(), 61, new BigDecimal("13114.75"));
+                count += createSOIfNotExists(existing, company, cashCustomer.getCustomerId(), "SO-DEMO-2", LocalDate.of(2026, 1, 21), chair.getItemId(), 10, new BigDecimal("13000"), SalesType.GOODS);
             }
         } catch (Exception e) {
             return "salesOrdersSkipped or error: " + e.getMessage();
@@ -357,7 +398,7 @@ public class DemoDataSeederService {
         return "salesOrdersCreated: " + count;
     }
 
-    private int createSOIfNotExists(List<SalesOrderResponseDto> existing, Company company, Long customerId, String soNo, LocalDate date, Long itemId, int qty, BigDecimal unitPrice) {
+    private int createSOIfNotExists(List<SalesOrderResponseDto> existing, Company company, Long customerId, String soNo, LocalDate date, Long itemId, int qty, BigDecimal unitPrice, SalesType sType) {
         if (existing.stream().anyMatch(so -> soNo.equals(so.getSoNumber()))) {
             return 0;
         }
@@ -366,6 +407,7 @@ public class DemoDataSeederService {
             dto.setCustomerId(customerId);
             dto.setSoNumber(soNo);
             dto.setIssueDate(date);
+            dto.setSalesType(sType);
             
             SalesOrderItemRequestDto itemDto = new SalesOrderItemRequestDto();
             itemDto.setItemId(itemId);
