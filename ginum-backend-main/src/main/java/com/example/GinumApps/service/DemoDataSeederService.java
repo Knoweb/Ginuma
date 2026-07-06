@@ -1542,69 +1542,69 @@ public class DemoDataSeederService {
         return 1;
     }
     private int createPO(Integer companyId, String poNum, String date, Supplier supp, String notes, Item item, int qty, BigDecimal price) {
-
         if (purchaseOrderService.getPurchaseOrdersByCompany(companyId).stream().anyMatch(po -> poNum.equals(po.getPurchaseOrderNumber()))) return 0;
 
         PurchaseOrderRequestDto po = new PurchaseOrderRequestDto();
-
         po.setPoNumber(poNum);
-
         po.setSupplierInvoiceNumber(poNum);
-
         po.setSupplierId(supp.getId());
-
         po.setIssueDate(LocalDate.parse(date));
-
         po.setDueDate(LocalDate.parse(date));
-
         po.setNotes(notes);
-
+        
+        po.setPurchaseType(PurchaseType.GOODS);
+        po.setPaymentAccountCode("1010"); // Bank Account
+        
         PurchaseOrderItemRequestDto line = new PurchaseOrderItemRequestDto();
-
         line.setItemId(item.getItemId());
-
         line.setQuantity(qty);
-
         line.setUnitPrice(price);
+        line.setAmount(price.multiply(new BigDecimal(qty)));
+        line.setDescription(item.getName());
+        line.setDiscount(BigDecimal.ZERO);
+        line.setAccountCode("1200"); // Raw Material Inventory
 
         po.setItems(List.of(line));
 
-        purchaseOrderService.createPurchaseOrder(po, companyId);
-
-        return 1;
-
+        try {
+            purchaseOrderService.createPurchaseOrder(po, companyId);
+            return 1;
+        } catch (Exception e) {
+            System.err.println(poNum + " skipped: " + e.getMessage());
+            return 0;
+        }
     }
 
     private int createSO(Integer companyId, String soNum, String date, Customer cust, String notes, Item item, int qty, BigDecimal price) {
-
         if (salesOrderService.getSalesOrdersByCompany(companyId).stream().anyMatch(so -> soNum.equals(so.getSoNumber()))) return 0;
 
         SalesOrderRequestDto so = new SalesOrderRequestDto();
-
         so.setSoNumber(soNum);
-
         so.setCustomerId(cust.getId());
-
         so.setIssueDate(LocalDate.parse(date));
-
         so.setDueDate(LocalDate.parse(date));
-
         so.setNotes(notes);
+        
+        so.setSalesType(SalesType.GOODS);
+        so.setPaymentAccountCode("1010"); // Bank Account
 
         SalesOrderItemRequestDto line = new SalesOrderItemRequestDto();
-
         line.setItemId(item.getItemId());
-
         line.setQuantity(qty);
-
         line.setUnitPrice(price);
+        line.setDescription(item.getName());
+        line.setAccountCode("4000"); // Sales Revenue
+        line.setItemType(LineItemType.GOODS);
 
         so.setItems(List.of(line));
 
-        salesOrderService.createSalesOrder(so, companyId);
-
-        return 1;
-
+        try {
+            salesOrderService.createSalesOrder(so, companyId);
+            return 1;
+        } catch (Exception e) {
+            System.err.println(soNum + " skipped: " + e.getMessage());
+            return 0;
+        }
     }
 
 
