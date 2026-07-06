@@ -93,4 +93,22 @@ public class DemoDataSeederController {
                     .body(Map.of("error", "Error resetting demo data", "details", e.getMessage()));
         }
     }
+    @PostMapping("/fresh-excel-reset/company/{companyId}")
+    public ResponseEntity<?> freshExcelReset(
+            @PathVariable Integer companyId,
+            @RequestHeader(value = "X-DEMO-SEED-TOKEN", required = false) String token) {
+        
+        if (token == null || !token.equals(requiredToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Invalid demo seed token."));
+        }
+
+        try {
+            Map<String, Object> result = demoDataSeederService.freshExcelReset(companyId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error performing fresh excel reset", "details", e.getMessage()));
+        }
+    }
 }

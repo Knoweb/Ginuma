@@ -37,6 +37,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 path.startsWith("/api/currencies") ||
                 path.startsWith("/api/demo/seed") ||
                 path.startsWith("/api/demo/reconcile") ||
+                path.startsWith("/api/demo/fresh-excel-reset") ||
                 path.startsWith("/api/demo/reset-excel-demo")) {
 
             filterChain.doFilter(request, response);

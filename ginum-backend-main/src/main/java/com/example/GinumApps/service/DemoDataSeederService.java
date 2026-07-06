@@ -1618,5 +1618,386 @@ public class DemoDataSeederService {
         }
     }
 
+    @Transactional
+    public Map<String, Object> freshExcelReset(Integer companyId) throws Exception {
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("finalStatus", "ERROR");
+        
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+                
+        // 1. Validate and prep company
+        company.setAccountsReceivableAccount(null);
+        company.setAccountsPayableAccount(null);
+        company.setFreightAccount(null);
+        company.setTaxAccount(null);
+        companyRepository.saveAndFlush(company);
+        
+        // 2. Clean business data
+        entityManager.createNativeQuery("DELETE FROM sales_order_line_items WHERE sales_order_id IN (SELECT id FROM sales_orders WHERE company_id = :cid)").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM purchase_order_line_items WHERE purchase_order_id IN (SELECT id FROM purchase_orders WHERE company_id = :cid)").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM journal_entry_lines WHERE journal_entry_id IN (SELECT id FROM journal_entries WHERE company_id = :cid)").setParameter("cid", companyId).executeUpdate();
+        
+        try {
+            entityManager.createNativeQuery("DELETE FROM aging_receivables WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
+        } catch(Exception e) { /* ignore if table doesn't exist */ }
 
+        entityManager.createNativeQuery("DELETE FROM transactions WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM sales_orders WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM purchase_orders WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM journal_entries WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM bank_accounts WHERE account_id IN (SELECT id FROM accounts WHERE company_id = :cid)").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM items WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM customers WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM suppliers WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM accounts WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
+        
+        summary.put("businessDataDeleted", true);
+        summary.put("loginDataPreserved", true);
+
+        // 3. Recreate exact Chart of Accounts
+        int accCount = 0;
+        Map<String, Account> createdAccounts = new HashMap<>();
+        
+        createdAccounts.put("Cash in Hand", createFreshAccount(company, "Cash in Hand", "1000", AccountType.ASSET_BANK));
+        createdAccounts.put("Bank Account", createFreshAccount(company, "Bank Account", "1010", AccountType.ASSET_BANK));
+        createdAccounts.put("Accounts Receivable", createFreshAccount(company, "Accounts Receivable", "1100", AccountType.ASSET_ACCOUNT_RECEIVABLE));
+        createdAccounts.put("Raw Material Inventory", createFreshAccount(company, "Raw Material Inventory", "1200", AccountType.ASSET_OTHER_CURRENT_ASSET));
+        createdAccounts.put("Finished Goods Inventory", createFreshAccount(company, "Finished Goods Inventory", "1210", AccountType.ASSET_OTHER_CURRENT_ASSET));
+        createdAccounts.put("Land", createFreshAccount(company, "Land", "1500", AccountType.ASSET_FIXED_ASSET));
+        createdAccounts.put("Factory Building", createFreshAccount(company, "Factory Building", "1510", AccountType.ASSET_FIXED_ASSET));
+        createdAccounts.put("Machinery", createFreshAccount(company, "Machinery", "1520", AccountType.ASSET_FIXED_ASSET));
+        createdAccounts.put("Furniture & Equipment", createFreshAccount(company, "Furniture & Equipment", "1530", AccountType.ASSET_FIXED_ASSET));
+        
+        createdAccounts.put("Accumulated Depreciation - Building", createFreshAccount(company, "Accumulated Depreciation - Building", "1590", AccountType.LIABILITY_OTHER_LIABILITY));
+        createdAccounts.put("Accumulated Depreciation - Machinery", createFreshAccount(company, "Accumulated Depreciation - Machinery", "1591", AccountType.LIABILITY_OTHER_LIABILITY));
+        createdAccounts.put("Accumulated Depreciation - Furniture", createFreshAccount(company, "Accumulated Depreciation - Furniture", "1592", AccountType.LIABILITY_OTHER_LIABILITY));
+        
+        createdAccounts.put("Accounts Payable", createFreshAccount(company, "Accounts Payable", "2000", AccountType.LIABILITY_ACCOUNTS_PAYABLE));
+        createdAccounts.put("Bank Loan", createFreshAccount(company, "Bank Loan", "2100", AccountType.LIABILITY_LONG_TERM_LIABILITY));
+        createdAccounts.put("VAT Payable", createFreshAccount(company, "VAT Payable", "2200", AccountType.LIABILITY_OTHER_CURRENT_LIABILITY));
+        
+        createdAccounts.put("Share Capital", createFreshAccount(company, "Share Capital", "3000", AccountType.EQUITY));
+        createdAccounts.put("Retained Earnings", createFreshAccount(company, "Retained Earnings", "3100", AccountType.EQUITY));
+        
+        createdAccounts.put("Sales Revenue", createFreshAccount(company, "Sales Revenue", "4000", AccountType.INCOME));
+        
+        createdAccounts.put("Cost of Goods Sold", createFreshAccount(company, "Cost of Goods Sold", "5000", AccountType.COST_OF_SALES));
+        createdAccounts.put("Work in Progress / Manufacturing Cost", createFreshAccount(company, "Work in Progress / Manufacturing Cost", "5100", AccountType.COST_OF_SALES));
+        
+        createdAccounts.put("Administrative Expenses", createFreshAccount(company, "Administrative Expenses", "6000", AccountType.EXPENSE));
+        createdAccounts.put("Selling Expenses", createFreshAccount(company, "Selling Expenses", "6100", AccountType.EXPENSE));
+        createdAccounts.put("Salary Expense", createFreshAccount(company, "Salary Expense", "6200", AccountType.EXPENSE));
+        createdAccounts.put("Depreciation Expense", createFreshAccount(company, "Depreciation Expense", "6300", AccountType.EXPENSE));
+        createdAccounts.put("Interest Expense", createFreshAccount(company, "Interest Expense", "6400", AccountType.EXPENSE));
+
+        summary.put("accountsCreated", createdAccounts.size());
+        
+        // Link defaults
+        company.setAccountsReceivableAccount(createdAccounts.get("Accounts Receivable"));
+        company.setAccountsPayableAccount(createdAccounts.get("Accounts Payable"));
+        company.setTaxAccount(createdAccounts.get("VAT Payable"));
+        company.setFreightAccount(createdAccounts.get("Administrative Expenses"));
+        companyRepository.saveAndFlush(company);
+
+        // 4. Opening Balance
+        JournalEntryDto obDto = new JournalEntryDto();
+        obDto.setCompanyId(companyId);
+        obDto.setEntryDate(LocalDate.of(2026, 1, 1));
+        obDto.setReferenceNo("OB-2026-001");
+        obDto.setJournalTitle("Opening Balances");
+        obDto.setDescription("Opening balances from Excel trial balance");
+        obDto.setEntryType(JournalEntryType.MANUAL);
+        obDto.setAuthorId(1);
+        
+        List<JournalEntryLineDto> obLines = new ArrayList<>();
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Cash in Hand").getAccountCode(), new BigDecimal("50000"), true, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Bank Account").getAccountCode(), new BigDecimal("2000000"), true, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Accounts Receivable").getAccountCode(), new BigDecimal("1200000"), true, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Raw Material Inventory").getAccountCode(), new BigDecimal("800000"), true, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Finished Goods Inventory").getAccountCode(), new BigDecimal("1500000"), true, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Land").getAccountCode(), new BigDecimal("5000000"), true, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Factory Building").getAccountCode(), new BigDecimal("8000000"), true, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Machinery").getAccountCode(), new BigDecimal("6000000"), true, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Furniture & Equipment").getAccountCode(), new BigDecimal("500000"), true, "Opening Balance"));
+
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Accumulated Depreciation - Building").getAccountCode(), new BigDecimal("800000"), false, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Accumulated Depreciation - Machinery").getAccountCode(), new BigDecimal("1200000"), false, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Accumulated Depreciation - Furniture").getAccountCode(), new BigDecimal("100000"), false, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Accounts Payable").getAccountCode(), new BigDecimal("1100000"), false, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Bank Loan").getAccountCode(), new BigDecimal("4000000"), false, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("VAT Payable").getAccountCode(), new BigDecimal("100000"), false, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Share Capital").getAccountCode(), new BigDecimal("15000000"), false, "Opening Balance"));
+        obLines.add(new JournalEntryLineDto(createdAccounts.get("Retained Earnings").getAccountCode(), new BigDecimal("2750000"), false, "Opening Balance"));
+        
+        obDto.setLines(obLines);
+        journalEntryService.createJournalEntry(obDto);
+        summary.put("openingBalanceImported", true);
+
+        // 5. Suppliers
+        Supplier s1 = createFreshSupplier(company, "Main Raw Material Supplier", "supplier@example.com");
+        Supplier s2 = createFreshSupplier(company, "Packaging Material Supplier", "packaging@example.com");
+        summary.put("suppliersCreated", 2);
+
+        // 6. Customers
+        Customer c1 = createFreshCustomer(company, "Main Credit Customer", "customer@example.com");
+        Customer c2 = createFreshCustomer(company, "Cash Customer", "cash@example.com");
+        summary.put("customersCreated", 2);
+
+        // 7. Items
+        Item i1 = createFreshItem(company, "RM-001", "Raw Material", "Raw Material", ItemType.RAW_MATERIAL, new BigDecimal("3900"), BigDecimal.ZERO, new BigDecimal("205"), 10, createdAccounts.get("Raw Material Inventory"));
+        Item i2 = createFreshItem(company, "CH-001", "Chair", "Finished Goods", ItemType.SALES_ITEM, new BigDecimal("6500"), new BigDecimal("13000"), new BigDecimal("230"), 5, createdAccounts.get("Finished Goods Inventory"));
+        summary.put("itemsCreated", 2);
+
+        // 8. Transactions
+        // A) Purchases
+        PurchaseOrderResponseDto po1 = createFreshPurchase(companyId, s1, i1, createdAccounts.get("Raw Material Inventory").getAccountCode(), "DEMO-PO-001", LocalDate.of(2026, 1, 3), "Purchased raw materials on credit", 10, new BigDecimal("120000"));
+        createFreshPurchase(companyId, s1, i1, createdAccounts.get("Raw Material Inventory").getAccountCode(), "DEMO-PO-002", LocalDate.of(2026, 1, 10), "Purchased raw materials cash", 1, new BigDecimal("300000"));
+        createFreshPurchase(companyId, s2, i1, createdAccounts.get("Raw Material Inventory").getAccountCode(), "DEMO-PO-003", LocalDate.of(2026, 1, 18), "Purchased packaging materials credit", 1, new BigDecimal("200000"));
+        summary.put("purchasesCreated", 3);
+
+        // B) Supplier Payments
+        PurchasePaymentRequestDto pay1 = new PurchasePaymentRequestDto();
+        pay1.setAmount(new BigDecimal("800000"));
+        pay1.setPaymentAccountCode(createdAccounts.get("Bank Account").getAccountCode());
+        pay1.setCompanyId(companyId);
+        pay1.setPaymentNote("Paid suppliers by bank");
+        purchaseOrderService.payPurchaseOrder(po1.getId(), pay1);
+        
+        PurchasePaymentRequestDto pay2 = new PurchasePaymentRequestDto();
+        pay2.setAmount(new BigDecimal("500000"));
+        pay2.setPaymentAccountCode(createdAccounts.get("Bank Account").getAccountCode());
+        pay2.setCompanyId(companyId);
+        pay2.setPaymentNote("Paid suppliers by bank");
+        purchaseOrderService.payPurchaseOrder(po1.getId(), pay2);
+        summary.put("supplierPaymentsCreated", 2);
+
+        // C) Sales
+        SalesOrderResponseDto so1 = createFreshSale(companyId, c1, i2, createdAccounts.get("Sales Revenue").getAccountCode(), "DEMO-SO-001", LocalDate.of(2026, 1, 8), "Credit Sales", 1, new BigDecimal("1500000"));
+        createFreshSale(companyId, c2, i2, createdAccounts.get("Sales Revenue").getAccountCode(), "DEMO-SO-002", LocalDate.of(2026, 1, 16), "Cash Sales", 1, new BigDecimal("800000"));
+        SalesOrderResponseDto so3 = createFreshSale(companyId, c1, i2, createdAccounts.get("Sales Revenue").getAccountCode(), "DEMO-SO-003", LocalDate.of(2026, 1, 25), "Credit Sales", 1, new BigDecimal("2000000"));
+        summary.put("salesCreated", 3);
+
+        // D) Customer Collections
+        SalesPaymentRequestDto rec1 = new SalesPaymentRequestDto();
+        rec1.setAmount(new BigDecimal("1000000"));
+        rec1.setPaymentAccountCode(createdAccounts.get("Bank Account").getAccountCode());
+        rec1.setCompanyId(companyId);
+        salesOrderService.paySalesOrder(so1.getId(), rec1);
+
+        SalesPaymentRequestDto rec2 = new SalesPaymentRequestDto();
+        rec2.setAmount(new BigDecimal("1500000"));
+        rec2.setPaymentAccountCode(createdAccounts.get("Bank Account").getAccountCode());
+        rec2.setCompanyId(companyId);
+        salesOrderService.paySalesOrder(so3.getId(), rec2);
+        summary.put("customerReceiptsCreated", 2);
+
+        // E) Payroll
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-PAY-001", LocalDate.of(2026, 1, 31), "Factory wages", new BigDecimal("900000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Salary Expense").getAccountCode(), "Salary Expense");
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-PAY-002", LocalDate.of(2026, 1, 31), "Admin salaries", new BigDecimal("250000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Administrative Expenses").getAccountCode(), "Salary Expense");
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-PAY-003", LocalDate.of(2026, 1, 31), "Sales salaries", new BigDecimal("200000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Selling Expenses").getAccountCode(), "Salary Expense");
+        summary.put("payrollCreated", 3);
+
+        // F) Administrative Expenses
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-ADM-001", LocalDate.of(2026, 1, 31), "Office rent", new BigDecimal("100000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Administrative Expenses").getAccountCode(), "Other");
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-ADM-002", LocalDate.of(2026, 1, 31), "Telephone", new BigDecimal("30000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Administrative Expenses").getAccountCode(), "Other");
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-ADM-003", LocalDate.of(2026, 1, 31), "Internet", new BigDecimal("20000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Administrative Expenses").getAccountCode(), "Other");
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-ADM-004", LocalDate.of(2026, 1, 31), "Office supplies", new BigDecimal("25000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Administrative Expenses").getAccountCode(), "Other");
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-ADM-005", LocalDate.of(2026, 1, 31), "Insurance", new BigDecimal("40000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Administrative Expenses").getAccountCode(), "Other");
+        summary.put("adminExpensesCreated", 5);
+
+        // G) Selling Expenses
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-SELL-001", LocalDate.of(2026, 1, 31), "Advertising", new BigDecimal("120000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Selling Expenses").getAccountCode(), "Other");
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-SELL-002", LocalDate.of(2026, 1, 31), "Delivery expenses", new BigDecimal("80000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Selling Expenses").getAccountCode(), "Other");
+        summary.put("sellingExpensesCreated", 2);
+
+        // H) Fixed Asset
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-FA-001", LocalDate.of(2026, 1, 20), "Purchased new machinery", new BigDecimal("1500000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Machinery").getAccountCode(), "Asset Purchase");
+        summary.put("fixedAssetTransactionsCreated", 1);
+
+        // I) Loan Payment
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-LOAN-001", LocalDate.of(2026, 1, 31), "Loan repayment", new BigDecimal("200000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Bank Loan").getAccountCode(), "Loan Payment");
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-INT-001", LocalDate.of(2026, 1, 31), "Loan interest", new BigDecimal("50000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Interest Expense").getAccountCode(), "Interest");
+        summary.put("loanTransactionsCreated", 2);
+
+        // J) Depreciation
+        createFreshJournal(company, "DEMO-DEP-001", LocalDate.of(2026, 1, 31), "Building depreciation", "Depreciation", List.of(
+            new JournalEntryLineDto(createdAccounts.get("Depreciation Expense").getAccountCode(), new BigDecimal("40000"), true, "Building depreciation"),
+            new JournalEntryLineDto(createdAccounts.get("Accumulated Depreciation - Building").getAccountCode(), new BigDecimal("40000"), false, "Building depreciation")
+        ));
+        createFreshJournal(company, "DEMO-DEP-002", LocalDate.of(2026, 1, 31), "Machinery depreciation", "Depreciation", List.of(
+            new JournalEntryLineDto(createdAccounts.get("Depreciation Expense").getAccountCode(), new BigDecimal("75000"), true, "Machinery depreciation"),
+            new JournalEntryLineDto(createdAccounts.get("Accumulated Depreciation - Machinery").getAccountCode(), new BigDecimal("75000"), false, "Machinery depreciation")
+        ));
+        createFreshJournal(company, "DEMO-DEP-003", LocalDate.of(2026, 1, 31), "Furniture depreciation", "Depreciation", List.of(
+            new JournalEntryLineDto(createdAccounts.get("Depreciation Expense").getAccountCode(), new BigDecimal("10000"), true, "Furniture depreciation"),
+            new JournalEntryLineDto(createdAccounts.get("Accumulated Depreciation - Furniture").getAccountCode(), new BigDecimal("10000"), false, "Furniture depreciation")
+        ));
+        summary.put("depreciationEntriesCreated", 3);
+
+        // K) Manufacturing Activities
+        createFreshJournal(company, "DEMO-MFG-001", LocalDate.of(2026, 1, 31), "Raw materials issued to production", "Manufacturing", List.of(
+            new JournalEntryLineDto(createdAccounts.get("Work in Progress / Manufacturing Cost").getAccountCode(), new BigDecimal("1400000"), true, "Materials issued"),
+            new JournalEntryLineDto(createdAccounts.get("Raw Material Inventory").getAccountCode(), new BigDecimal("1400000"), false, "Materials issued")
+        ));
+        createFreshJournal(company, "DEMO-MFG-002", LocalDate.of(2026, 1, 31), "Direct labour", "Manufacturing", List.of(
+            new JournalEntryLineDto(createdAccounts.get("Work in Progress / Manufacturing Cost").getAccountCode(), new BigDecimal("900000"), true, "Direct labour"),
+            new JournalEntryLineDto(createdAccounts.get("Salary Expense").getAccountCode(), new BigDecimal("900000"), false, "Direct labour")
+        ));
+        createFreshJournal(company, "DEMO-MFG-003", LocalDate.of(2026, 1, 31), "Factory electricity", "Manufacturing", List.of(
+            new JournalEntryLineDto(createdAccounts.get("Work in Progress / Manufacturing Cost").getAccountCode(), new BigDecimal("180000"), true, "Electricity"),
+            new JournalEntryLineDto(createdAccounts.get("Bank Account").getAccountCode(), new BigDecimal("180000"), false, "Electricity")
+        ));
+        createFreshJournal(company, "DEMO-MFG-004", LocalDate.of(2026, 1, 31), "Factory rent", "Manufacturing", List.of(
+            new JournalEntryLineDto(createdAccounts.get("Work in Progress / Manufacturing Cost").getAccountCode(), new BigDecimal("150000"), true, "Rent"),
+            new JournalEntryLineDto(createdAccounts.get("Bank Account").getAccountCode(), new BigDecimal("150000"), false, "Rent")
+        ));
+        createFreshJournal(company, "DEMO-MFG-005", LocalDate.of(2026, 1, 31), "Factory maintenance", "Manufacturing", List.of(
+            new JournalEntryLineDto(createdAccounts.get("Work in Progress / Manufacturing Cost").getAccountCode(), new BigDecimal("70000"), true, "Maintenance"),
+            new JournalEntryLineDto(createdAccounts.get("Bank Account").getAccountCode(), new BigDecimal("70000"), false, "Maintenance")
+        ));
+        createFreshJournal(company, "DEMO-MFG-006", LocalDate.of(2026, 1, 31), "Finished Goods Produced", "Manufacturing", List.of(
+            new JournalEntryLineDto(createdAccounts.get("Finished Goods Inventory").getAccountCode(), new BigDecimal("2700000"), true, "Goods produced"),
+            new JournalEntryLineDto(createdAccounts.get("Work in Progress / Manufacturing Cost").getAccountCode(), new BigDecimal("2700000"), false, "Goods produced")
+        ));
+        createFreshJournal(company, "DEMO-MFG-007", LocalDate.of(2026, 1, 31), "Cost of Goods Sold", "Manufacturing", List.of(
+            new JournalEntryLineDto(createdAccounts.get("Cost of Goods Sold").getAccountCode(), new BigDecimal("2400000"), true, "COGS"),
+            new JournalEntryLineDto(createdAccounts.get("Finished Goods Inventory").getAccountCode(), new BigDecimal("2400000"), false, "COGS")
+        ));
+        summary.put("manufacturingEntriesCreated", 7);
+        
+        // 10. Dashboard
+        createFreshSale(companyId, c2, i2, createdAccounts.get("Sales Revenue").getAccountCode(), "DEMO-DASH-SALE-001", LocalDate.now(), "Current month demo sale", 1, new BigDecimal("65000"));
+        createFreshDirectPayment(companyId, null, "OTHER", "DEMO-DASH-EXP-001", LocalDate.now(), "Current month demo admin expense", new BigDecimal("10000"), createdAccounts.get("Bank Account").getAccountCode(), createdAccounts.get("Administrative Expenses").getAccountCode(), "Other");
+        summary.put("dashboardEntriesCreated", 2);
+        
+        summary.put("finalStatus", "SUCCESS");
+        return summary;
+    }
+
+    private Account createFreshAccount(Company company, String name, String code, AccountType type) {
+        Account a = new Account();
+        a.setCompany(company);
+        a.setAccountName(name);
+        a.setAccountCode(code);
+        a.setAccountType(type);
+        a.setNormalizedName(name.replaceAll("\\s+", "").toUpperCase());
+        a.setCurrentBalance(BigDecimal.ZERO);
+        a.setActive(true);
+        return accountRepository.save(a);
+    }
+    
+    private Supplier createFreshSupplier(Company company, String name, String email) {
+        Supplier s = new Supplier();
+        s.setCompany(company);
+        s.setSupplierName(name);
+        s.setEmail(email);
+        s.setMobileNo("0770000000");
+        s.setAddress("Colombo");
+        s.setSupplierType(SupplierType.SUPPLIER);
+        s.setTax(TaxType.INCLUSIVE);
+        s.setItemCategory(ItemCategory.FURNITURE);
+        s.setCurrency(company.getCountry().getDefaultCurrency());
+        s.setDiscountPercentage(0.0);
+        return supplierRepository.save(s);
+    }
+    
+    private Customer createFreshCustomer(Company company, String name, String email) {
+        Customer c = new Customer();
+        c.setCompany(company);
+        c.setName(name);
+        c.setEmail(email);
+        c.setPhoneNo("0771111111");
+        c.setDeliveryAddress("Colombo");
+        c.setBillingAddress("Colombo");
+        c.setCustomerType(com.example.GinumApps.enums.CustomerType.CORPORATE);
+        c.setTax(TaxType.INCLUSIVE);
+        c.setCurrency(company.getCountry().getDefaultCurrency());
+        c.setDiscountPercentage(0.0);
+        return customerRepository.save(c);
+    }
+    
+    private Item createFreshItem(Company company, String code, String name, String category, ItemType type, BigDecimal purchasePrice, BigDecimal unitPrice, BigDecimal stock, int reorder, Account inventoryAccount) {
+        Item i = new Item();
+        i.setCompany(company);
+        i.setItemCode(code);
+        i.setName(name);
+        i.setCategory(category);
+        i.setItemType(type);
+        i.setPurchasePrice(purchasePrice);
+        i.setUnitPrice(unitPrice);
+        i.setCurrentStock(stock);
+        i.setReorderLevel(reorder);
+        i.setUnit("PCS");
+        i.setActive(true);
+        return itemRepository.save(i);
+    }
+    
+    private PurchaseOrderResponseDto createFreshPurchase(Integer companyId, Supplier supplier, Item item, String lineAccountCode, String poNo, LocalDate date, String desc, int qty, BigDecimal unitPrice) throws Exception {
+        PurchaseOrderRequestDto dto = new PurchaseOrderRequestDto();
+        dto.setSupplierId(supplier.getId());
+        dto.setSupplierInvoiceNumber("SUP-" + poNo);
+        dto.setPoNumber(poNo);
+        dto.setIssueDate(date);
+        dto.setDueDate(date.plusDays(30));
+        dto.setPurchaseType(PurchaseType.GOODS);
+
+        PurchaseOrderItemRequestDto itemDto = new PurchaseOrderItemRequestDto();
+        itemDto.setItemId(item.getItemId());
+        itemDto.setQuantity(qty);
+        itemDto.setUnitPrice(unitPrice);
+        itemDto.setDiscount(BigDecimal.ZERO);
+        itemDto.setAmount(unitPrice.multiply(BigDecimal.valueOf(qty)));
+        itemDto.setAccountCode(lineAccountCode);
+        itemDto.setDescription(desc);
+
+        dto.setItems(List.of(itemDto));
+        return purchaseOrderService.createPurchaseOrder(dto, companyId);
+    }
+    
+    private SalesOrderResponseDto createFreshSale(Integer companyId, Customer customer, Item item, String lineAccountCode, String soNo, LocalDate date, String desc, int qty, BigDecimal unitPrice) throws Exception {
+        SalesOrderRequestDto dto = new SalesOrderRequestDto();
+        dto.setCustomerId(customer.getId());
+        dto.setSoNumber(soNo);
+        dto.setIssueDate(date);
+        dto.setSalesType(SalesType.GOODS);
+        
+        SalesOrderItemRequestDto itemDto = new SalesOrderItemRequestDto();
+        itemDto.setItemId(item.getItemId());
+        itemDto.setQuantity(qty);
+        itemDto.setUnitPrice(unitPrice);
+        itemDto.setDiscountPercent(BigDecimal.ZERO);
+        itemDto.setAccountCode(lineAccountCode);
+        itemDto.setDescription(desc);
+
+        dto.setItems(List.of(itemDto));
+        return salesOrderService.createSalesOrder(dto, companyId);
+    }
+    
+    private void createFreshDirectPayment(Integer companyId, Integer payeeId, String payeeType, String refNo, LocalDate date, String note, BigDecimal amount, String paymentAccountCode, String expenseAccountCode, String cat) throws Exception {
+        DirectPaymentRequestDto req = new DirectPaymentRequestDto();
+        req.setPayeeId(payeeId);
+        req.setPayeeType(payeeType);
+        req.setAmount(amount);
+        req.setPaymentAccountCode(paymentAccountCode);
+        req.setExpenseAccountCode(expenseAccountCode);
+        req.setPaymentCategory(cat);
+        req.setPaymentMethod("Bank Transfer");
+        req.setPaymentNote(note);
+        req.setReferenceNumber(refNo);
+        transactionService.processDirectPayment(companyId, req);
+    }
+    
+    private void createFreshJournal(Company company, String refNo, LocalDate date, String desc, String title, List<JournalEntryLineDto> lines) throws Exception {
+        JournalEntryDto dto = new JournalEntryDto();
+        dto.setCompanyId(company.getCompanyId());
+        dto.setEntryDate(date);
+        dto.setReferenceNo(refNo);
+        dto.setJournalTitle(title);
+        dto.setDescription(desc);
+        dto.setEntryType(JournalEntryType.MANUAL);
+        dto.setAuthorId(1);
+        dto.setLines(lines);
+        journalEntryService.createJournalEntry(dto);
+    }
 }
