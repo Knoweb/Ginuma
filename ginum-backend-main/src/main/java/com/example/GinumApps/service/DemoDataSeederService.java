@@ -37,6 +37,7 @@ public class DemoDataSeederService {
     private final CustomerRepository customerRepository;
     private final ItemRepository itemRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final jakarta.persistence.EntityManager entityManager;
 
     // Removed @Transactional to prevent one big transaction failure
     public Map<String, Object> seedCompanyData(Integer companyId) throws Exception {
@@ -909,6 +910,109 @@ public class DemoDataSeederService {
     private Account findAccount(Integer companyId, String normalizedName) {
         return accountRepository.findByCompany_CompanyId(companyId).stream().filter(a -> a.getNormalizedName().equalsIgnoreCase(normalizedName)).findFirst().orElse(null);
     }
+    
+    @Transactional
+    public Map<String, Object> cleanAndMergeDuplicateAccounts(Integer companyId) {
+        Map<String, Object> mergeStats = new HashMap<>();
+        List<Account> accounts = accountRepository.findByCompany_CompanyId(companyId);
+        
+        // Group by normalizedName
+        Map<String, List<Account>> grouped = new HashMap<>();
+        for (Account a : accounts) {
+            String norm = a.getNormalizedName();
+            if (norm == null) continue;
+            grouped.computeIfAbsent(norm, k -> new ArrayList<>()).add(a);
+        }
+        
+        int mergedCount = 0;
+        int skippedCount = 0;
+        List<String> warnings = new ArrayList<>();
+        
+        Set<String> exactNames = new HashSet<>(Arrays.asList(
+            "Cash in Hand", "Bank Account", "Accounts Receivable", 
+            "Raw Material Inventory", "Finished Goods Inventory",
+            "Land", "Factory Building", "Machinery", "Furniture & Equipment",
+            "Accumulated Depreciation - Building", "Accumulated Depreciation - Machinery", "Accumulated Depreciation - Furniture",
+            "Accounts Payable", "Bank Loan", "VAT Payable", "Share Capital", "Retained Earnings",
+            "Sales Revenue", "Cost of Goods Sold", "Work in Progress / Manufacturing Cost",
+            "Administrative Expenses", "Selling Expenses", "Salary Expense", "Depreciation Expense", "Interest Expense"
+        ));
+        
+        for (Map.Entry<String, List<Account>> entry : grouped.entrySet()) {
+            List<Account> dups = entry.getValue();
+            if (dups.size() <= 1) continue;
+            
+            // Select canonical
+            Account canonical = dups.stream().min((a1, a2) -> {
+                boolean a1Match = exactNames.contains(a1.getAccountName());
+                boolean a2Match = exactNames.contains(a2.getAccountName());
+                if (a1Match && !a2Match) return -1;
+                if (a2Match && !a1Match) return 1;
+                
+                if (a1.getAccountCode() != null && a2.getAccountCode() == null) return -1;
+                if (a2.getAccountCode() != null && a1.getAccountCode() == null) return 1;
+                
+                boolean a1Active = a1.getActive() != null && a1.getActive();
+                boolean a2Active = a2.getActive() != null && a2.getActive();
+                if (a1Active && !a2Active) return -1;
+                if (a2Active && !a1Active) return 1;
+                
+                return a1.getId().compareTo(a2.getId());
+            }).orElseThrow();
+            
+            for (Account dup : dups) {
+                if (dup.getId().equals(canonical.getId())) continue;
+                
+                try {
+                    Long canId = canonical.getId();
+                    Long dupId = dup.getId();
+                    
+                    entityManager.createNativeQuery("UPDATE journal_entry_lines SET account_id = :canId WHERE account_id = :dupId")
+                        .setParameter("canId", canId).setParameter("dupId", dupId).executeUpdate();
+                        
+                    entityManager.createNativeQuery("UPDATE company_tbl SET freight_account_id = :canId WHERE freight_account_id = :dupId")
+                        .setParameter("canId", canId).setParameter("dupId", dupId).executeUpdate();
+                        
+                    entityManager.createNativeQuery("UPDATE company_tbl SET tax_account_id = :canId WHERE tax_account_id = :dupId")
+                        .setParameter("canId", canId).setParameter("dupId", dupId).executeUpdate();
+                        
+                    entityManager.createNativeQuery("UPDATE company_tbl SET accounts_payable_account_id = :canId WHERE accounts_payable_account_id = :dupId")
+                        .setParameter("canId", canId).setParameter("dupId", dupId).executeUpdate();
+                        
+                    entityManager.createNativeQuery("UPDATE company_tbl SET accounts_receivable_account_id = :canId WHERE accounts_receivable_account_id = :dupId")
+                        .setParameter("canId", canId).setParameter("dupId", dupId).executeUpdate();
+                        
+                    entityManager.createNativeQuery("UPDATE purchase_orders SET payment_account_id = :canId WHERE payment_account_id = :dupId")
+                        .setParameter("canId", canId).setParameter("dupId", dupId).executeUpdate();
+                        
+                    entityManager.createNativeQuery("UPDATE purchase_order_line_items SET account_id = :canId WHERE account_id = :dupId")
+                        .setParameter("canId", canId).setParameter("dupId", dupId).executeUpdate();
+                        
+                    entityManager.createNativeQuery("UPDATE sales_orders SET payment_account_id = :canId WHERE payment_account_id = :dupId")
+                        .setParameter("canId", canId).setParameter("dupId", dupId).executeUpdate();
+                        
+                    entityManager.createNativeQuery("UPDATE sales_order_line_items SET account_id = :canId WHERE account_id = :dupId")
+                        .setParameter("canId", canId).setParameter("dupId", dupId).executeUpdate();
+                        
+                    accountRepository.delete(dup);
+                    accountRepository.flush();
+                    mergedCount++;
+                } catch (Exception e) {
+                    warnings.add("Failed to merge duplicate account: " + dup.getAccountName() + " (ID: " + dup.getId() + ") - " + e.getMessage());
+                    skippedCount++;
+                }
+            }
+        }
+        
+        mergeStats.put("duplicateAccountsMerged", mergedCount);
+        mergeStats.put("duplicateAccountsSkipped", skippedCount);
+        if (!warnings.isEmpty()) {
+            mergeStats.put("mergeWarnings", warnings);
+        }
+        return mergeStats;
+    }
+
+
     public Map<String, Object> resetAndSeedExactExcelDemo(Integer companyId) {
         Map<String, Object> summary = new LinkedHashMap<>();
         
@@ -1097,27 +1201,37 @@ public class DemoDataSeederService {
     }
 
     private int ensureAccount(Integer companyId, String code, String name, AccountType type) {
-        String normalized = name.replaceAll("\\s+", "").toLowerCase();
-        Account acc = accountRepository.findByCompany_CompanyId(companyId).stream()
-                .filter(a -> a.getNormalizedName().equalsIgnoreCase(normalized) || code.equals(a.getAccountCode()))
-                .findFirst().orElse(null);
-        if (acc == null) {
-            acc = new Account();
+        String normalized = name.replaceAll("\s+", "").toLowerCase();
+        List<Account> allAccounts = accountRepository.findByCompany_CompanyId(companyId);
+        
+        Account accByNorm = allAccounts.stream().filter(a -> a.getNormalizedName().equalsIgnoreCase(normalized)).findFirst().orElse(null);
+        Account accByCode = allAccounts.stream().filter(a -> code.equals(a.getAccountCode())).findFirst().orElse(null);
+        
+        if (accByNorm != null) {
+            if (accByCode != null && !accByCode.getId().equals(accByNorm.getId())) {
+                accByCode.setAccountCode("TMP-" + UUID.randomUUID().toString().substring(0, 8));
+                accountRepository.saveAndFlush(accByCode);
+            }
+            accByNorm.setAccountCode(code);
+            accByNorm.setAccountName(name);
+            accByNorm.setAccountType(type);
+            accountRepository.saveAndFlush(accByNorm);
+            return 0;
+        } else if (accByCode != null) {
+            accByCode.setAccountName(name);
+            accByCode.setNormalizedName(normalized);
+            accByCode.setAccountType(type);
+            accountRepository.saveAndFlush(accByCode);
+            return 0;
+        } else {
+            Account acc = new Account();
             acc.setAccountCode(code);
             acc.setAccountName(name);
             acc.setNormalizedName(normalized);
             acc.setAccountType(type);
-            Company comp = companyRepository.findById(companyId).orElse(null);
-            acc.setCompany(comp);
-            
-            accountRepository.save(acc);
+            acc.setCompany(companyRepository.findById(companyId).orElse(null));
+            accountRepository.saveAndFlush(acc);
             return 1;
-        } else {
-            acc.setAccountCode(code);
-            acc.setAccountName(name);
-            acc.setNormalizedName(normalized);
-            accountRepository.save(acc);
-            return 0;
         }
     }
     
