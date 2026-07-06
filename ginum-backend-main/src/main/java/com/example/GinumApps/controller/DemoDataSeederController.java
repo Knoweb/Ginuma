@@ -30,12 +30,30 @@ public class DemoDataSeederController {
         }
 
         try {
-            Map<String, Object> summary = demoDataSeederService.seedCompanyData(companyId);
-            return ResponseEntity.ok(summary);
+            Map<String, Object> result = demoDataSeederService.seedCompanyData(companyId);
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error seeding demo data", "details", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reconcile/company/{companyId}")
+    public ResponseEntity<?> reconcileDemoData(
+            @PathVariable Integer companyId,
+            @RequestHeader(value = "X-DEMO-SEED-TOKEN", required = false) String token) {
+        
+        if (token == null || !token.equals(requiredToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Invalid or missing DEMO_SEED_TOKEN"));
+        }
+
+        try {
+            Map<String, Object> result = demoDataSeederService.reconcileDemoOpeningBalances(companyId);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error reconciling demo data", "details", e.getMessage()));
         }
     }
 }

@@ -25,6 +25,7 @@ public class DemoDataSeederService {
     private final AccountService accountService;
     private final AccountRepository accountRepository;
     private final JournalEntryService journalEntryService;
+    private final com.example.GinumApps.repository.JournalEntryRepository journalEntryRepository;
     private final SupplierService supplierService;
     private final CustomerService customerService;
     private final ItemService itemService;
@@ -129,9 +130,9 @@ public class DemoDataSeederService {
         count += createAccountIfNotExists(company, "Factory Building", AccountType.ASSET_FIXED_ASSET);
         count += createAccountIfNotExists(company, "Machinery", AccountType.ASSET_FIXED_ASSET);
         count += createAccountIfNotExists(company, "Furniture & Equipment", AccountType.ASSET_FIXED_ASSET);
-        count += createAccountIfNotExists(company, "Accumulated Depreciation - Building", AccountType.ASSET_FIXED_ASSET);
-        count += createAccountIfNotExists(company, "Accumulated Depreciation - Machinery", AccountType.ASSET_FIXED_ASSET);
-        count += createAccountIfNotExists(company, "Accumulated Depreciation - Furniture", AccountType.ASSET_FIXED_ASSET);
+        count += createAccountIfNotExists(company, "Accumulated Depreciation - Building", AccountType.LIABILITY_OTHER_LIABILITY);
+        count += createAccountIfNotExists(company, "Accumulated Depreciation - Machinery", AccountType.LIABILITY_OTHER_LIABILITY);
+        count += createAccountIfNotExists(company, "Accumulated Depreciation - Furniture", AccountType.LIABILITY_OTHER_LIABILITY);
 
         count += createAccountIfNotExists(company, "Accounts Payable", AccountType.LIABILITY_ACCOUNTS_PAYABLE);
         count += createAccountIfNotExists(company, "Bank Loan", AccountType.LIABILITY_LONG_TERM_LIABILITY);
@@ -154,7 +155,16 @@ public class DemoDataSeederService {
 
     private int createAccountIfNotExists(Company company, String name, AccountType type) {
         String normalized = name.replaceAll("\\s+", "").toUpperCase();
-        if (accountRepository.findByCompany_CompanyId(company.getCompanyId()).stream().anyMatch(a -> a.getNormalizedName().equals(normalized) && (a.getNormalizedSubAccount() == null || a.getNormalizedSubAccount().isEmpty()))) {
+        java.util.Optional<Account> existingOpt = accountRepository.findByCompany_CompanyId(company.getCompanyId()).stream()
+                .filter(a -> a.getNormalizedName().equals(normalized) && (a.getNormalizedSubAccount() == null || a.getNormalizedSubAccount().isEmpty()))
+                .findFirst();
+
+        if (existingOpt.isPresent()) {
+            Account existing = existingOpt.get();
+            if (existing.getAccountType() != type) {
+                existing.setAccountType(type);
+                accountRepository.save(existing);
+            }
             return 0;
         }
         AccountRequestDto dto = new AccountRequestDto();
@@ -167,6 +177,9 @@ public class DemoDataSeederService {
 
     private String seedJournalEntries(Company company) {
         String refNo = "OB-2026-001";
+        if (journalEntryRepository.findByCompany_CompanyId(company.getCompanyId()).stream().anyMatch(je -> refNo.equals(je.getReferenceNo()))) {
+            return "journalEntriesSkipped: already exists";
+        }
         try {
             JournalEntryDto dto = new JournalEntryDto();
             dto.setCompanyId(company.getCompanyId());
@@ -188,12 +201,14 @@ public class DemoDataSeederService {
             lines.add(createJELine(company, "Machinery", new BigDecimal("6000000"), true));
             lines.add(createJELine(company, "Furniture & Equipment", new BigDecimal("500000"), true));
 
+            lines.add(createJELine(company, "Accumulated Depreciation - Building", new BigDecimal("800000"), false));
+            lines.add(createJELine(company, "Accumulated Depreciation - Machinery", new BigDecimal("1200000"), false));
+            lines.add(createJELine(company, "Accumulated Depreciation - Furniture", new BigDecimal("100000"), false));
             lines.add(createJELine(company, "Accounts Payable", new BigDecimal("1100000"), false));
             lines.add(createJELine(company, "Bank Loan", new BigDecimal("4000000"), false));
             lines.add(createJELine(company, "VAT Payable", new BigDecimal("100000"), false));
             lines.add(createJELine(company, "Share Capital", new BigDecimal("15000000"), false));
-            lines.add(createJELine(company, "Retained Earnings", new BigDecimal("4850000"), false));
-            // Removed accumulated depreciation to prevent negative balances in assets.
+            lines.add(createJELine(company, "Retained Earnings", new BigDecimal("2750000"), false));
 
             dto.setLines(lines);
 
@@ -202,6 +217,83 @@ public class DemoDataSeederService {
         } catch (Exception e) {
             return "journalEntriesSkipped or error: " + e.getMessage();
         }
+    }
+
+    public Map<String, Object> reconcileDemoOpeningBalances(Integer companyId) {
+        Map<String, Object> summary = new java.util.LinkedHashMap<>();
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+        
+        seedAccounts(company); 
+        summary.put("accountsUpdated", true);
+
+        List<com.example.GinumApps.model.JournalEntry> obEntries = journalEntryRepository.findByCompany_CompanyId(company.getCompanyId())
+                .stream().filter(je -> "OB-2026-001".equals(je.getReferenceNo())).toList();
+        
+        int removedCount = obEntries.size();
+        for (com.example.GinumApps.model.JournalEntry je : obEntries) {
+            for (com.example.GinumApps.model.JournalEntryLine line : je.getJournalEntryLines()) {
+                Account acc = line.getAccount();
+                BigDecimal amount = line.getAmount();
+                boolean isDebit = line.isDebit();
+                
+                boolean isDebitNormal = acc.getAccountType().isDebitType();
+                BigDecimal change;
+                if (isDebitNormal) {
+                    change = isDebit ? amount.negate() : amount;
+                } else {
+                    change = isDebit ? amount : amount.negate();
+                }
+                acc.setCurrentBalance(acc.getCurrentBalance().add(change));
+                accountRepository.save(acc);
+            }
+            journalEntryRepository.delete(je);
+        }
+        summary.put("duplicateOpeningBalancesRemoved", removedCount);
+        
+        try {
+            JournalEntryDto dto = new JournalEntryDto();
+            dto.setCompanyId(company.getCompanyId());
+            dto.setEntryDate(LocalDate.of(2026, 1, 1));
+            dto.setReferenceNo("OB-2026-001");
+            dto.setJournalTitle("Opening Balances");
+            dto.setDescription("Opening balances for demo testing");
+            dto.setEntryType(com.example.GinumApps.enums.JournalEntryType.MANUAL);
+            dto.setAuthorId(1); 
+
+            List<JournalEntryLineDto> lines = new ArrayList<>();
+            lines.add(createJELine(company, "Cash in Hand", new BigDecimal("50000"), true));
+            lines.add(createJELine(company, "Bank Account", new BigDecimal("2000000"), true));
+            lines.add(createJELine(company, "Accounts Receivable", new BigDecimal("1200000"), true));
+            lines.add(createJELine(company, "Raw Material Inventory", new BigDecimal("800000"), true));
+            lines.add(createJELine(company, "Finished Goods Inventory", new BigDecimal("1500000"), true));
+            lines.add(createJELine(company, "Land", new BigDecimal("5000000"), true));
+            lines.add(createJELine(company, "Factory Building", new BigDecimal("8000000"), true));
+            lines.add(createJELine(company, "Machinery", new BigDecimal("6000000"), true));
+            lines.add(createJELine(company, "Furniture & Equipment", new BigDecimal("500000"), true));
+
+            lines.add(createJELine(company, "Accumulated Depreciation - Building", new BigDecimal("800000"), false));
+            lines.add(createJELine(company, "Accumulated Depreciation - Machinery", new BigDecimal("1200000"), false));
+            lines.add(createJELine(company, "Accumulated Depreciation - Furniture", new BigDecimal("100000"), false));
+            lines.add(createJELine(company, "Accounts Payable", new BigDecimal("1100000"), false));
+            lines.add(createJELine(company, "Bank Loan", new BigDecimal("4000000"), false));
+            lines.add(createJELine(company, "VAT Payable", new BigDecimal("100000"), false));
+            lines.add(createJELine(company, "Share Capital", new BigDecimal("15000000"), false));
+            lines.add(createJELine(company, "Retained Earnings", new BigDecimal("2750000"), false));
+
+            dto.setLines(lines);
+            journalEntryService.createJournalEntry(dto);
+            summary.put("openingBalanceCreatedOrUpdated", true);
+            summary.put("finalDebitTotal", new BigDecimal("25050000"));
+            summary.put("finalCreditTotal", new BigDecimal("25050000"));
+            summary.put("status", "SUCCESS");
+        } catch (Exception e) {
+            e.printStackTrace();
+            summary.put("openingBalanceCreatedOrUpdated", false);
+            summary.put("status", "ERROR: " + e.getMessage());
+        }
+        
+        return summary;
     }
 
     private JournalEntryLineDto createJELine(Company company, String accountName, BigDecimal amount, boolean isDebit) {
