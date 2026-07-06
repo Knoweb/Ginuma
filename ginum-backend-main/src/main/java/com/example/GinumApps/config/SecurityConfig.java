@@ -55,8 +55,9 @@ public class SecurityConfig {
                                 "/api/currencies/**"
                         ).permitAll()
 
-                        // Demo Seeder endpoint
+                        // Demo Seeder & Reconcile endpoints
                         .requestMatchers(HttpMethod.POST, "/api/demo/seed/company/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/demo/reconcile/company/**").permitAll()
 
                         // Purchase order endpoints
                         .requestMatchers(
