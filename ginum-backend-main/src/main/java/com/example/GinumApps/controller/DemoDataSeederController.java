@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/demo/seed")
+@RequestMapping("/api/demo")
 @RequiredArgsConstructor
 public class DemoDataSeederController {
 
@@ -19,7 +19,7 @@ public class DemoDataSeederController {
     @Value("${DEMO_SEED_TOKEN:change-me-demo-seed-token}")
     private String requiredToken;
 
-    @PostMapping("/company/{companyId}")
+    @PostMapping("/seed/company/{companyId}")
     public ResponseEntity<?> seedDemoData(
             @PathVariable Integer companyId,
             @RequestHeader(value = "X-DEMO-SEED-TOKEN", required = false) String providedToken) {
