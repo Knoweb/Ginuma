@@ -123,7 +123,8 @@ public class JournalEntryService {
     }
 
     private void updateAccountBalance(Account account, BigDecimal amount) {
-        BigDecimal newBalance = account.getCurrentBalance().add(amount);
+        BigDecimal current = account.getCurrentBalance() == null ? BigDecimal.ZERO : account.getCurrentBalance();
+        BigDecimal newBalance = current.add(amount);
 
         if (newBalance.compareTo(BigDecimal.ZERO) < 0 &&
                 !account.getAccountType().getMainCategory().equals("Liability")) {

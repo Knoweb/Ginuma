@@ -40,6 +40,15 @@ public class DemoDataSeederService {
     private final jakarta.persistence.EntityManager entityManager;
 
     // Removed @Transactional to prevent one big transaction failure
+    
+    private BigDecimal balanceOf(Account account) {
+        return account.getCurrentBalance() == null ? BigDecimal.ZERO : account.getCurrentBalance();
+    }
+
+    private void setBalance(Account account, BigDecimal amount) {
+        account.setCurrentBalance(amount == null ? BigDecimal.ZERO : amount);
+    }
+
     public Map<String, Object> seedCompanyData(Integer companyId) throws Exception {
         Map<String, Object> summary = new LinkedHashMap<>();
 
@@ -249,7 +258,7 @@ public class DemoDataSeederService {
                 } else {
                     change = isDebit ? amount : amount.negate();
                 }
-                acc.setCurrentBalance(acc.getCurrentBalance().add(change));
+                setBalance(acc, balanceOf(acc).add(change));
                 accountRepository.save(acc);
             }
             journalEntryRepository.delete(je);
@@ -1229,6 +1238,8 @@ public class DemoDataSeederService {
             acc.setAccountName(name);
             acc.setNormalizedName(normalized);
             acc.setAccountType(type);
+            acc.setCurrentBalance(BigDecimal.ZERO);
+            acc.setActive(true);
             acc.setCompany(companyRepository.findById(companyId).orElse(null));
             accountRepository.saveAndFlush(acc);
             return 1;
