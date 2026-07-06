@@ -1646,7 +1646,7 @@ public class DemoDataSeederService {
         entityManager.createNativeQuery("DELETE FROM sales_orders WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
         entityManager.createNativeQuery("DELETE FROM purchase_orders WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
         entityManager.createNativeQuery("DELETE FROM journal_entries WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
-        entityManager.createNativeQuery("DELETE FROM bank_accounts WHERE account_id IN (SELECT id FROM accounts WHERE company_id = :cid)").setParameter("cid", companyId).executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM bank_accounts WHERE id IN (SELECT id FROM accounts WHERE company_id = :cid)").setParameter("cid", companyId).executeUpdate();
         entityManager.createNativeQuery("DELETE FROM items WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
         entityManager.createNativeQuery("DELETE FROM customers WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
         entityManager.createNativeQuery("DELETE FROM suppliers WHERE company_id = :cid").setParameter("cid", companyId).executeUpdate();
