@@ -55,6 +55,9 @@ public class SecurityConfig {
                                 "/api/currencies/**"
                         ).permitAll()
 
+                        // Demo Seeder endpoint
+                        .requestMatchers(HttpMethod.POST, "/api/demo/seed/company/**").permitAll()
+
                         // Purchase order endpoints
                         .requestMatchers(
                                 "/api/*/purchase-orders",
@@ -190,7 +193,7 @@ public class SecurityConfig {
         );
 
         config.setAllowedHeaders(
-                Arrays.asList("Authorization", "Content-Type", "Accept")
+                Arrays.asList("Authorization", "Content-Type", "Accept", "X-DEMO-SEED-TOKEN")
         );
 
         config.setAllowCredentials(true);

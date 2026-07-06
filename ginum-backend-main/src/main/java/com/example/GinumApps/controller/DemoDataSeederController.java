@@ -26,7 +26,7 @@ public class DemoDataSeederController {
 
         if (providedToken == null || !providedToken.equals(requiredToken)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Invalid or missing X-DEMO-SEED-TOKEN header."));
+                    .body(Map.of("error", "Invalid demo seed token."));
         }
 
         try {
