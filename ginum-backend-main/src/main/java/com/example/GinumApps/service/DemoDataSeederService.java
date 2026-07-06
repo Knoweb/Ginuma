@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -2207,5 +2208,226 @@ public class DemoDataSeederService {
                 errors.add(acc.getAccountName() + " (Expected: " + expected + ", Actual: " + acc.getCurrentBalance() + ")");
             }
         }
+    }
+
+    public Map<String, Object> seedExcelPhase2(Integer companyId) {
+        Map<String, Object> summary = new LinkedHashMap<>();
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        List<String> errors = new ArrayList<>();
+
+        // Verify Cash in Hand exactly 50000
+        verifyAccountBalanceForPhase2(companyId, "1000", new BigDecimal("50000"), errors);
+        // Verify Bank exactly 2000000
+        verifyAccountBalanceForPhase2(companyId, "1010", new BigDecimal("2000000"), errors);
+
+        String[] requiredAccounts = {"1000", "1010", "1100", "1200", "1210", "1520", "1590", "1591", "1592", "2000", "2100", "4000", "5000", "5100", "6000", "6100", "6200", "6300", "6400"};
+        for (String accCode : requiredAccounts) {
+            if (accountRepository.findByAccountCodeAndCompany_CompanyId(accCode, companyId).isEmpty()) {
+                errors.add("Required account " + accCode + " is missing");
+            }
+        }
+
+        // Check suppliers
+        List<Supplier> suppliers = supplierRepository.findByCompany_CompanyId(companyId);
+        boolean hasSupplier1 = suppliers.stream().anyMatch(s -> s.getSupplierName().equals("Main Raw Material Supplier"));
+        boolean hasSupplier2 = suppliers.stream().anyMatch(s -> s.getSupplierName().equals("Packaging Material Supplier"));
+        if (!hasSupplier1) errors.add("Missing supplier: Main Raw Material Supplier");
+        if (!hasSupplier2) errors.add("Missing supplier: Packaging Material Supplier");
+
+        // Check customers
+        List<Customer> customers = customerRepository.findByCompany_CompanyId(companyId);
+        boolean hasCust1 = customers.stream().anyMatch(c -> c.getName().equals("Main Credit Customer"));
+        boolean hasCust2 = customers.stream().anyMatch(c -> c.getName().equals("Cash Customer"));
+        if (!hasCust1) errors.add("Missing customer: Main Credit Customer");
+        if (!hasCust2) errors.add("Missing customer: Cash Customer");
+
+        // Check items
+        List<Item> items = itemRepository.findByCompany_CompanyId(companyId);
+        boolean hasItem1 = items.stream().anyMatch(i -> i.getName().equals("Raw Material"));
+        boolean hasItem2 = items.stream().anyMatch(i -> i.getName().equals("Chair"));
+        if (!hasItem1) errors.add("Missing item: Raw Material");
+        if (!hasItem2) errors.add("Missing item: Chair");
+
+        if (!errors.isEmpty()) {
+            summary.put("finalStatus", "ERROR");
+            summary.put("errors", errors);
+            return summary;
+        }
+
+        Set<String> existingJournals = journalEntryRepository.findByCompany_CompanyId(companyId).stream()
+                .map(JournalEntry::getReferenceNo)
+                .collect(Collectors.toSet());
+
+        int purchasesCreated = 0;
+        int supplierPaymentsCreated = 0;
+        int salesCreated = 0;
+        int customerCollectionsCreated = 0;
+        int payrollCreated = 0;
+        int adminExpensesCreated = 0;
+        int sellingExpensesCreated = 0;
+        int fixedAssetTransactionsCreated = 0;
+        int loanTransactionsCreated = 0;
+        int depreciationEntriesCreated = 0;
+        int manufacturingEntriesCreated = 0;
+
+        try {
+            // A) Purchases
+            if (createPhase2Entry(company, existingJournals, "DEMO-PO-001", "2026-01-03", "Purchased raw materials on credit", "1200", "2000", new BigDecimal("1200000"))) purchasesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-PO-002", "2026-01-10", "Purchased raw materials cash", "1200", "1010", new BigDecimal("300000"))) purchasesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-PO-003", "2026-01-18", "Purchased packaging materials credit", "5100", "2000", new BigDecimal("200000"))) purchasesCreated++;
+
+            // B) Supplier Payments
+            if (createPhase2Entry(company, existingJournals, "DEMO-SP-001", "2026-01-15", "Paid suppliers by bank", "2000", "1010", new BigDecimal("800000"))) supplierPaymentsCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-SP-002", "2026-01-28", "Paid suppliers by bank", "2000", "1010", new BigDecimal("500000"))) supplierPaymentsCreated++;
+
+            // C) Sales
+            if (createPhase2Entry(company, existingJournals, "DEMO-SO-001", "2026-01-08", "Credit Sales", "1100", "4000", new BigDecimal("1500000"))) salesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-SO-002", "2026-01-16", "Cash Sales", "1010", "4000", new BigDecimal("800000"))) salesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-SO-003", "2026-01-25", "Credit Sales", "1100", "4000", new BigDecimal("2000000"))) salesCreated++;
+
+            // D) Customer Collections
+            if (createPhase2Entry(company, existingJournals, "DEMO-RC-001", "2026-01-12", "Collection from debtors", "1010", "1100", new BigDecimal("1000000"))) customerCollectionsCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-RC-002", "2026-01-29", "Collection from debtors", "1010", "1100", new BigDecimal("1500000"))) customerCollectionsCreated++;
+
+            // E) Payroll
+            if (createPhase2Entry(company, existingJournals, "DEMO-PAY-001", "2026-01-31", "Factory wages", "6200", "1010", new BigDecimal("900000"))) payrollCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-PAY-002", "2026-01-31", "Admin salaries", "6000", "1010", new BigDecimal("250000"))) payrollCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-PAY-003", "2026-01-31", "Sales salaries", "6100", "1010", new BigDecimal("200000"))) payrollCreated++;
+
+            // F) Admin Expenses
+            if (createPhase2Entry(company, existingJournals, "DEMO-ADM-001", "2026-01-31", "Office rent", "6000", "1010", new BigDecimal("100000"))) adminExpensesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-ADM-002", "2026-01-31", "Telephone", "6000", "1010", new BigDecimal("30000"))) adminExpensesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-ADM-003", "2026-01-31", "Internet", "6000", "1010", new BigDecimal("20000"))) adminExpensesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-ADM-004", "2026-01-31", "Office supplies", "6000", "1010", new BigDecimal("25000"))) adminExpensesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-ADM-005", "2026-01-31", "Insurance", "6000", "1010", new BigDecimal("40000"))) adminExpensesCreated++;
+
+            // G) Selling Expenses
+            if (createPhase2Entry(company, existingJournals, "DEMO-SELL-001", "2026-01-31", "Advertising", "6100", "1010", new BigDecimal("120000"))) sellingExpensesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-SELL-002", "2026-01-31", "Delivery expenses", "6100", "1010", new BigDecimal("80000"))) sellingExpensesCreated++;
+
+            // H) Fixed Asset
+            if (createPhase2Entry(company, existingJournals, "DEMO-FA-001", "2026-01-20", "Purchased new machinery", "1520", "1010", new BigDecimal("1500000"))) fixedAssetTransactionsCreated++;
+
+            // I) Loan
+            if (createPhase2Entry(company, existingJournals, "DEMO-LOAN-001", "2026-01-31", "Loan repayment", "2100", "1010", new BigDecimal("200000"))) loanTransactionsCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-INT-001", "2026-01-31", "Loan interest", "6400", "1010", new BigDecimal("50000"))) loanTransactionsCreated++;
+
+            // J) Depreciation
+            if (createPhase2Entry(company, existingJournals, "DEMO-DEP-001", "2026-01-31", "Building depreciation", "6300", "1590", new BigDecimal("40000"))) depreciationEntriesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-DEP-002", "2026-01-31", "Machinery depreciation", "6300", "1591", new BigDecimal("75000"))) depreciationEntriesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-DEP-003", "2026-01-31", "Furniture depreciation", "6300", "1592", new BigDecimal("10000"))) depreciationEntriesCreated++;
+
+            // K) Manufacturing
+            if (createPhase2Entry(company, existingJournals, "DEMO-MFG-001", "2026-01-31", "Raw materials issued to production", "5100", "1200", new BigDecimal("1400000"))) manufacturingEntriesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-MFG-002", "2026-01-31", "Direct labour", "5100", "6200", new BigDecimal("900000"))) manufacturingEntriesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-MFG-003", "2026-01-31", "Factory electricity", "5100", "1010", new BigDecimal("180000"))) manufacturingEntriesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-MFG-004", "2026-01-31", "Factory rent", "5100", "1010", new BigDecimal("150000"))) manufacturingEntriesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-MFG-005", "2026-01-31", "Factory maintenance", "5100", "1010", new BigDecimal("70000"))) manufacturingEntriesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-MFG-006", "2026-01-31", "Finished Goods Produced", "1210", "5100", new BigDecimal("2700000"))) manufacturingEntriesCreated++;
+            if (createPhase2Entry(company, existingJournals, "DEMO-MFG-007", "2026-01-31", "Cost of Goods Sold", "5000", "1210", new BigDecimal("2400000"))) manufacturingEntriesCreated++;
+
+            // Inventory Adjustment if needed
+            int inventoryAdjustments = 0;
+            Account rm = accountRepository.findByAccountCodeAndCompany_CompanyId("1200", companyId).orElse(null);
+            if (rm != null && rm.getCurrentBalance().compareTo(new BigDecimal("900000")) != 0) {
+                BigDecimal diff = new BigDecimal("900000").subtract(rm.getCurrentBalance());
+                if (diff.compareTo(BigDecimal.ZERO) > 0) {
+                    if (createPhase2Entry(company, existingJournals, "DEMO-INV-001", "2026-01-31", "Closing inventory adjustment - Raw Materials", "1200", "5100", diff)) inventoryAdjustments++;
+                } else {
+                    if (createPhase2Entry(company, existingJournals, "DEMO-INV-001", "2026-01-31", "Closing inventory adjustment - Raw Materials", "5100", "1200", diff.abs())) inventoryAdjustments++;
+                }
+            }
+
+            Account fg = accountRepository.findByAccountCodeAndCompany_CompanyId("1210", companyId).orElse(null);
+            if (fg != null && fg.getCurrentBalance().compareTo(new BigDecimal("1800000")) != 0) {
+                BigDecimal diff = new BigDecimal("1800000").subtract(fg.getCurrentBalance());
+                if (diff.compareTo(BigDecimal.ZERO) > 0) {
+                    if (createPhase2Entry(company, existingJournals, "DEMO-INV-002", "2026-01-31", "Closing inventory adjustment - Finished Goods", "1210", "5000", diff)) inventoryAdjustments++;
+                } else {
+                    if (createPhase2Entry(company, existingJournals, "DEMO-INV-002", "2026-01-31", "Closing inventory adjustment - Finished Goods", "5000", "1210", diff.abs())) inventoryAdjustments++;
+                }
+            }
+
+            // Results
+            summary.put("finalStatus", "SUCCESS");
+            summary.put("openingBalancePreserved", true);
+            summary.put("purchasesCreated", purchasesCreated);
+            summary.put("supplierPaymentsCreated", supplierPaymentsCreated);
+            summary.put("salesCreated", salesCreated);
+            summary.put("customerCollectionsCreated", customerCollectionsCreated);
+            summary.put("payrollCreated", payrollCreated);
+            summary.put("adminExpensesCreated", adminExpensesCreated);
+            summary.put("sellingExpensesCreated", sellingExpensesCreated);
+            summary.put("fixedAssetTransactionsCreated", fixedAssetTransactionsCreated);
+            summary.put("loanTransactionsCreated", loanTransactionsCreated);
+            summary.put("depreciationEntriesCreated", depreciationEntriesCreated);
+            summary.put("manufacturingEntriesCreated", manufacturingEntriesCreated);
+            summary.put("closingInventoryAdjustmentsCreated", inventoryAdjustments);
+
+            summary.put("rawMaterialClosingExpected", 900000);
+            summary.put("rawMaterialClosingActual", accountRepository.findByAccountCodeAndCompany_CompanyId("1200", companyId).get().getCurrentBalance());
+            summary.put("finishedGoodsClosingExpected", 1800000);
+            summary.put("finishedGoodsClosingActual", accountRepository.findByAccountCodeAndCompany_CompanyId("1210", companyId).get().getCurrentBalance());
+            summary.put("errors", errors);
+            summary.put("note", "Dashboard may require January 2026 filter because Excel transactions are dated January 2026.");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            summary.put("finalStatus", "ERROR");
+            summary.put("message", e.getMessage());
+        }
+
+        return summary;
+    }
+
+    private void verifyAccountBalanceForPhase2(Integer companyId, String code, BigDecimal expected, List<String> errors) {
+        Account acc = accountRepository.findByAccountCodeAndCompany_CompanyId(code, companyId).orElse(null);
+        if (acc == null) {
+            errors.add(code + " account not found");
+        } else {
+            if (acc.getCurrentBalance().compareTo(expected) != 0) {
+                errors.add(acc.getAccountName() + " (Expected: " + expected + ", Actual: " + acc.getCurrentBalance() + ")");
+            }
+        }
+    }
+
+    private boolean createPhase2Entry(Company company, Set<String> existingJournals, String refNo, String dateStr, String desc, String drCode, String crCode, BigDecimal amount) throws Exception {
+        if (existingJournals.contains(refNo)) {
+            return false;
+        }
+
+        LocalDate date = LocalDate.parse(dateStr);
+
+        JournalEntryDto dto = new JournalEntryDto();
+        dto.setCompanyId(company.getCompanyId());
+        dto.setEntryDate(date);
+        dto.setReferenceNo(refNo);
+        dto.setJournalTitle(desc);
+        dto.setDescription(desc);
+        dto.setEntryType(JournalEntryType.MANUAL);
+        dto.setAuthorId(1);
+
+        List<JournalEntryLineDto> lines = new ArrayList<>();
+        lines.add(new JournalEntryLineDto(drCode, amount, true, desc));
+        lines.add(new JournalEntryLineDto(crCode, amount, false, desc));
+
+        dto.setLines(lines);
+        journalEntryService.createJournalEntry(dto);
+
+        // Also create Transaction summary
+        Transaction t = new Transaction();
+        t.setCompany(company);
+        t.setReferenceNumber(refNo);
+        t.setDate(dateStr);
+        t.setDescription(desc);
+        t.setTotalDebit(amount.doubleValue());
+        t.setTotalCredit(amount.doubleValue());
+        transactionRepository.save(t);
+
+        existingJournals.add(refNo);
+        return true;
     }
 }
