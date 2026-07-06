@@ -27,4 +27,9 @@ public class Transaction {
     private String paymentCategory;
     private String paymentMethod;
     private String paymentAccountCode;
+
+    @Transient
+    public double getAmount() {
+        return Math.max(totalDebit, totalCredit);
+    }
 }

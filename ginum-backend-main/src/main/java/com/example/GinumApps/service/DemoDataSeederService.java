@@ -32,6 +32,10 @@ public class DemoDataSeederService {
     private final PurchaseOrderService purchaseOrderService;
     private final SalesOrderService salesOrderService;
     private final TransactionService transactionService;
+    private final TransactionRepository transactionRepository;
+    private final SupplierRepository supplierRepository;
+    private final CustomerRepository customerRepository;
+    private final ItemRepository itemRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     // Removed @Transactional to prevent one big transaction failure
@@ -635,5 +639,274 @@ public class DemoDataSeederService {
             return "receiptsSkipped or error: " + e.getMessage();
         }
         return "receiptsCreated: " + count;
+    }
+    public Map<String, Object> seedDemoTransactions(Integer companyId) {
+        Map<String, Object> summary = new java.util.LinkedHashMap<>();
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+        
+        // 1. Cleanup old wrong EXP-001 / EXP-002 transactions
+        List<Transaction> allTx = transactionService.getAllTransactions(companyId);
+        int cleaned = 0;
+        for (Transaction tx : allTx) {
+            if ("EXP-001".equals(tx.getReferenceNumber()) || "EXP-002".equals(tx.getReferenceNumber())) {
+                try {
+                    transactionService.deleteTransaction(companyId, tx.getId());
+                    cleaned++;
+                } catch(Exception e) {}
+            }
+        }
+        summary.put("oldDemoTransactionsCleaned", cleaned);
+
+        // Required Accounts
+        Account bank = findAccount(companyId, "BankAccount");
+        Account recv = findAccount(companyId, "AccountsReceivable");
+        Account payable = findAccount(companyId, "AccountsPayable");
+        Account salaryExp = findAccount(companyId, "SalaryExpense");
+        Account adminExp = findAccount(companyId, "AdministrativeExpenses");
+        Account sellingExp = findAccount(companyId, "SellingExpenses");
+        Account mach = findAccount(companyId, "Machinery");
+        Account bankLoan = findAccount(companyId, "BankLoan");
+        Account interestExp = findAccount(companyId, "InterestExpense");
+        Account depExp = findAccount(companyId, "DepreciationExpense");
+        Account accDepBuild = findAccount(companyId, "AccumulatedDepreciation-Building");
+        Account accDepMach = findAccount(companyId, "AccumulatedDepreciation-Machinery");
+        Account accDepFurn = findAccount(companyId, "AccumulatedDepreciation-Furniture");
+        Account salesRev = findAccount(companyId, "SalesRevenue");
+
+        // 2. Purchases (POs)
+        int pos = 0;
+        Supplier mainSupp = findSupplier(companyId, "Main Raw Material Supplier");
+        Supplier packSupp = findSupplier(companyId, "Packaging Material Supplier");
+        Item rawMat = findItem(companyId, "Raw Material");
+        Item chair = findItem(companyId, "Chair"); // Using Chair if Raw Mat missing for some reason
+
+        if (mainSupp != null && rawMat != null) {
+            pos += createPOIfMissing(companyId, "DEMO-PO-001", "2026-01-03", mainSupp, "Purchased raw materials on credit", rawMat, 10, new BigDecimal("120000"));
+            pos += createPOIfMissing(companyId, "DEMO-PO-002", "2026-01-10", mainSupp, "Purchased raw materials cash", rawMat, 1, new BigDecimal("300000"));
+        }
+        if (packSupp != null && rawMat != null) {
+            pos += createPOIfMissing(companyId, "DEMO-PO-003", "2026-01-18", packSupp, "Purchased packaging materials credit", rawMat, 1, new BigDecimal("200000"));
+        }
+        summary.put("purchaseOrdersCreated", pos);
+
+        // 3. Supplier Payments (Spend Money)
+        int payments = 0;
+        if (mainSupp != null && bank != null && payable != null) {
+            payments += createDirectPaymentIfMissing(companyId, "DEMO-SP-001", "2026-01-15", mainSupp.getId().intValue(), "SUPPLIER", "Paid suppliers by bank", new BigDecimal("800000"), bank, payable, "Supplier Payment");
+            payments += createDirectPaymentIfMissing(companyId, "DEMO-SP-002", "2026-01-28", mainSupp.getId().intValue(), "SUPPLIER", "Paid suppliers by bank", new BigDecimal("500000"), bank, payable, "Supplier Payment");
+        }
+        summary.put("supplierPaymentsCreated", payments);
+
+        // 4. Sales Orders
+        int sos = 0;
+        Customer mainCust = findCustomer(companyId, "Main Credit Customer");
+        Customer cashCust = findCustomer(companyId, "Cash Customer");
+        if (mainCust != null && chair != null) {
+            sos += createSOIfMissing(companyId, "DEMO-SO-001", "2026-01-08", mainCust, "Credit Sales", chair, 1, new BigDecimal("1500000"));
+            sos += createSOIfMissing(companyId, "DEMO-SO-003", "2026-01-25", mainCust, "Credit Sales", chair, 1, new BigDecimal("2000000"));
+        }
+        if (cashCust != null && chair != null) {
+            sos += createSOIfMissing(companyId, "DEMO-SO-002", "2026-01-16", cashCust, "Cash Sales", chair, 1, new BigDecimal("800000"));
+        }
+        summary.put("salesOrdersCreated", sos);
+
+        // 5. Customer Collections (Receive Money)
+        int collections = 0;
+        if (mainCust != null && bank != null && recv != null) {
+            collections += createDirectReceiptIfMissing(companyId, "DEMO-RC-001", "2026-01-12", mainCust.getId().intValue(), "CUSTOMER", "Collection from debtors", new BigDecimal("1000000"), bank, recv, "Customer Receipt");
+            collections += createDirectReceiptIfMissing(companyId, "DEMO-RC-002", "2026-01-29", mainCust.getId().intValue(), "CUSTOMER", "Collection from debtors", new BigDecimal("1500000"), bank, recv, "Customer Receipt");
+        }
+        summary.put("customerCollectionsCreated", collections);
+
+        // 6. Payroll (Spend Money)
+        int payroll = 0;
+        if (bank != null && salaryExp != null && adminExp != null && sellingExp != null) {
+            payroll += createDirectPaymentIfMissing(companyId, "DEMO-PAY-001", "2026-01-31", null, "OTHER", "Factory wages", new BigDecimal("900000"), bank, salaryExp, "Salary Expense");
+            payroll += createDirectPaymentIfMissing(companyId, "DEMO-PAY-002", "2026-01-31", null, "OTHER", "Admin salaries", new BigDecimal("250000"), bank, adminExp, "Salary Expense");
+            payroll += createDirectPaymentIfMissing(companyId, "DEMO-PAY-003", "2026-01-31", null, "OTHER", "Sales salaries", new BigDecimal("200000"), bank, sellingExp, "Salary Expense");
+        }
+        summary.put("payrollCreated", payroll);
+
+        // 7. Admin & Selling Expenses
+        int expenses = 0;
+        if (bank != null && adminExp != null) {
+            expenses += createDirectPaymentIfMissing(companyId, "DEMO-ADM-001", "2026-01-15", null, "OTHER", "Office rent", new BigDecimal("100000"), bank, adminExp, "Other");
+            expenses += createDirectPaymentIfMissing(companyId, "DEMO-ADM-002", "2026-01-18", null, "OTHER", "Telephone", new BigDecimal("30000"), bank, adminExp, "Other");
+            expenses += createDirectPaymentIfMissing(companyId, "DEMO-ADM-003", "2026-01-20", null, "OTHER", "Internet", new BigDecimal("20000"), bank, adminExp, "Other");
+            expenses += createDirectPaymentIfMissing(companyId, "DEMO-ADM-004", "2026-01-22", null, "OTHER", "Office supplies", new BigDecimal("25000"), bank, adminExp, "Other");
+            expenses += createDirectPaymentIfMissing(companyId, "DEMO-ADM-005", "2026-01-25", null, "OTHER", "Insurance", new BigDecimal("40000"), bank, adminExp, "Other");
+        }
+        if (bank != null && sellingExp != null) {
+            expenses += createDirectPaymentIfMissing(companyId, "DEMO-SELL-001", "2026-01-10", null, "OTHER", "Advertising", new BigDecimal("120000"), bank, sellingExp, "Other");
+            expenses += createDirectPaymentIfMissing(companyId, "DEMO-SELL-002", "2026-01-20", null, "OTHER", "Delivery expenses", new BigDecimal("80000"), bank, sellingExp, "Other");
+        }
+        summary.put("adminSellingExpensesCreated", expenses);
+
+        // 8. Fixed Asset & Loan (Spend Money)
+        int faLoan = 0;
+        if (bank != null && mach != null) {
+            faLoan += createDirectPaymentIfMissing(companyId, "DEMO-FA-001", "2026-01-20", null, "OTHER", "Purchased new machinery", new BigDecimal("1500000"), bank, mach, "Asset Purchase");
+        }
+        if (bank != null && bankLoan != null && interestExp != null) {
+            faLoan += createDirectPaymentIfMissing(companyId, "DEMO-LOAN-001", "2026-01-31", null, "OTHER", "Loan repayment", new BigDecimal("200000"), bank, bankLoan, "Loan Payment");
+            faLoan += createDirectPaymentIfMissing(companyId, "DEMO-INT-001", "2026-01-31", null, "OTHER", "Loan interest", new BigDecimal("50000"), bank, interestExp, "Interest");
+        }
+        summary.put("faAndLoanTransactionsCreated", faLoan);
+
+        // 9. Depreciation Journal Entry
+        int dep = 0;
+        if (depExp != null && accDepBuild != null && accDepMach != null && accDepFurn != null) {
+            dep += createJournalIfMissing(company, "DEMO-DEP-001", "2026-01-31", "Depreciation", "Monthly depreciation", List.of(
+                createJELine(depExp.getAccountCode(), new BigDecimal("125000"), true),
+                createJELine(accDepBuild.getAccountCode(), new BigDecimal("40000"), false),
+                createJELine(accDepMach.getAccountCode(), new BigDecimal("75000"), false),
+                createJELine(accDepFurn.getAccountCode(), new BigDecimal("10000"), false)
+            ));
+        }
+        summary.put("depreciationCreated", dep);
+        
+        // 10. Dashboard Current Month
+        int dash = 0;
+        String curMonth = LocalDate.now().toString();
+        if (bank != null && salesRev != null) {
+            dash += createDirectReceiptIfMissing(companyId, "DEMO-DASH-SALE-001", curMonth, null, "OTHER", "Demo Dashboard Sale", new BigDecimal("500000"), bank, salesRev, "Sales");
+        }
+        if (bank != null && adminExp != null) {
+            dash += createDirectPaymentIfMissing(companyId, "DEMO-DASH-EXP-001", curMonth, null, "OTHER", "Demo Dashboard Expense", new BigDecimal("100000"), bank, adminExp, "Other");
+        }
+        summary.put("dashboardTransactionsCreated", dash);
+
+        summary.put("status", "SUCCESS");
+        return summary;
+    }
+
+    private int createPOIfMissing(Integer companyId, String poNum, String date, Supplier supp, String notes, Item item, int qty, BigDecimal price) {
+        if (purchaseOrderService.getPurchaseOrdersByCompany(companyId).stream().anyMatch(po -> poNum.equals(po.getPurchaseOrderNumber()))) return 0;
+        PurchaseOrderRequestDto po = new PurchaseOrderRequestDto();
+        po.setPoNumber(poNum);
+        po.setSupplierInvoiceNumber(poNum);
+        po.setSupplierId(supp.getId());
+        po.setIssueDate(LocalDate.parse(date));
+        po.setDueDate(LocalDate.parse(date));
+        po.setNotes(notes);
+        PurchaseOrderItemRequestDto line = new PurchaseOrderItemRequestDto();
+        line.setItemId(item.getItemId());
+        line.setQuantity(qty);
+        line.setUnitPrice(price);
+        po.setItems(List.of(line));
+        purchaseOrderService.createPurchaseOrder(po, companyId);
+        return 1;
+    }
+
+    private int createSOIfMissing(Integer companyId, String soNum, String date, Customer cust, String notes, Item item, int qty, BigDecimal price) {
+        if (salesOrderService.getSalesOrdersByCompany(companyId).stream().anyMatch(so -> soNum.equals(so.getSoNumber()))) return 0;
+        SalesOrderRequestDto so = new SalesOrderRequestDto();
+        so.setSoNumber(soNum);
+        so.setCustomerId(cust.getId());
+        so.setIssueDate(LocalDate.parse(date));
+        so.setDueDate(LocalDate.parse(date));
+        so.setNotes(notes);
+        SalesOrderItemRequestDto line = new SalesOrderItemRequestDto();
+        line.setItemId(item.getItemId());
+        line.setQuantity(qty);
+        line.setUnitPrice(price);
+        so.setItems(List.of(line));
+        salesOrderService.createSalesOrder(so, companyId);
+        return 1;
+    }
+
+    private int createDirectPaymentIfMissing(Integer companyId, String ref, String date, Integer payeeId, String payeeType, String note, BigDecimal amt, Account bank, Account expense, String cat) {
+        if (transactionService.getAllTransactions(companyId).stream().anyMatch(t -> ref.equals(t.getReferenceNumber()))) return 0;
+        DirectPaymentRequestDto pay = new DirectPaymentRequestDto();
+        pay.setReferenceNumber(ref);
+        pay.setPaymentAccountCode(bank.getAccountCode());
+        pay.setExpenseAccountCode(expense.getAccountCode());
+        pay.setAmount(amt);
+        pay.setPaymentNote(note);
+        pay.setPayeeId(payeeId);
+        pay.setPayeeType(payeeType);
+        pay.setPaymentCategory(cat);
+        pay.setPaymentMethod("Bank Transfer");
+        transactionService.processDirectPayment(companyId, pay);
+        // Set exact date (TransactionService sets it to LocalDate.now())
+        Transaction saved = transactionService.getAllTransactions(companyId).stream().filter(t -> ref.equals(t.getReferenceNumber())).findFirst().orElse(null);
+        if (saved != null) {
+            saved.setDate(date);
+            transactionRepository.save(saved); // Need transactionRepository
+        }
+        return 1;
+    }
+
+    private int createDirectReceiptIfMissing(Integer companyId, String ref, String date, Integer payeeId, String payeeType, String note, BigDecimal amt, Account bank, Account income, String cat) {
+        if (transactionService.getAllTransactions(companyId).stream().anyMatch(t -> ref.equals(t.getReferenceNumber()))) return 0;
+        
+        Company company = companyRepository.findById(companyId).orElse(null);
+        if(company == null) return 0;
+
+        Transaction t = new Transaction();
+        t.setReferenceNumber(ref);
+        t.setDate(date);
+        t.setDescription("Receive Money - " + note);
+        t.setTotalDebit(amt.doubleValue());
+        t.setTotalCredit(0.0);
+        t.setCompany(company);
+        t.setPayeeType(payeeType);
+        t.setPayeeId(payeeId);
+        t.setPayeeName("Customer");
+        t.setPaymentCategory(cat);
+        t.setPaymentMethod("Bank Transfer");
+        t.setPaymentAccountCode(bank.getAccountCode());
+        
+        JournalEntryDto je = new JournalEntryDto();
+        je.setEntryType(JournalEntryType.RECEIPT);
+        je.setEntryDate(LocalDate.parse(date));
+        je.setJournalTitle("Receive Money Direct");
+        je.setReferenceNo(ref);
+        je.setCompanyId(companyId);
+        je.setDescription(t.getDescription());
+        List<JournalEntryLineDto> lines = new ArrayList<>();
+        lines.add(new JournalEntryLineDto(bank.getAccountCode(), amt, true, note));
+        lines.add(new JournalEntryLineDto(income.getAccountCode(), amt, false, note));
+        je.setLines(lines);
+        
+        journalEntryService.createJournalEntry(je);
+        transactionRepository.save(t);
+        return 1;
+    }
+
+    private int createJournalIfMissing(Company comp, String ref, String date, String title, String desc, List<JournalEntryLineDto> lines) {
+        List<JournalEntry> exists = journalEntryRepository.findByCompany_CompanyId(comp.getCompanyId());
+        if (exists.stream().anyMatch(j -> ref.equals(j.getReferenceNo()))) return 0;
+        JournalEntryDto je = new JournalEntryDto();
+        je.setEntryType(JournalEntryType.MANUAL);
+        je.setEntryDate(LocalDate.parse(date));
+        je.setJournalTitle(title);
+        je.setReferenceNo(ref);
+        je.setCompanyId(comp.getCompanyId());
+        je.setDescription(desc);
+        je.setLines(lines);
+        journalEntryService.createJournalEntry(je);
+        return 1;
+    }
+
+    private JournalEntryLineDto createJELine(String accountCode, BigDecimal amount, boolean isDebit) {
+        return new JournalEntryLineDto(accountCode, amount, isDebit, "");
+    }
+
+    private Supplier findSupplier(Integer companyId, String name) {
+        return supplierRepository.findByCompany_CompanyId(companyId).stream().filter(s -> name.equals(s.getSupplierName())).findFirst().orElse(null);
+    }
+    
+    private Customer findCustomer(Integer companyId, String name) {
+        return customerRepository.findByCompany_CompanyId(companyId).stream().filter(c -> name.equals(c.getName())).findFirst().orElse(null);
+    }
+    
+    private Item findItem(Integer companyId, String name) {
+        return itemRepository.findByCompany_CompanyId(companyId).stream().filter(i -> name.equals(i.getName())).findFirst().orElse(null);
+    }
+
+    private Account findAccount(Integer companyId, String normalizedName) {
+        return accountRepository.findByCompany_CompanyId(companyId).stream().filter(a -> a.getNormalizedName().equalsIgnoreCase(normalizedName)).findFirst().orElse(null);
     }
 }
