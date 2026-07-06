@@ -29,7 +29,7 @@ public class DemoDataSeederService {
     private final SalesOrderService salesOrderService;
     private final TransactionService transactionService;
 
-    @Transactional
+    // Removed @Transactional to prevent one big transaction failure
     public Map<String, Object> seedCompanyData(Integer companyId) throws Exception {
         Map<String, Object> summary = new LinkedHashMap<>();
 
@@ -318,7 +318,11 @@ public class DemoDataSeederService {
             Account account = accountRepository.findByCompany_CompanyId(company.getCompanyId()).stream()
                 .filter(a -> a.getNormalizedName().equals("RAWMATERIALINVENTORY"))
                 .findFirst().orElse(null);
-            itemDto.setAccountCode(account != null ? account.getAccountCode() : "");
+            if (account == null) {
+                System.err.println("Purchase Order Seeding failed: RAWMATERIALINVENTORY account is missing for company " + company.getCompanyId());
+                return 0;
+            }
+            itemDto.setAccountCode(account.getAccountCode());
 
             dto.setItems(List.of(itemDto));
             purchaseOrderService.createPurchaseOrder(dto, company.getCompanyId());
@@ -369,9 +373,14 @@ public class DemoDataSeederService {
             itemDto.setUnitPrice(unitPrice);
             itemDto.setDiscountPercent(BigDecimal.ZERO);
             itemDto.setDescription("Chair for testing");
-            itemDto.setAccountCode(accountRepository.findByCompany_CompanyId(company.getCompanyId()).stream()
+            Account account = accountRepository.findByCompany_CompanyId(company.getCompanyId()).stream()
                 .filter(a -> a.getNormalizedName().equals("SALESREVENUE"))
-                .findFirst().map(Account::getAccountCode).orElse(""));
+                .findFirst().orElse(null);
+            if (account == null) {
+                System.err.println("Sales Order Seeding failed: SALESREVENUE account is missing for company " + company.getCompanyId());
+                return 0;
+            }
+            itemDto.setAccountCode(account.getAccountCode());
 
             dto.setItems(List.of(itemDto));
             salesOrderService.createSalesOrder(dto, company.getCompanyId());
