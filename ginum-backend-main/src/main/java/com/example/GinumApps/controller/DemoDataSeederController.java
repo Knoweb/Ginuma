@@ -1,0 +1,41 @@
+package com.example.GinumApps.controller;
+
+import com.example.GinumApps.service.DemoDataSeederService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/demo/seed")
+@RequiredArgsConstructor
+public class DemoDataSeederController {
+
+    private final DemoDataSeederService demoDataSeederService;
+
+    @Value("${DEMO_SEED_TOKEN:change-me-demo-seed-token}")
+    private String requiredToken;
+
+    @PostMapping("/company/{companyId}")
+    public ResponseEntity<?> seedDemoData(
+            @PathVariable Integer companyId,
+            @RequestHeader(value = "X-DEMO-SEED-TOKEN", required = false) String providedToken) {
+
+        if (providedToken == null || !providedToken.equals(requiredToken)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Invalid or missing X-DEMO-SEED-TOKEN header."));
+        }
+
+        try {
+            Map<String, Object> summary = demoDataSeederService.seedCompanyData(companyId);
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error seeding demo data", "details", e.getMessage()));
+        }
+    }
+}

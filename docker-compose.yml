@@ -30,10 +30,11 @@ services:
     ports:
       - "${BACKEND_PORT:-8081}:8081"
     environment:
-      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:mysql://database:3306/ginum_apps}
-      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-root}
-      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-root_password}
-      - SERVER_PORT=${BACKEND_PORT:-8081}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:mysql://database:3306/ginum_apps}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-root}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-root_password}
+      DEMO_SEED_TOKEN: ${DEMO_SEED_TOKEN:-change-me-demo-seed-token}
+      SERVER_PORT: ${BACKEND_PORT:-8081}
 
   frontend:
     build:
