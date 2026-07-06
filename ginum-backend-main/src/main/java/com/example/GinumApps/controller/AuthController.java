@@ -52,7 +52,9 @@ public class AuthController {
             return ResponseEntity.ok(buildLoginResponse(userDetails.getUsername(), role, token));
 
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(java.util.Map.of("error", "Invalid credentials"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -60,22 +62,34 @@ public class AuthController {
         LoginResponse response = new LoginResponse();
         response.setToken(token);
         response.setRole(role);
+        response.setEmail(email);
 
-        switch (role) {
-            case "ROLE_SUPER_ADMIN":
-                Admin admin = adminRepository.findByEmail(email).get();
-                response.setUserId(admin.getId());
-                break;
-            case "ROLE_COMPANY":
-                Company company = companyRepository.findByEmail(email).get();
-                response.setCompanyId(company.getCompanyId());
-                break;
-            case "ROLE_APP_USER":
-                AppUser appUser = userRepository.findByEmail(email).get();
-                response.setUserId(appUser.getId());
+        java.util.Optional<AppUser> appUserOpt = userRepository.findByEmail(email);
+        if (appUserOpt.isPresent()) {
+            AppUser appUser = appUserOpt.get();
+            response.setUserId(appUser.getId());
+            if (appUser.getCompany() != null) {
                 response.setCompanyId(appUser.getCompany().getCompanyId());
-                break;
+                response.setCompanyName(appUser.getCompany().getCompanyName());
+            }
+            return response;
         }
-        return response;
+
+        java.util.Optional<Company> companyOpt = companyRepository.findByEmail(email);
+        if (companyOpt.isPresent()) {
+            Company company = companyOpt.get();
+            response.setCompanyId(company.getCompanyId());
+            response.setCompanyName(company.getCompanyName());
+            return response;
+        }
+
+        java.util.Optional<Admin> adminOpt = adminRepository.findByEmail(email);
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            response.setUserId(admin.getId());
+            return response;
+        }
+
+        throw new RuntimeException("Missing company mapping for email: " + email);
     }
 }

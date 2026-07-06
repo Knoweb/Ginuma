@@ -8,4 +8,6 @@ public class LoginResponse {
     private String role;
     private Integer userId;
     private Integer companyId;
+    private String email;
+    private String companyName;
 }

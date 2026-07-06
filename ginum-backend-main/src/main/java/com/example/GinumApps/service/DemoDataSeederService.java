@@ -31,6 +31,7 @@ public class DemoDataSeederService {
     private final PurchaseOrderService purchaseOrderService;
     private final SalesOrderService salesOrderService;
     private final TransactionService transactionService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     // Removed @Transactional to prevent one big transaction failure
     public Map<String, Object> seedCompanyData(Integer companyId) throws Exception {
@@ -56,9 +57,6 @@ public class DemoDataSeederService {
 
     private String seedUser(Company company) {
         String email = "madam.demo@ginuma.com";
-        if (appUserRepository.findByEmail(email).isPresent()) {
-            return "userAlreadyExists";
-        }
         try {
             Department dept = departmentRepository.findAll().stream()
                 .filter(d -> d.getCompany().getCompanyId().equals(company.getCompanyId()))
@@ -97,6 +95,16 @@ public class DemoDataSeederService {
                     e.setNic("000000000V");
                     return employeeRepository.save(e);
                 });
+
+            java.util.Optional<AppUser> existingUserOpt = appUserRepository.findByEmail(email);
+            if (existingUserOpt.isPresent()) {
+                AppUser existing = existingUserOpt.get();
+                existing.setPassword(passwordEncoder.encode("Demo@2026"));
+                existing.setRole("ROLE_COMPANY");
+                existing.setCompany(company);
+                appUserRepository.save(existing);
+                return "userRepaired";
+            }
 
             AppUserRequestDto userDto = new AppUserRequestDto();
             userDto.setEmail(email);
