@@ -40,7 +40,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 path.startsWith("/api/demo/fresh-excel-reset") ||
                 path.startsWith("/api/demo/reset-excel-demo") ||
                 path.startsWith("/api/demo/excel-phase1") ||
-                path.startsWith("/api/demo/excel-phase2")) {
+                path.startsWith("/api/demo/excel-phase2") ||
+                path.startsWith("/api/demo/excel-fix-visibility")) {
 
             filterChain.doFilter(request, response);
             return;

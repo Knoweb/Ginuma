@@ -39,6 +39,8 @@ public class DemoDataSeederService {
     private final ItemRepository itemRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private final jakarta.persistence.EntityManager entityManager;
+    private final PurchaseOrderRepository purchaseOrderRepository;
+    private final SalesOrderRepository salesOrderRepository;
 
     // Removed @Transactional to prevent one big transaction failure
     
@@ -2429,5 +2431,147 @@ public class DemoDataSeederService {
 
         existingJournals.add(refNo);
         return true;
+    }
+
+    public Map<String, Object> excelFixVisibility(Integer companyId) {
+        Map<String, Object> summary = new LinkedHashMap<>();
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        List<String> errors = new ArrayList<>();
+        int purchaseOrdersVisible = 0;
+        int salesOrdersVisible = 0;
+
+        try {
+            // Suppliers
+            Supplier rawSupplier = supplierRepository.findByCompany_CompanyId(companyId).stream()
+                    .filter(s -> s.getSupplierName().equals("Main Raw Material Supplier")).findFirst().orElse(null);
+            Supplier pkgSupplier = supplierRepository.findByCompany_CompanyId(companyId).stream()
+                    .filter(s -> s.getSupplierName().equals("Packaging Material Supplier")).findFirst().orElse(null);
+            
+            // Customers
+            Customer creditCustomer = customerRepository.findByCompany_CompanyId(companyId).stream()
+                    .filter(c -> c.getName().equals("Main Credit Customer")).findFirst().orElse(null);
+            Customer cashCustomer = customerRepository.findByCompany_CompanyId(companyId).stream()
+                    .filter(c -> c.getName().equals("Cash Customer")).findFirst().orElse(null);
+
+            // Items
+            Item rawItem = itemRepository.findByCompany_CompanyId(companyId).stream()
+                    .filter(i -> i.getName().equals("Raw Material")).findFirst().orElse(null);
+            Item pkgItem = itemRepository.findByCompany_CompanyId(companyId).stream()
+                    .filter(i -> i.getName().equals("Packaging Material")).findFirst().orElse(rawItem);
+            Item chairItem = itemRepository.findByCompany_CompanyId(companyId).stream()
+                    .filter(i -> i.getName().equals("Chair")).findFirst().orElse(null);
+
+            // Bank Account for paid orders
+            Account bankAcc = accountRepository.findByAccountCodeAndCompany_CompanyId("1010", companyId).orElse(null);
+
+            // Purchase Orders
+            purchaseOrdersVisible += createVisibilityPO(company, "DEMO-PO-001", "2026-01-03", "Purchased raw materials on credit", rawSupplier, rawItem, 10, new BigDecimal("120000"), new BigDecimal("1200000"), false, bankAcc);
+            purchaseOrdersVisible += createVisibilityPO(company, "DEMO-PO-002", "2026-01-10", "Purchased raw materials cash", rawSupplier, rawItem, 1, new BigDecimal("300000"), new BigDecimal("300000"), true, bankAcc);
+            purchaseOrdersVisible += createVisibilityPO(company, "DEMO-PO-003", "2026-01-18", "Purchased packaging materials credit", pkgSupplier, pkgItem, 1, new BigDecimal("200000"), new BigDecimal("200000"), false, bankAcc);
+
+            // Sales Orders
+            salesOrdersVisible += createVisibilitySO(company, "DEMO-SO-001", "2026-01-08", "Credit Sales", creditCustomer, chairItem, 1, new BigDecimal("1500000"), new BigDecimal("1500000"), false, bankAcc);
+            salesOrdersVisible += createVisibilitySO(company, "DEMO-SO-002", "2026-01-16", "Cash Sales", cashCustomer, chairItem, 1, new BigDecimal("800000"), new BigDecimal("800000"), true, bankAcc);
+            salesOrdersVisible += createVisibilitySO(company, "DEMO-SO-003", "2026-01-25", "Credit Sales", creditCustomer, chairItem, 1, new BigDecimal("2000000"), new BigDecimal("2000000"), false, bankAcc);
+
+            // Finished Goods Inventory adjustment
+            Set<String> existingJournals = journalEntryRepository.findByCompany_CompanyId(companyId).stream()
+                    .map(JournalEntry::getReferenceNo)
+                    .collect(Collectors.toSet());
+
+            Account fg = accountRepository.findByAccountCodeAndCompany_CompanyId("1210", companyId).orElse(null);
+            if (fg != null && fg.getCurrentBalance().compareTo(new BigDecimal("1800000")) < 0) {
+                BigDecimal diff = new BigDecimal("1800000").subtract(fg.getCurrentBalance());
+                createPhase2Entry(company, existingJournals, "DEMO-INV-002", "2026-01-31", "Closing inventory adjustment - Finished Goods", "1210", "5100", diff);
+            }
+
+            summary.put("finalStatus", "SUCCESS");
+            summary.put("purchaseOrdersVisible", purchaseOrderRepository.findByCompany_CompanyId(companyId).size());
+            summary.put("salesOrdersVisible", salesOrderRepository.findByCompany_CompanyId(companyId).size());
+            
+            summary.put("rawMaterialInventoryActual", accountRepository.findByAccountCodeAndCompany_CompanyId("1200", companyId).map(Account::getCurrentBalance).orElse(BigDecimal.ZERO));
+            summary.put("finishedGoodsInventoryExpected", 1800000);
+            summary.put("finishedGoodsInventoryActual", accountRepository.findByAccountCodeAndCompany_CompanyId("1210", companyId).map(Account::getCurrentBalance).orElse(BigDecimal.ZERO));
+            summary.put("dashboardNote", "Dashboard may show 0 because Excel transactions are dated January 2026 and dashboard displays Last 30 Days.");
+            summary.put("errors", errors);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            summary.put("finalStatus", "ERROR");
+            summary.put("message", e.getMessage());
+        }
+
+        return summary;
+    }
+
+    private int createVisibilityPO(Company company, String poNumber, String dateStr, String notes, Supplier supplier, Item item, int qty, BigDecimal unitPrice, BigDecimal totalAmount, boolean isPaid, Account bankAcc) {
+        if (supplier == null || item == null) return 0;
+        
+        Optional<PurchaseOrder> existing = purchaseOrderRepository.findByPoNumberAndCompany_CompanyId(poNumber, company.getCompanyId());
+        if (existing.isPresent()) return 0;
+
+        PurchaseOrder po = new PurchaseOrder();
+        po.setCompany(company);
+        po.setPoNumber(poNumber);
+        po.setSupplier(supplier);
+        po.setIssueDate(LocalDate.parse(dateStr));
+        po.setDueDate(LocalDate.parse(dateStr));
+        po.setNotes(notes);
+        po.setPurchaseType(PurchaseType.GOODS);
+
+        if (isPaid && bankAcc != null) {
+            po.setPaymentAccount(bankAcc);
+            po.setAmountPaid(totalAmount);
+        }
+
+        PurchaseOrderLineItem line = new PurchaseOrderLineItem();
+        line.setPurchaseOrder(po);
+        line.setItem(item);
+        line.setDescription(notes);
+        line.setQuantity(qty);
+        line.setUnitPrice(unitPrice);
+        line.setItemType(LineItemType.GOODS);
+        line.setAmount(totalAmount);
+        po.getItems().add(line);
+
+        purchaseOrderRepository.save(po);
+        return 1;
+    }
+
+    private int createVisibilitySO(Company company, String soNumber, String dateStr, String notes, Customer customer, Item item, int qty, BigDecimal unitPrice, BigDecimal totalAmount, boolean isPaid, Account bankAcc) {
+        if (customer == null || item == null) return 0;
+        
+        boolean exists = salesOrderRepository.findByCompany_CompanyId(company.getCompanyId()).stream()
+                .anyMatch(s -> soNumber.equals(s.getSoNumber()));
+        if (exists) return 0;
+
+        SalesOrder so = new SalesOrder();
+        so.setCompany(company);
+        so.setSoNumber(soNumber);
+        so.setCustomer(customer);
+        so.setIssueDate(LocalDate.parse(dateStr));
+        so.setDueDate(LocalDate.parse(dateStr));
+        so.setNotes(notes);
+        so.setSalesType(SalesType.GOODS);
+
+        if (isPaid && bankAcc != null) {
+            so.setPaymentAccount(bankAcc);
+            so.setAmountPaid(totalAmount);
+        }
+
+        SalesOrderLineItem line = new SalesOrderLineItem();
+        line.setSalesOrder(so);
+        line.setItem(item);
+        line.setDescription(notes);
+        line.setQuantity(qty);
+        line.setUnitPrice(totalAmount); // Use totalAmount to guarantee correct SO subtotal
+        line.setItemType(LineItemType.GOODS);
+        so.getItems().add(line);
+
+        salesOrderRepository.save(so);
+        return 1;
     }
 }

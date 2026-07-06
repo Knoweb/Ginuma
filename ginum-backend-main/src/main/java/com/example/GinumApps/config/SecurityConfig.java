@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/demo/fresh-excel-reset/company/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/demo/excel-phase1/company/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/demo/excel-phase2/company/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/demo/excel-fix-visibility/company/**").permitAll()
 
                         // Purchase order endpoints
                         .requestMatchers(
