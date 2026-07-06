@@ -2000,4 +2000,212 @@ public class DemoDataSeederService {
         dto.setLines(lines);
         journalEntryService.createJournalEntry(dto);
     }
+
+    public Map<String, Object> seedExcelPhase1(Integer companyId) {
+        Map<String, Object> summary = new LinkedHashMap<>();
+
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        if (!accountRepository.findByCompany_CompanyId(companyId).isEmpty() ||
+            !supplierRepository.findByCompany_CompanyId(companyId).isEmpty() ||
+            !customerRepository.findByCompany_CompanyId(companyId).isEmpty() ||
+            !itemRepository.findByCompany_CompanyId(companyId).isEmpty()) {
+            
+            summary.put("status", "ERROR");
+            summary.put("message", "Company data is not empty. Cannot proceed with Phase 1.");
+            return summary;
+        }
+        
+        try {
+            // 1. Create exact Chart of Accounts
+            Account cash = createPhase1Account(company, "1000", "Cash in Hand", AccountType.ASSET_BANK);
+            createPhase1Account(company, "1010", "Bank Account", AccountType.ASSET_BANK);
+            Account accRec = createPhase1Account(company, "1100", "Accounts Receivable", AccountType.ASSET_ACCOUNT_RECEIVABLE);
+            createPhase1Account(company, "1200", "Raw Material Inventory", AccountType.ASSET_OTHER_CURRENT_ASSET);
+            createPhase1Account(company, "1210", "Finished Goods Inventory", AccountType.ASSET_OTHER_CURRENT_ASSET);
+            createPhase1Account(company, "1500", "Land", AccountType.ASSET_FIXED_ASSET);
+            createPhase1Account(company, "1510", "Factory Building", AccountType.ASSET_FIXED_ASSET);
+            createPhase1Account(company, "1520", "Machinery", AccountType.ASSET_FIXED_ASSET);
+            createPhase1Account(company, "1530", "Furniture & Equipment", AccountType.ASSET_FIXED_ASSET);
+            createPhase1Account(company, "1590", "Accumulated Depreciation - Building", AccountType.LIABILITY_OTHER_LIABILITY);
+            createPhase1Account(company, "1591", "Accumulated Depreciation - Machinery", AccountType.LIABILITY_OTHER_LIABILITY);
+            createPhase1Account(company, "1592", "Accumulated Depreciation - Furniture", AccountType.LIABILITY_OTHER_LIABILITY);
+            Account accPay = createPhase1Account(company, "2000", "Accounts Payable", AccountType.LIABILITY_ACCOUNTS_PAYABLE);
+            createPhase1Account(company, "2100", "Bank Loan", AccountType.LIABILITY_LONG_TERM_LIABILITY);
+            Account taxPay = createPhase1Account(company, "2200", "VAT Payable", AccountType.LIABILITY_OTHER_CURRENT_LIABILITY);
+            createPhase1Account(company, "3000", "Share Capital", AccountType.EQUITY);
+            createPhase1Account(company, "3100", "Retained Earnings", AccountType.EQUITY);
+            createPhase1Account(company, "4000", "Sales Revenue", AccountType.INCOME);
+            createPhase1Account(company, "5000", "Cost of Goods Sold", AccountType.COST_OF_SALES);
+            createPhase1Account(company, "5100", "Work in Progress / Manufacturing Cost", AccountType.COST_OF_SALES);
+            Account adminExp = createPhase1Account(company, "6000", "Administrative Expenses", AccountType.EXPENSE);
+            createPhase1Account(company, "6100", "Selling Expenses", AccountType.EXPENSE);
+            createPhase1Account(company, "6200", "Salary Expense", AccountType.EXPENSE);
+            createPhase1Account(company, "6300", "Depreciation Expense", AccountType.EXPENSE);
+            createPhase1Account(company, "6400", "Interest Expense", AccountType.EXPENSE);
+
+            // 2. Update company account references
+            company.setAccountsReceivableAccount(accRec);
+            company.setAccountsPayableAccount(accPay);
+            company.setTaxAccount(taxPay);
+            company.setFreightAccount(adminExp);
+            companyRepository.save(company);
+
+            // 3. Create suppliers
+            createPhase1Supplier(company, "Main Raw Material Supplier", "supplier@example.com", SupplierType.SUPPLIER, ItemCategory.FURNITURE);
+            createPhase1Supplier(company, "Packaging Material Supplier", "supplier@example.com", SupplierType.SUPPLIER, ItemCategory.ELECTRONICS);
+
+            // 4. Create customers
+            createPhase1Customer(company, "Main Credit Customer", "customer@example.com", com.example.GinumApps.enums.CustomerType.CORPORATE);
+            createPhase1Customer(company, "Cash Customer", "customer@example.com", com.example.GinumApps.enums.CustomerType.INDIVIDUAL);
+
+            // 5. Create inventory items
+            createPhase1Item(company, "RM-001", "Raw Material", "Raw Material", ItemType.RAW_MATERIAL, new BigDecimal("3900"), new BigDecimal("3900"), new BigDecimal("205"), 10);
+            createPhase1Item(company, "CH-001", "Chair", "Finished Goods", ItemType.SALES_ITEM, new BigDecimal("6500"), new BigDecimal("13000"), new BigDecimal("230"), 5);
+
+            // 6. Opening Trial Balance using Journal Entry
+            JournalEntryDto dto = new JournalEntryDto();
+            dto.setCompanyId(companyId);
+            dto.setEntryDate(LocalDate.of(2026, 1, 1));
+            dto.setReferenceNo("OB-2026-001");
+            dto.setJournalTitle("Opening balances from Excel trial balance");
+            dto.setDescription("Opening balances from Excel trial balance");
+            dto.setEntryType(JournalEntryType.MANUAL);
+            dto.setAuthorId(1);
+
+            List<JournalEntryLineDto> lines = new ArrayList<>();
+            lines.add(new JournalEntryLineDto("1000", new BigDecimal("50000"), true, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("1010", new BigDecimal("2000000"), true, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("1100", new BigDecimal("1200000"), true, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("1200", new BigDecimal("800000"), true, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("1210", new BigDecimal("1500000"), true, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("1500", new BigDecimal("5000000"), true, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("1510", new BigDecimal("8000000"), true, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("1520", new BigDecimal("6000000"), true, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("1530", new BigDecimal("500000"), true, "Opening Balance"));
+
+            lines.add(new JournalEntryLineDto("1590", new BigDecimal("800000"), false, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("1591", new BigDecimal("1200000"), false, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("1592", new BigDecimal("100000"), false, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("2000", new BigDecimal("1100000"), false, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("2100", new BigDecimal("4000000"), false, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("2200", new BigDecimal("100000"), false, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("3000", new BigDecimal("15000000"), false, "Opening Balance"));
+            lines.add(new JournalEntryLineDto("3100", new BigDecimal("2750000"), false, "Opening Balance"));
+
+            dto.setLines(lines);
+            journalEntryService.createJournalEntry(dto);
+
+            // Refresh accounts before verification
+            List<String> errors = new ArrayList<>();
+            verifyAccountBalance(companyId, "1000", new BigDecimal("50000"), errors);
+            verifyAccountBalance(companyId, "1010", new BigDecimal("2000000"), errors);
+            verifyAccountBalance(companyId, "1100", new BigDecimal("1200000"), errors);
+            verifyAccountBalance(companyId, "1200", new BigDecimal("800000"), errors);
+            verifyAccountBalance(companyId, "1210", new BigDecimal("1500000"), errors);
+            verifyAccountBalance(companyId, "1500", new BigDecimal("5000000"), errors);
+            verifyAccountBalance(companyId, "1510", new BigDecimal("8000000"), errors);
+            verifyAccountBalance(companyId, "1520", new BigDecimal("6000000"), errors);
+            verifyAccountBalance(companyId, "1530", new BigDecimal("500000"), errors);
+            verifyAccountBalance(companyId, "1590", new BigDecimal("800000"), errors);
+            verifyAccountBalance(companyId, "1591", new BigDecimal("1200000"), errors);
+            verifyAccountBalance(companyId, "1592", new BigDecimal("100000"), errors);
+            verifyAccountBalance(companyId, "2000", new BigDecimal("1100000"), errors);
+            verifyAccountBalance(companyId, "2100", new BigDecimal("4000000"), errors);
+            verifyAccountBalance(companyId, "2200", new BigDecimal("100000"), errors);
+            verifyAccountBalance(companyId, "3000", new BigDecimal("15000000"), errors);
+            verifyAccountBalance(companyId, "3100", new BigDecimal("2750000"), errors);
+
+            if (!errors.isEmpty()) {
+                summary.put("finalStatus", "ERROR");
+                summary.put("errors", errors);
+                return summary;
+            }
+
+            summary.put("finalStatus", "SUCCESS");
+            summary.put("loginDataPreserved", true);
+            summary.put("accountsCreated", 25);
+            summary.put("suppliersCreated", 2);
+            summary.put("customersCreated", 2);
+            summary.put("itemsCreated", 2);
+            summary.put("openingTrialBalanceImported", true);
+            summary.put("openingTrialBalanceVerified", true);
+            summary.put("cashInHandExpected", 50000);
+            summary.put("cashInHandActual", accountRepository.findByAccountCodeAndCompany_CompanyId("1000", companyId).get().getCurrentBalance());
+            summary.put("errors", errors);
+
+            return summary;
+        } catch (Exception e) {
+            e.printStackTrace();
+            summary.put("finalStatus", "ERROR");
+            summary.put("message", e.getMessage());
+            return summary;
+        }
+    }
+
+    private Account createPhase1Account(Company company, String code, String name, AccountType type) throws Exception {
+        AccountRequestDto dto = new AccountRequestDto();
+        dto.setAccountCode(code);
+        dto.setAccountName(name);
+        dto.setAccountType(type);
+        dto.setCurrentBalance(BigDecimal.ZERO);
+        return accountService.createAccount(company.getCompanyId(), dto);
+    }
+
+    private void createPhase1Supplier(Company company, String name, String email, SupplierType type, ItemCategory cat) throws Exception {
+        SupplierDto dto = new SupplierDto();
+        dto.setSupplierName(name);
+        dto.setEmail(email);
+        dto.setMobileNo("0770000000");
+        dto.setAddress("Colombo");
+        dto.setSupplierType(type);
+        dto.setTax(TaxType.INCLUSIVE);
+        dto.setCurrencyId(company.getCountry().getDefaultCurrency().getId());
+        dto.setItemCategory(cat);
+        dto.setDiscountPercentage(0.0);
+        supplierService.createSupplier(dto, company.getCompanyId());
+    }
+
+    private void createPhase1Customer(Company company, String name, String email, com.example.GinumApps.enums.CustomerType type) throws Exception {
+        CustomerDto dto = new CustomerDto();
+        dto.setName(name);
+        dto.setEmail(email);
+        dto.setPhoneNo("0771111111");
+        dto.setDeliveryAddress("Colombo");
+        dto.setBillingAddress("Colombo");
+        dto.setCustomerType(type);
+        dto.setTax(TaxType.INCLUSIVE);
+        dto.setCurrencyId(company.getCountry().getDefaultCurrency().getId());
+        dto.setDiscountPercentage(0.0);
+        dto.setCompanyId(company.getCompanyId());
+        customerService.createCustomer(dto);
+    }
+
+    private void createPhase1Item(Company company, String code, String name, String category, ItemType type, BigDecimal purchasePrice, BigDecimal unitPrice, BigDecimal stock, int reorder) throws Exception {
+        ItemDto dto = new ItemDto();
+        dto.setItemCode(code);
+        dto.setName(name);
+        dto.setCategory(category);
+        dto.setItemType(type);
+        dto.setPurchasePrice(purchasePrice);
+        dto.setUnitPrice(unitPrice);
+        dto.setCurrentStock(stock);
+        dto.setReorderLevel(reorder);
+        dto.setUnit("PCS");
+        dto.setActive(true);
+        dto.setDescription(name);
+        itemService.createItem(company.getCompanyId(), dto);
+    }
+
+    private void verifyAccountBalance(Integer companyId, String code, BigDecimal expected, List<String> errors) {
+        Account acc = accountRepository.findByAccountCodeAndCompany_CompanyId(code, companyId).orElse(null);
+        if (acc == null) {
+            errors.add(code + " account not found");
+        } else {
+            if (acc.getCurrentBalance().compareTo(expected) != 0) {
+                errors.add(acc.getAccountName() + " (Expected: " + expected + ", Actual: " + acc.getCurrentBalance() + ")");
+            }
+        }
+    }
 }
