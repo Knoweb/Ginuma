@@ -29,6 +29,9 @@ public class Transaction {
     private String paymentAccountCode;
 
     @Transient
+    private Long journalEntryId;
+
+    @Transient
     public double getAmount() {
         return Math.max(totalDebit, totalCredit);
     }

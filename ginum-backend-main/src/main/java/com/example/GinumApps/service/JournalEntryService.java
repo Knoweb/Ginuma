@@ -137,6 +137,49 @@ public class JournalEntryService {
         accountRepo.save(account);
     }
 
+    public java.util.Map<String, Object> getJournalEntry(Integer companyId, Long id) {
+        JournalEntry je = journalEntryRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Journal Entry not found"));
+        
+        if (!je.getCompany().getCompanyId().equals(companyId)) {
+            throw new EntityNotFoundException("Journal Entry not found for this company");
+        }
+
+        BigDecimal totalDebit = BigDecimal.ZERO;
+        BigDecimal totalCredit = BigDecimal.ZERO;
+        
+        List<java.util.Map<String, Object>> linesList = new java.util.ArrayList<>();
+        if (je.getJournalEntryLines() != null) {
+            for (JournalEntryLine line : je.getJournalEntryLines()) {
+                java.util.Map<String, Object> lineMap = new java.util.HashMap<>();
+                lineMap.put("accountCode", line.getAccount().getAccountCode());
+                lineMap.put("accountName", line.getAccount().getAccountName());
+                if (line.isDebit()) {
+                    lineMap.put("debit", line.getAmount());
+                    lineMap.put("credit", BigDecimal.ZERO);
+                    totalDebit = totalDebit.add(line.getAmount());
+                } else {
+                    lineMap.put("debit", BigDecimal.ZERO);
+                    lineMap.put("credit", line.getAmount());
+                    totalCredit = totalCredit.add(line.getAmount());
+                }
+                linesList.add(lineMap);
+            }
+        }
+
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("id", je.getId());
+        response.put("jeNumber", je.getReferenceNo());
+        response.put("date", je.getEntryDate());
+        response.put("description", je.getDescription());
+        response.put("status", "Completed");
+        response.put("totalDebit", totalDebit);
+        response.put("totalCredit", totalCredit);
+        response.put("lines", linesList);
+
+        return response;
+    }
+
     // Custom exception
     public static class InvalidJournalEntryException extends RuntimeException {
         public InvalidJournalEntryException(String message) {

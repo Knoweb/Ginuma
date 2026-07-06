@@ -55,7 +55,23 @@ public class TransactionService {
     private PurchaseOrderRepository purchaseOrderRepo;
 
     public List<Transaction> getAllTransactions(Integer companyId) {
-        return transactionRepository.findByCompanyId(companyId);
+        List<Transaction> transactions = transactionRepository.findByCompanyId(companyId);
+        List<JournalEntry> journalEntries = journalEntryRepo.findByCompany_CompanyId(companyId);
+        
+        java.util.Map<String, Long> refToJeId = new java.util.HashMap<>();
+        for (JournalEntry je : journalEntries) {
+            if (je.getReferenceNo() != null) {
+                refToJeId.put(je.getReferenceNo(), je.getId());
+            }
+        }
+        
+        for (Transaction tx : transactions) {
+            if (tx.getReferenceNumber() != null && refToJeId.containsKey(tx.getReferenceNumber())) {
+                tx.setJournalEntryId(refToJeId.get(tx.getReferenceNumber()));
+            }
+        }
+        
+        return transactions;
     }
 
     public Transaction saveTransaction(Integer companyId, TransactionDto dto) {

@@ -19,7 +19,7 @@ function AllTransactions() {
     setIsModalOpen(true);
     setJeDetails(null);
 
-    const jeId = tx.journalEntryId || tx.jeId || tx.journalId || tx.id;
+    const jeId = tx.journalEntryId || tx.jeId || tx.journalId;
     if (jeId) {
       try {
         setLoadingJe(true);
@@ -31,12 +31,12 @@ function AllTransactions() {
         setJeDetails(response);
       } catch (err) {
         console.error("Error fetching JE details:", err);
-        setJeDetails(tx);
+        setJeDetails(null);
       } finally {
         setLoadingJe(false);
       }
     } else {
-      setJeDetails(tx);
+      setJeDetails(null);
     }
   };
 
@@ -256,7 +256,7 @@ function AllTransactions() {
                   )}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">Failed to load details.</div>
+                <div className="text-center py-8 text-gray-500">Journal entry is not linked to this transaction.</div>
               )}
             </div>
           </div>
