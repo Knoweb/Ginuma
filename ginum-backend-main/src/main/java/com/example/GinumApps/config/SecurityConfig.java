@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/demo/seed/company/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/demo/seed-transactions/company/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/demo/reconcile/company/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/demo/reset-excel-demo/company/**").permitAll()
 
                         // Purchase order endpoints
                         .requestMatchers(

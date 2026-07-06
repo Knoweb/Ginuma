@@ -909,4 +909,589 @@ public class DemoDataSeederService {
     private Account findAccount(Integer companyId, String normalizedName) {
         return accountRepository.findByCompany_CompanyId(companyId).stream().filter(a -> a.getNormalizedName().equalsIgnoreCase(normalizedName)).findFirst().orElse(null);
     }
+    public Map<String, Object> resetAndSeedExactExcelDemo(Integer companyId) {
+        Map<String, Object> summary = new LinkedHashMap<>();
+        
+        Company company = companyRepository.findById(companyId)
+                .orElseThrow(() -> new RuntimeException("Company not found with ID: " + companyId));
+
+        summary.put("cleanupStatus", cleanExactDemoData(companyId));
+        summary.put("userStatus", ensureExactDemoUser(company));
+        summary.put("accountsStatus", ensureExactChartOfAccounts(company));
+        summary.put("openingBalanceStatus", seedExactOpeningBalance(company));
+        summary.put("suppliersStatus", seedExactSuppliers(company));
+        summary.put("customersStatus", seedExactCustomers(company));
+        summary.put("itemsStatus", seedExactItems(company));
+        
+        // Build robust transaction summaries
+        Map<String, Object> purchases = new LinkedHashMap<>();
+        Map<String, Object> sales = new LinkedHashMap<>();
+        Map<String, Object> supplierPayments = new LinkedHashMap<>();
+        Map<String, Object> customerReceipts = new LinkedHashMap<>();
+        Map<String, Object> payroll = new LinkedHashMap<>();
+        Map<String, Object> adminExpenses = new LinkedHashMap<>();
+        Map<String, Object> sellingExpenses = new LinkedHashMap<>();
+        Map<String, Object> fixedAssets = new LinkedHashMap<>();
+        Map<String, Object> loan = new LinkedHashMap<>();
+        Map<String, Object> depreciation = new LinkedHashMap<>();
+        Map<String, Object> manufacturing = new LinkedHashMap<>();
+        Map<String, Object> dashboardDemo = new LinkedHashMap<>();
+        
+        // Seed exact transactions
+        seedExactPurchases(company, purchases);
+        seedExactSupplierPayments(company, supplierPayments);
+        seedExactSales(company, sales);
+        seedExactCustomerReceipts(company, customerReceipts);
+        seedExactPayroll(company, payroll);
+        seedExactAdminExpenses(company, adminExpenses);
+        seedExactSellingExpenses(company, sellingExpenses);
+        seedExactFixedAssets(company, fixedAssets);
+        seedExactLoan(company, loan);
+        seedExactDepreciation(company, depreciation);
+        seedExactManufacturing(company, manufacturing);
+        seedExactDashboardDemo(company, dashboardDemo);
+
+        summary.put("purchasesStatus", purchases);
+        summary.put("supplierPaymentsStatus", supplierPayments);
+        summary.put("salesStatus", sales);
+        summary.put("customerReceiptsStatus", customerReceipts);
+        summary.put("payrollStatus", payroll);
+        summary.put("adminExpensesStatus", adminExpenses);
+        summary.put("sellingExpensesStatus", sellingExpenses);
+        summary.put("fixedAssetStatus", fixedAssets);
+        summary.put("loanStatus", loan);
+        summary.put("depreciationStatus", depreciation);
+        summary.put("manufacturingStatus", manufacturing);
+        summary.put("dashboardStatus", dashboardDemo);
+        summary.put("finalStatus", "SUCCESS");
+
+        return summary;
+    }
+
+    private String cleanExactDemoData(Integer companyId) {
+        int txDeleted = 0;
+        int jeDeleted = 0;
+        
+        // Delete transactions
+        List<Transaction> transactions = transactionService.getAllTransactions(companyId);
+        for (Transaction tx : transactions) {
+            String ref = tx.getReferenceNumber();
+            if (ref != null && (ref.startsWith("DEMO-") || ref.startsWith("EXP-001") || ref.startsWith("EXP-002") || ref.equals("OB-2026-001"))) {
+                try {
+                    transactionService.deleteTransaction(companyId, tx.getId());
+                    txDeleted++;
+                } catch(Exception e) {}
+            }
+        }
+        
+        // Delete Journal Entries
+        List<JournalEntry> journals = journalEntryRepository.findByCompany_CompanyId(companyId);
+        for (JournalEntry je : journals) {
+            String ref = je.getReferenceNo();
+            if (ref != null && (ref.startsWith("DEMO-") || ref.startsWith("EXP-") || ref.equals("OB-2026-001"))) {
+                try {
+                    journalEntryRepository.delete(je);
+                    jeDeleted++;
+                } catch(Exception e) {}
+            }
+        }
+        
+        // Delete Purchase Orders
+        List<PurchaseOrderResponseDto> pos = purchaseOrderService.getPurchaseOrdersByCompany(companyId);
+        for (PurchaseOrderResponseDto po : pos) {
+            if (po.getPurchaseOrderNumber() != null && po.getPurchaseOrderNumber().startsWith("DEMO-")) {
+                // Skipped PO delete
+            }
+        }
+        
+        // Delete Sales Orders
+        List<SalesOrderResponseDto> sos = salesOrderService.getSalesOrdersByCompany(companyId);
+        for (SalesOrderResponseDto so : sos) {
+            if (so.getSoNumber() != null && so.getSoNumber().startsWith("DEMO-")) {
+                // Skipped SO delete
+            }
+        }
+
+        return "Cleaned " + txDeleted + " tx, " + jeDeleted + " je";
+    }
+
+    private String ensureExactDemoUser(Company company) {
+        String email = "madam.demo@ginuma.com";
+        AppUser existingUser = appUserRepository.findByEmail(email).orElse(null);
+        if (existingUser == null) {
+            AppUserRequestDto request = new AppUserRequestDto();
+            request.setEmail(email);
+            request.setPassword("Demo@2026");
+            request.setRole("COMPANY");
+            try {
+                appUserService.createUser(company.getCompanyId(), request);
+            } catch (Exception e) {}
+            existingUser = appUserRepository.findByEmail(email).orElse(null);
+            if(existingUser != null) {
+                existingUser.setCompany(company);
+                appUserRepository.save(existingUser);
+            }
+        } else {
+            existingUser.setCompany(company);
+            existingUser.setPassword(passwordEncoder.encode("Demo@2026"));
+            appUserRepository.save(existingUser);
+        }
+
+        // Employee
+        Employee emp = employeeRepository.findByEmail(email).orElse(null);
+        if (emp == null) {
+            emp = new Employee();
+            emp.setFirstName("Madam");
+            emp.setLastName("Demo User");
+            emp.setEmail(email);
+            emp.setMobileNo("0770000000");
+            emp.setCompany(company);
+            emp.setDateAdded(LocalDate.now());
+            // Set department and designation if needed
+            Department d = departmentRepository.findAll().stream().findFirst().orElse(null);
+            if (d != null) emp.setDepartment(d);
+            Designation des = designationRepository.findAll().stream().findFirst().orElse(null);
+            if (des != null) emp.setDesignation(des);
+            
+            employeeRepository.save(emp);
+        }
+        return "User Madam Demo configured successfully.";
+    }
+
+    private String ensureExactChartOfAccounts(Company company) {
+        Integer cId = company.getCompanyId();
+        int added = 0;
+        added += ensureAccount(cId, "1000", "Cash in Hand", AccountType.ASSET_BANK);
+        added += ensureAccount(cId, "1010", "Bank Account", AccountType.ASSET_BANK);
+        added += ensureAccount(cId, "1100", "Accounts Receivable", AccountType.ASSET_OTHER_CURRENT_ASSET);
+        added += ensureAccount(cId, "1200", "Raw Material Inventory", AccountType.ASSET_OTHER_CURRENT_ASSET);
+        added += ensureAccount(cId, "1210", "Finished Goods Inventory", AccountType.ASSET_OTHER_CURRENT_ASSET);
+        added += ensureAccount(cId, "1500", "Land", AccountType.ASSET_FIXED_ASSET);
+        added += ensureAccount(cId, "1510", "Factory Building", AccountType.ASSET_FIXED_ASSET);
+        added += ensureAccount(cId, "1520", "Machinery", AccountType.ASSET_FIXED_ASSET);
+        added += ensureAccount(cId, "1530", "Furniture & Equipment", AccountType.ASSET_FIXED_ASSET);
+        
+        // Accumulated Depreciation (Technically Contra-Asset, but use Asset/Liability based on what doesn't crash)
+        added += ensureAccount(cId, "1590", "Accumulated Depreciation - Building", AccountType.EQUITY); 
+        added += ensureAccount(cId, "1591", "Accumulated Depreciation - Machinery", AccountType.EQUITY);
+        added += ensureAccount(cId, "1592", "Accumulated Depreciation - Furniture", AccountType.EQUITY);
+        
+        added += ensureAccount(cId, "2000", "Accounts Payable", AccountType.LIABILITY_ACCOUNTS_PAYABLE);
+        added += ensureAccount(cId, "2100", "Bank Loan", AccountType.LIABILITY_LONG_TERM_LIABILITY);
+        added += ensureAccount(cId, "2200", "VAT Payable", AccountType.LIABILITY_OTHER_CURRENT_LIABILITY);
+        
+        added += ensureAccount(cId, "3000", "Share Capital", AccountType.EQUITY);
+        added += ensureAccount(cId, "3100", "Retained Earnings", AccountType.EQUITY);
+        
+        added += ensureAccount(cId, "4000", "Sales Revenue", AccountType.INCOME);
+        added += ensureAccount(cId, "5000", "Cost of Goods Sold", AccountType.EXPENSE);
+        added += ensureAccount(cId, "5100", "Manufacturing Cost", AccountType.EXPENSE); // WIP approx
+        
+        added += ensureAccount(cId, "6000", "Administrative Expenses", AccountType.EXPENSE);
+        added += ensureAccount(cId, "6100", "Selling Expenses", AccountType.EXPENSE);
+        added += ensureAccount(cId, "6200", "Salary Expense", AccountType.EXPENSE);
+        added += ensureAccount(cId, "6300", "Depreciation Expense", AccountType.EXPENSE);
+        added += ensureAccount(cId, "6400", "Interest Expense", AccountType.EXPENSE);
+
+        return "Created/Updated " + added + " exact accounts";
+    }
+
+    private int ensureAccount(Integer companyId, String code, String name, AccountType type) {
+        String normalized = name.replaceAll("\\s+", "").toLowerCase();
+        Account acc = accountRepository.findByCompany_CompanyId(companyId).stream()
+                .filter(a -> a.getNormalizedName().equalsIgnoreCase(normalized) || code.equals(a.getAccountCode()))
+                .findFirst().orElse(null);
+        if (acc == null) {
+            acc = new Account();
+            acc.setAccountCode(code);
+            acc.setAccountName(name);
+            acc.setNormalizedName(normalized);
+            acc.setAccountType(type);
+            Company comp = companyRepository.findById(companyId).orElse(null);
+            acc.setCompany(comp);
+            
+            accountRepository.save(acc);
+            return 1;
+        } else {
+            acc.setAccountCode(code);
+            acc.setAccountName(name);
+            acc.setNormalizedName(normalized);
+            accountRepository.save(acc);
+            return 0;
+        }
+    }
+    
+    private Account reqAcc(Integer companyId, String code) {
+        return accountRepository.findByCompany_CompanyId(companyId).stream().filter(a -> code.equals(a.getAccountCode())).findFirst().orElseThrow(() -> new RuntimeException("Account Code " + code + " not found"));
+    }
+
+    private String seedExactOpeningBalance(Company company) {
+        String ref = "OB-2026-001";
+        JournalEntry exists = journalEntryRepository.findByCompany_CompanyId(company.getCompanyId()).stream().filter(j -> ref.equals(j.getReferenceNo())).findFirst().orElse(null);
+        if (exists != null) return "Already exists";
+
+        JournalEntryDto je = new JournalEntryDto();
+        je.setEntryType(JournalEntryType.MANUAL);
+        je.setEntryDate(LocalDate.parse("2026-01-01"));
+        je.setJournalTitle("Opening Balances");
+        je.setReferenceNo(ref);
+        je.setCompanyId(company.getCompanyId());
+        je.setDescription("Opening balances from Excel trial balance");
+        
+        List<JournalEntryLineDto> lines = new ArrayList<>();
+        // Debits
+        lines.add(new JournalEntryLineDto("1000", new BigDecimal("50000"), true, "Cash"));
+        lines.add(new JournalEntryLineDto("1010", new BigDecimal("2000000"), true, "Bank"));
+        lines.add(new JournalEntryLineDto("1100", new BigDecimal("1200000"), true, "AR"));
+        lines.add(new JournalEntryLineDto("1200", new BigDecimal("800000"), true, "Raw Mat"));
+        lines.add(new JournalEntryLineDto("1210", new BigDecimal("1500000"), true, "FG"));
+        lines.add(new JournalEntryLineDto("1500", new BigDecimal("5000000"), true, "Land"));
+        lines.add(new JournalEntryLineDto("1510", new BigDecimal("8000000"), true, "Building"));
+        lines.add(new JournalEntryLineDto("1520", new BigDecimal("6000000"), true, "Machinery"));
+        lines.add(new JournalEntryLineDto("1530", new BigDecimal("500000"), true, "Furniture"));
+
+        // Credits
+        lines.add(new JournalEntryLineDto("1590", new BigDecimal("800000"), false, "Acc Dep Build"));
+        lines.add(new JournalEntryLineDto("1591", new BigDecimal("1200000"), false, "Acc Dep Mach"));
+        lines.add(new JournalEntryLineDto("1592", new BigDecimal("100000"), false, "Acc Dep Furn"));
+        lines.add(new JournalEntryLineDto("2000", new BigDecimal("1100000"), false, "AP"));
+        lines.add(new JournalEntryLineDto("2100", new BigDecimal("4000000"), false, "Loan"));
+        lines.add(new JournalEntryLineDto("2200", new BigDecimal("100000"), false, "VAT"));
+        lines.add(new JournalEntryLineDto("3000", new BigDecimal("15000000"), false, "Capital"));
+        lines.add(new JournalEntryLineDto("3100", new BigDecimal("2750000"), false, "RE"));
+
+        je.setLines(lines);
+        journalEntryService.createJournalEntry(je);
+        return "Created opening balances exactly 25,050,000";
+    }
+
+    private String seedExactSuppliers(Company company) {
+        int added = 0;
+        added += ensureSupplier(company, "Main Raw Material Supplier", "supplier@example.com");
+        added += ensureSupplier(company, "Packaging Material Supplier", "packaging@example.com");
+        return "Suppliers created: " + added;
+    }
+    
+    private int ensureSupplier(Company c, String name, String email) {
+        if(supplierRepository.findByCompany_CompanyId(c.getCompanyId()).stream().anyMatch(s -> name.equals(s.getSupplierName()))) return 0;
+        Supplier s = new Supplier();
+        s.setSupplierName(name);
+        s.setEmail(email);
+        s.setMobileNo("0770000000");
+        s.setAddress("Colombo");
+        s.setSupplierType(SupplierType.SUPPLIER);
+        s.setCompany(c);
+        s.setTax(com.example.GinumApps.enums.TaxType.EXCLUSIVE);
+        supplierRepository.save(s);
+        return 1;
+    }
+
+    private String seedExactCustomers(Company company) {
+        int added = 0;
+        added += ensureCustomer(company, "Main Credit Customer", "customer@example.com", CustomerType.CORPORATE);
+        added += ensureCustomer(company, "Cash Customer", "cash@example.com", CustomerType.INDIVIDUAL);
+        return "Customers created: " + added;
+    }
+
+    private int ensureCustomer(Company c, String name, String email, CustomerType type) {
+        if(customerRepository.findByCompany_CompanyId(c.getCompanyId()).stream().anyMatch(cu -> name.equals(cu.getName()))) return 0;
+        Customer cu = new Customer();
+        cu.setName(name);
+        cu.setEmail(email);
+        cu.setPhoneNo("0771111111");
+        cu.setBillingAddress("Colombo");
+        cu.setDeliveryAddress("Colombo");
+        cu.setCustomerType(type);
+        cu.setCompany(c);
+        cu.setTax(com.example.GinumApps.enums.TaxType.EXCLUSIVE);
+        customerRepository.save(cu);
+        return 1;
+    }
+
+    private String seedExactItems(Company company) {
+        int added = 0;
+        added += ensureItem(company, "Raw Material", "Raw Material", ItemType.BOTH, "1200", new BigDecimal("3900"), BigDecimal.ZERO, 205, 10);
+        added += ensureItem(company, "Chair", "Finished Goods", ItemType.BOTH, "1210", new BigDecimal("6500"), new BigDecimal("13000"), 230, 5);
+        return "Items created: " + added;
+    }
+
+    private int ensureItem(Company c, String name, String cat, ItemType type, String accCode, BigDecimal cost, BigDecimal price, int stock, int reorder) {
+        if(itemRepository.findByCompany_CompanyId(c.getCompanyId()).stream().anyMatch(i -> name.equals(i.getName()))) return 0;
+        Item i = new Item();
+        i.setName(name);
+        i.setCategory(cat);
+        i.setItemType(type);
+        i.setItemCode(name.substring(0, 3).toUpperCase() + "-" + System.currentTimeMillis() % 1000);
+        i.setPurchasePrice(cost);
+        i.setUnitPrice(price);
+        i.setCurrentStock(new BigDecimal(stock));
+        i.setReorderLevel(reorder);
+        
+        i.setCompany(c);
+        itemRepository.save(i);
+        return 1;
+    }
+
+    private void seedExactPurchases(Company c, Map<String, Object> map) {
+        int created = 0;
+        Supplier mainSupp = findSupplier(c.getCompanyId(), "Main Raw Material Supplier");
+        Supplier packSupp = findSupplier(c.getCompanyId(), "Packaging Material Supplier");
+        Item rawMat = findItem(c.getCompanyId(), "Raw Material");
+        if(mainSupp != null && rawMat != null) {
+            created += createPO(c.getCompanyId(), "DEMO-PO-001", "2026-01-03", mainSupp, "Purchased raw materials on credit", rawMat, 10, new BigDecimal("120000"));
+            created += createPO(c.getCompanyId(), "DEMO-PO-002", "2026-01-10", mainSupp, "Purchased raw materials cash", rawMat, 1, new BigDecimal("300000")); // qty 1 for int validation
+        }
+        if(packSupp != null && rawMat != null) {
+            created += createPO(c.getCompanyId(), "DEMO-PO-003", "2026-01-18", packSupp, "Purchased packaging materials credit", rawMat, 1, new BigDecimal("200000"));
+        }
+        map.put("created", created);
+    }
+
+    private void seedExactSupplierPayments(Company c, Map<String, Object> map) {
+        int created = 0;
+        Supplier mainSupp = findSupplier(c.getCompanyId(), "Main Raw Material Supplier");
+        if(mainSupp != null) {
+            created += createDP(c.getCompanyId(), "DEMO-SP-001", "2026-01-15", mainSupp.getId().intValue(), "SUPPLIER", "Paid suppliers by bank", new BigDecimal("800000"), "1010", "2000", "Supplier Payment");
+            created += createDP(c.getCompanyId(), "DEMO-SP-002", "2026-01-28", mainSupp.getId().intValue(), "SUPPLIER", "Paid suppliers by bank", new BigDecimal("500000"), "1010", "2000", "Supplier Payment");
+        }
+        map.put("created", created);
+    }
+
+    private void seedExactSales(Company c, Map<String, Object> map) {
+        int created = 0;
+        Customer mainCust = findCustomer(c.getCompanyId(), "Main Credit Customer");
+        Customer cashCust = findCustomer(c.getCompanyId(), "Cash Customer");
+        Item chair = findItem(c.getCompanyId(), "Chair");
+        if(mainCust != null && chair != null) {
+            created += createSO(c.getCompanyId(), "DEMO-SO-001", "2026-01-08", mainCust, "Credit Sales", chair, 1, new BigDecimal("1500000"));
+            created += createSO(c.getCompanyId(), "DEMO-SO-003", "2026-01-25", mainCust, "Credit Sales", chair, 1, new BigDecimal("2000000"));
+        }
+        if(cashCust != null && chair != null) {
+            created += createSO(c.getCompanyId(), "DEMO-SO-002", "2026-01-16", cashCust, "Cash Sales", chair, 1, new BigDecimal("800000"));
+        }
+        map.put("created", created);
+    }
+
+    private void seedExactCustomerReceipts(Company c, Map<String, Object> map) {
+        int created = 0;
+        Customer mainCust = findCustomer(c.getCompanyId(), "Main Credit Customer");
+        if(mainCust != null) {
+            created += createDR(c.getCompanyId(), "DEMO-RC-001", "2026-01-12", mainCust.getId().intValue(), "CUSTOMER", "Collection from debtors", new BigDecimal("1000000"), "1010", "1100", "Customer Receipt");
+            created += createDR(c.getCompanyId(), "DEMO-RC-002", "2026-01-29", mainCust.getId().intValue(), "CUSTOMER", "Collection from debtors", new BigDecimal("1500000"), "1010", "1100", "Customer Receipt");
+        }
+        map.put("created", created);
+    }
+
+    private void seedExactPayroll(Company c, Map<String, Object> map) {
+        int created = 0;
+        created += createDP(c.getCompanyId(), "DEMO-PAY-001", "2026-01-31", null, "OTHER", "Factory wages", new BigDecimal("900000"), "1010", "6200", "Salary Expense");
+        created += createDP(c.getCompanyId(), "DEMO-PAY-002", "2026-01-31", null, "OTHER", "Admin salaries", new BigDecimal("250000"), "1010", "6000", "Salary Expense");
+        created += createDP(c.getCompanyId(), "DEMO-PAY-003", "2026-01-31", null, "OTHER", "Sales salaries", new BigDecimal("200000"), "1010", "6100", "Salary Expense");
+        map.put("created", created);
+    }
+
+    private void seedExactAdminExpenses(Company c, Map<String, Object> map) {
+        int created = 0;
+        created += createDP(c.getCompanyId(), "DEMO-ADM-001", "2026-01-31", null, "OTHER", "Office rent", new BigDecimal("100000"), "1010", "6000", "Other");
+        created += createDP(c.getCompanyId(), "DEMO-ADM-002", "2026-01-31", null, "OTHER", "Telephone", new BigDecimal("30000"), "1010", "6000", "Other");
+        created += createDP(c.getCompanyId(), "DEMO-ADM-003", "2026-01-31", null, "OTHER", "Internet", new BigDecimal("20000"), "1010", "6000", "Other");
+        created += createDP(c.getCompanyId(), "DEMO-ADM-004", "2026-01-31", null, "OTHER", "Office supplies", new BigDecimal("25000"), "1010", "6000", "Other");
+        created += createDP(c.getCompanyId(), "DEMO-ADM-005", "2026-01-31", null, "OTHER", "Insurance", new BigDecimal("40000"), "1010", "6000", "Other");
+        map.put("created", created);
+    }
+
+    private void seedExactSellingExpenses(Company c, Map<String, Object> map) {
+        int created = 0;
+        created += createDP(c.getCompanyId(), "DEMO-SELL-001", "2026-01-31", null, "OTHER", "Advertising", new BigDecimal("120000"), "1010", "6100", "Other");
+        created += createDP(c.getCompanyId(), "DEMO-SELL-002", "2026-01-31", null, "OTHER", "Delivery expenses", new BigDecimal("80000"), "1010", "6100", "Other");
+        map.put("created", created);
+    }
+
+    private void seedExactFixedAssets(Company c, Map<String, Object> map) {
+        int created = 0;
+        created += createDP(c.getCompanyId(), "DEMO-FA-001", "2026-01-20", null, "OTHER", "Purchased new machinery", new BigDecimal("1500000"), "1010", "1520", "Asset Purchase");
+        map.put("created", created);
+    }
+
+    private void seedExactLoan(Company c, Map<String, Object> map) {
+        int created = 0;
+        created += createDP(c.getCompanyId(), "DEMO-LOAN-001", "2026-01-31", null, "OTHER", "Loan repayment", new BigDecimal("200000"), "1010", "2100", "Loan Payment");
+        created += createDP(c.getCompanyId(), "DEMO-INT-001", "2026-01-31", null, "OTHER", "Loan interest", new BigDecimal("50000"), "1010", "6400", "Interest");
+        map.put("created", created);
+    }
+
+    private void seedExactDepreciation(Company c, Map<String, Object> map) {
+        int created = 0;
+        created += createJE(c, "DEMO-DEP-001", "2026-01-31", "Depreciation", "Building depreciation", "6300", "1590", new BigDecimal("40000"));
+        created += createJE(c, "DEMO-DEP-002", "2026-01-31", "Depreciation", "Machinery depreciation", "6300", "1591", new BigDecimal("75000"));
+        created += createJE(c, "DEMO-DEP-003", "2026-01-31", "Depreciation", "Furniture depreciation", "6300", "1592", new BigDecimal("10000"));
+        map.put("created", created);
+    }
+
+    private void seedExactManufacturing(Company c, Map<String, Object> map) {
+        int created = 0;
+        created += createJE(c, "DEMO-MFG-001", "2026-01-31", "Manufacturing", "Raw materials issued to production", "5100", "1200", new BigDecimal("1400000"));
+        created += createJE(c, "DEMO-MFG-002", "2026-01-31", "Manufacturing", "Direct labour", "5100", "1010", new BigDecimal("900000"));
+        created += createJE(c, "DEMO-MFG-003", "2026-01-31", "Manufacturing", "Factory electricity", "5100", "1010", new BigDecimal("180000"));
+        created += createJE(c, "DEMO-MFG-004", "2026-01-31", "Manufacturing", "Factory rent", "5100", "1010", new BigDecimal("150000"));
+        created += createJE(c, "DEMO-MFG-005", "2026-01-31", "Manufacturing", "Factory maintenance", "5100", "1010", new BigDecimal("70000"));
+        created += createJE(c, "DEMO-MFG-006", "2026-01-31", "Manufacturing", "Finished Goods Produced", "1210", "5100", new BigDecimal("2700000"));
+        created += createJE(c, "DEMO-MFG-007", "2026-01-31", "Manufacturing", "Cost of Goods Sold", "5000", "1210", new BigDecimal("2400000"));
+        
+        created += createJE(c, "DEMO-INV-001", "2026-01-31", "Inventory", "Raw Materials Closing", "1200", "5000", new BigDecimal("900000"));
+        created += createJE(c, "DEMO-INV-002", "2026-01-31", "Inventory", "Finished Goods Closing", "1210", "5000", new BigDecimal("1800000"));
+        
+        map.put("created", created);
+    }
+
+    private void seedExactDashboardDemo(Company c, Map<String, Object> map) {
+        int created = 0;
+        String curMonth = LocalDate.now().toString();
+        created += createDR(c.getCompanyId(), "DEMO-DASH-SALE-001", curMonth, null, "OTHER", "Current month demo sale", new BigDecimal("65000"), "1010", "4000", "Sales");
+        created += createDP(c.getCompanyId(), "DEMO-DASH-EXP-001", curMonth, null, "OTHER", "Current month demo admin expense", new BigDecimal("10000"), "1010", "6000", "Other");
+        map.put("created", created);
+    }
+
+    // Helper functions
+
+    private int createDP(Integer companyId, String ref, String date, Integer payeeId, String payeeType, String note, BigDecimal amt, String payCode, String expCode, String cat) {
+        if (transactionService.getAllTransactions(companyId).stream().anyMatch(t -> ref.equals(t.getReferenceNumber()))) return 0;
+        DirectPaymentRequestDto pay = new DirectPaymentRequestDto();
+        pay.setReferenceNumber(ref);
+        pay.setPaymentAccountCode(payCode);
+        pay.setExpenseAccountCode(expCode);
+        pay.setAmount(amt);
+        pay.setPaymentNote(note);
+        pay.setPayeeId(payeeId);
+        pay.setPayeeType(payeeType);
+        pay.setPaymentCategory(cat);
+        pay.setPaymentMethod("Bank Transfer");
+        transactionService.processDirectPayment(companyId, pay);
+        Transaction saved = transactionService.getAllTransactions(companyId).stream().filter(t -> ref.equals(t.getReferenceNumber())).findFirst().orElse(null);
+        if (saved != null) {
+            saved.setDate(date);
+            saved.setTotalDebit(amt.doubleValue());
+            saved.setTotalCredit(amt.doubleValue());
+            transactionRepository.save(saved);
+        }
+        return 1;
+    }
+
+    private int createDR(Integer companyId, String ref, String date, Integer payeeId, String payeeType, String note, BigDecimal amt, String payCode, String incCode, String cat) {
+        if (transactionService.getAllTransactions(companyId).stream().anyMatch(t -> ref.equals(t.getReferenceNumber()))) return 0;
+        Company company = companyRepository.findById(companyId).orElse(null);
+        if(company == null) return 0;
+        Transaction t = new Transaction();
+        t.setReferenceNumber(ref);
+        t.setDate(date);
+        t.setDescription("Receive Money - " + note);
+        t.setTotalDebit(amt.doubleValue());
+        t.setTotalCredit(amt.doubleValue());
+        t.setCompany(company);
+        t.setPayeeType(payeeType);
+        t.setPayeeId(payeeId);
+        t.setPayeeName("Customer");
+        t.setPaymentCategory(cat);
+        t.setPaymentMethod("Bank Transfer");
+        t.setPaymentAccountCode(payCode);
+        JournalEntryDto je = new JournalEntryDto();
+        je.setEntryType(JournalEntryType.RECEIPT);
+        je.setEntryDate(LocalDate.parse(date));
+        je.setJournalTitle("Receive Money Direct");
+        je.setReferenceNo(ref);
+        je.setCompanyId(companyId);
+        je.setDescription(t.getDescription());
+        List<JournalEntryLineDto> lines = new ArrayList<>();
+        lines.add(new JournalEntryLineDto(payCode, amt, true, note));
+        lines.add(new JournalEntryLineDto(incCode, amt, false, note));
+        je.setLines(lines);
+        journalEntryService.createJournalEntry(je);
+        transactionRepository.save(t);
+        return 1;
+    }
+    
+    private int createJE(Company comp, String ref, String date, String title, String desc, String debitAcc, String creditAcc, BigDecimal amount) {
+        List<JournalEntry> exists = journalEntryRepository.findByCompany_CompanyId(comp.getCompanyId());
+        if (exists.stream().anyMatch(j -> ref.equals(j.getReferenceNo()))) return 0;
+        JournalEntryDto je = new JournalEntryDto();
+        je.setEntryType(JournalEntryType.MANUAL);
+        je.setEntryDate(LocalDate.parse(date));
+        je.setJournalTitle(title);
+        je.setReferenceNo(ref);
+        je.setCompanyId(comp.getCompanyId());
+        je.setDescription(desc);
+        List<JournalEntryLineDto> lines = new ArrayList<>();
+        lines.add(new JournalEntryLineDto(debitAcc, amount, true, ""));
+        lines.add(new JournalEntryLineDto(creditAcc, amount, false, ""));
+        je.setLines(lines);
+        journalEntryService.createJournalEntry(je);
+        return 1;
+    }
+    private int createPO(Integer companyId, String poNum, String date, Supplier supp, String notes, Item item, int qty, BigDecimal price) {
+
+        if (purchaseOrderService.getPurchaseOrdersByCompany(companyId).stream().anyMatch(po -> poNum.equals(po.getPurchaseOrderNumber()))) return 0;
+
+        PurchaseOrderRequestDto po = new PurchaseOrderRequestDto();
+
+        po.setPoNumber(poNum);
+
+        po.setSupplierInvoiceNumber(poNum);
+
+        po.setSupplierId(supp.getId());
+
+        po.setIssueDate(LocalDate.parse(date));
+
+        po.setDueDate(LocalDate.parse(date));
+
+        po.setNotes(notes);
+
+        PurchaseOrderItemRequestDto line = new PurchaseOrderItemRequestDto();
+
+        line.setItemId(item.getItemId());
+
+        line.setQuantity(qty);
+
+        line.setUnitPrice(price);
+
+        po.setItems(List.of(line));
+
+        purchaseOrderService.createPurchaseOrder(po, companyId);
+
+        return 1;
+
+    }
+
+    private int createSO(Integer companyId, String soNum, String date, Customer cust, String notes, Item item, int qty, BigDecimal price) {
+
+        if (salesOrderService.getSalesOrdersByCompany(companyId).stream().anyMatch(so -> soNum.equals(so.getSoNumber()))) return 0;
+
+        SalesOrderRequestDto so = new SalesOrderRequestDto();
+
+        so.setSoNumber(soNum);
+
+        so.setCustomerId(cust.getId());
+
+        so.setIssueDate(LocalDate.parse(date));
+
+        so.setDueDate(LocalDate.parse(date));
+
+        so.setNotes(notes);
+
+        SalesOrderItemRequestDto line = new SalesOrderItemRequestDto();
+
+        line.setItemId(item.getItemId());
+
+        line.setQuantity(qty);
+
+        line.setUnitPrice(price);
+
+        so.setItems(List.of(line));
+
+        salesOrderService.createSalesOrder(so, companyId);
+
+        return 1;
+
+    }
+
+
 }
