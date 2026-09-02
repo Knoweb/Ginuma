@@ -34,4 +34,16 @@ public class JournalEntryController {
                     .body(Map.of("error", ex.getMessage()));
         }
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getJournalEntry(
+            @PathVariable Integer companyId,
+            @PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(journalEntryService.getJournalEntry(companyId, id));
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", ex.getMessage()));
+        }
+    }
 }
