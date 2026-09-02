@@ -12,6 +12,7 @@ import Register from "../pages/Register/Register";
 import NotFound from "../pages/NotFound/NotFound";
 import PrivateRoute from "./PrivateRoute";
 import PublicRoute from "./PublicRoute";
+import LandingPage from "../pages/LandingPage/LandingPage";
 import MainLayout from "../layout/MainLayout";
 import DashboardPage from "../pages/Dashboard/DashboardPage";
 import AllEmployeesPage from "../components/Employee/AllEmployeePage";
@@ -63,9 +64,8 @@ function AppRouter() {
   return (
     <Router>
       <Routes>
-        <Route element={<PublicRoute />}>
-          <Route path="/login" element={<Login />} />
-        </Route>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route
           path="/register"
           element={
@@ -93,15 +93,13 @@ function AppRouter() {
 
         {/* Admin Routings */}
         <Route
-          path="/"
           element={
             <PrivateRoute>
               <MainLayout />
             </PrivateRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="profile" element={<CompanyProfile />} />
+          <Route path="/profile" element={<CompanyProfile />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="employee">
