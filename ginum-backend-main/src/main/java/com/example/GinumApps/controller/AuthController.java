@@ -20,11 +20,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 // AuthController.java
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
@@ -49,11 +55,15 @@ public class AuthController {
             String role = authentication.getAuthorities().iterator().next().getAuthority();
             String token = jwtUtil.generateToken(userDetails.getUsername(), role);
 
+            logger.info("Successful login for user: {}, role: {}", userDetails.getUsername(), role);
+
             return ResponseEntity.ok(buildLoginResponse(userDetails.getUsername(), role, token));
 
         } catch (BadCredentialsException e) {
+            logger.warn("Failed login attempt for email: {}", authRequest.getEmail());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(java.util.Map.of("error", "Invalid credentials"));
         } catch (RuntimeException e) {
+            logger.error("Error during login for email: {}", authRequest.getEmail(), e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(java.util.Map.of("error", e.getMessage()));
         }
     }
