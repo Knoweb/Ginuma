@@ -62,7 +62,12 @@ const Header = ({ toggleSidebar, isSidebarVisible }) => {
   };
 
   // Function to handle logout
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post("/api/auth/logout");
+    } catch (e) {
+      console.error("Logout failed:", e);
+    }
     localStorage.clear();
     sessionStorage.clear();
     navigate("/login");

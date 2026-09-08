@@ -3,13 +3,15 @@ import { Navigate, Outlet } from "react-router-dom";
 
 // PrivateRoute component to protect authenticated routes
 const PrivateRoute = ({ children }) => {
-  // Check if the user is authenticated
-  const authToken =
-    localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token");
-  const isAuthenticated =!!authToken; // Convert to boolean
-// true
+  // Check if the user is authenticated via isLoggedIn cookie
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+  };
 
-  // const isAuthenticated = false;
+  const isAuthenticated = getCookie("isLoggedIn") === "true";
 
   // If the user is not authenticated, redirect to login
   if (!isAuthenticated) {

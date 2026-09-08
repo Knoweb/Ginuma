@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.util.ConcurrentModificationException;
 import java.util.stream.Collectors;
 
-@RestControllerAdvice
-public class GlobalExceptionHandler {
+@RestControllerAdvice("rootGlobalExceptionHandler")
+public class RootGlobalExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleEntityNotFound(EntityNotFoundException ex) {

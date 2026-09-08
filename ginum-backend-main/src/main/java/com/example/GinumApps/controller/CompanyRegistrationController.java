@@ -35,10 +35,26 @@ public class CompanyRegistrationController {
             @RequestPart(value = "brReport", required = false) MultipartFile brReport
     ) throws IOException {
 
+        long maxFileSize = 5 * 1024 * 1024; // 5 MB
+
         if (companyLogo != null && !companyLogo.isEmpty()) {
+            if (companyLogo.getSize() > maxFileSize) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Company logo exceeds the maximum size of 5MB"));
+            }
+            String contentType = companyLogo.getContentType();
+            if (contentType == null || (!contentType.startsWith("image/jpeg") && !contentType.startsWith("image/png"))) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Company logo must be a JPEG or PNG image"));
+            }
             dto.setCompanyLogo(companyLogo);
         }
         if (brReport != null && !brReport.isEmpty()) {
+            if (brReport.getSize() > maxFileSize) {
+                return ResponseEntity.badRequest().body(Map.of("error", "BR Report exceeds the maximum size of 5MB"));
+            }
+            String contentType = brReport.getContentType();
+            if (contentType == null || !contentType.equals("application/pdf")) {
+                return ResponseEntity.badRequest().body(Map.of("error", "BR Report must be a PDF document"));
+            }
             dto.setBrReport(brReport);
         }
 

@@ -10,4 +10,5 @@ public class LoginResponse {
     private Integer companyId;
     private String email;
     private String companyName;
+    private boolean mfaRequired;
 }

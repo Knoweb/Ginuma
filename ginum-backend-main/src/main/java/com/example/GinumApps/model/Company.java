@@ -75,6 +75,12 @@ public class Company {
     @Column(nullable = false, length = 255)
     private String password;
 
+    @Column(name = "mfa_enabled")
+    private boolean mfaEnabled = false;
+
+    @Column(name = "mfa_secret")
+    private String mfaSecret;
+
     @Lob
     @Column(name = "company_logo", columnDefinition = "MEDIUMBLOB")
     private byte[] companyLogo;

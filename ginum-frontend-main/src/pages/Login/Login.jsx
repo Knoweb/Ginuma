@@ -9,10 +9,11 @@ import Alert from "../../components/Alert/Alert";
 const Login = () => {
   usePageTitle("Login"); // Set the page title to "Login" using the custom hook
 
-  // State to manage password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaRequired, setMfaRequired] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
@@ -23,11 +24,18 @@ const Login = () => {
       const res = await axios.post(`${apiUrl}/api/auth/login`, {
         email,
         password,
-      });
+        mfaCode: mfaRequired ? mfaCode : null,
+      }, { withCredentials: true });
 
       // axios වලදී actual data එක තියෙන්නේ res.data කියන එක ඇතුළෙයි
       const response = res.data; 
       console.log("Login response:", response);
+
+      if (response.mfaRequired) {
+        setMfaRequired(true);
+        setError("");
+        return;
+      }
 
       if (!response.token || !response.role) {
         throw new Error("Missing token or role in response");
@@ -35,7 +43,6 @@ const Login = () => {
 
       // Save authentication details
       if (response.role === "ROLE_SUPER_ADMIN") {
-        sessionStorage.setItem("auth_token", response.token);
         sessionStorage.setItem("role", response.role);
         sessionStorage.setItem("userId", response.userId ?? "");
 
@@ -49,7 +56,6 @@ const Login = () => {
         response.role === "ROLE_APP_USER" ||
         response.role === "APP_USER"
       ) {
-        sessionStorage.setItem("auth_token", response.token);
         sessionStorage.setItem("role", response.role);
         sessionStorage.setItem("companyId", response.companyId ?? "");
         sessionStorage.setItem("userId", response.userId ?? "");
@@ -101,68 +107,136 @@ const Login = () => {
             <div className="mt-4 text-center text-red-500 text-sm">{error}</div>
           )}
 
-          {/* Login form */}
-          <form className="mt-6" onSubmit={handleSubmit}>
-            {/* Email input field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-lg border px-4 py-2 focus:border-blue-500 focus:ring-2"
-                placeholder="Enter your email"
-                required
-              />
-            </div>
+          {/* Login Form */}
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {!mfaRequired ? (
+              <>
+                <div className="space-y-4">
+                  {/* Email Input Field */}
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Email address
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+                      placeholder="Enter your email"
+                    />
+                  </div>
 
-            {/* Password input field with toggle visibility */}
-            <div className="mt-4">
-              <label className="block text-gray-700">Password</label>
-              <div className="relative">
-                <input
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  type={showPassword ? "text" : "password"} // Toggle between text and password type
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your password"
-                  required
-                />
-                {/* Button to toggle password visibility */}
-                <button
-                  type="button" // Changed to type="button" to prevent form submission
-                  className="absolute inset-y-0 right-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}{" "}
-                  {/* Toggle eye icon */}
-                </button>
+                  {/* Password Input Field */}
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Password
+                    </label>
+                    <div className="relative mt-1">
+                      <input
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm pr-10"
+                        placeholder="Enter your password"
+                      />
+                      {/* Show/Hide password toggle button */}
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700"
+                      >
+                        {showPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Remember me and Forgot password options */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      id="remember-me"
+                      name="remember-me"
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="remember-me"
+                      className="ml-2 block text-sm text-gray-900"
+                    >
+                      Remember me
+                    </label>
+                  </div>
+                  <div className="text-sm">
+                    <a
+                      href="#"
+                      className="font-medium text-blue-600 hover:text-blue-500"
+                    >
+                      Forgot your password?
+                    </a>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="mfaCode"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Authenticator Code
+                  </label>
+                  <input
+                    id="mfaCode"
+                    name="mfaCode"
+                    type="text"
+                    required
+                    value={mfaCode}
+                    onChange={(e) => setMfaCode(e.target.value)}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm text-center tracking-widest text-lg"
+                    placeholder="000000"
+                    maxLength={6}
+                  />
+                  <p className="mt-2 text-xs text-gray-500 text-center">
+                    Open Google Authenticator and enter the 6-digit code.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Remember me checkbox and forgot password link */}
-            <div className="mt-4 flex items-center justify-between">
-              <label className="flex items-center text-sm">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="ml-2 text-gray-700">Remember me</span>
-              </label>
-              <a href="#" className="text-sm text-blue-600 hover:underline">
-                Forgot password?
-              </a>
+            {/* Submit Button */}
+            <div>
+              <button
+                type="submit"
+                className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                {mfaRequired ? "Verify Code" : "Sign in"}
+              </button>
+              {mfaRequired && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMfaRequired(false);
+                    setMfaCode("");
+                  }}
+                  className="mt-3 group relative flex w-full justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
-
-            {/* Sign-in button */}
-            <button
-              type="submit"
-              className="mt-6 w-full rounded-lg bg-blue-500 px-4 py-2 text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Sign in
-            </button>
           </form>
         </div>
 

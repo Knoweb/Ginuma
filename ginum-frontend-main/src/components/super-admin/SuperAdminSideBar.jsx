@@ -9,6 +9,7 @@ import {
   FaChevronDown,
   FaChevronRight,
 } from "react-icons/fa";
+import api from "../../utils/api";
 
 const SuperAdminSideBar = ({ isCollapsed }) => {
   const [openCompany, setOpenCompany] = useState(false);
@@ -17,7 +18,12 @@ const SuperAdminSideBar = ({ isCollapsed }) => {
   const navigate = useNavigate(); // Initialize navigate
 
   // Function to handle logout
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post("/api/auth/logout");
+    } catch (e) {
+      console.error("Logout failed:", e);
+    }
     localStorage.clear();
     sessionStorage.clear();
     navigate("/login");

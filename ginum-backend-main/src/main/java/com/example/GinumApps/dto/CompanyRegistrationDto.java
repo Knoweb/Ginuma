@@ -59,7 +59,8 @@ public class CompanyRegistrationDto {
     @Size(max = 20)
     private String websiteUrl;
 
-    @NotBlank @Size(min = 6, max = 50)
+    @NotBlank @Size(min = 8, max = 50)
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).*$", message = "Password must contain at least one digit, one lowercase, one uppercase, and one special character")
     private String password;
 
     @NotNull
