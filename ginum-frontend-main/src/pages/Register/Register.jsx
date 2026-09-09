@@ -129,9 +129,8 @@ const Register = () => {
       setRegistrationSuccess(true);
     } catch (error) {
       console.error("Registration error:", error);
-      setSubmitError(
-        error.response?.data?.message || error.response?.data?.error || "Registration failed. Please try again."
-      );
+      const serverMsg = error.response?.data?.error || error.response?.data?.message || (typeof error.response?.data === "string" ? error.response.data : null);
+      setSubmitError(serverMsg || "Registration failed. Please check your information and try again.");
     } finally {
       setIsSubmitting(false);
     }

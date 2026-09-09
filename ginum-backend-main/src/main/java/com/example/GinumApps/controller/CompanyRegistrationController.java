@@ -31,9 +31,16 @@ public class CompanyRegistrationController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> registerCompany(
             @RequestPart("company") @Valid CompanyRegistrationDto dto,
+            org.springframework.validation.BindingResult bindingResult,
             @RequestPart(value = "companyLogo", required = false) MultipartFile companyLogo,
             @RequestPart(value = "brReport", required = false) MultipartFile brReport
     ) throws IOException {
+
+        if (bindingResult.hasErrors()) {
+            String field = bindingResult.getFieldError() != null ? bindingResult.getFieldError().getField() : "";
+            String defaultMessage = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return ResponseEntity.badRequest().body(Map.of("error", "Validation failed on " + field + ": " + defaultMessage));
+        }
 
         long maxFileSize = 5 * 1024 * 1024; // 5 MB
 
@@ -58,7 +65,11 @@ public class CompanyRegistrationController {
             dto.setBrReport(brReport);
         }
 
-        companyService.registerCompany(dto);
+        try {
+            companyService.registerCompany(dto);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Registration failed"));
+        }
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

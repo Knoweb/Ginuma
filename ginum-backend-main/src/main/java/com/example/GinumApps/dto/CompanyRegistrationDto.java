@@ -13,7 +13,7 @@ import java.time.LocalDate;
 
 @Data
 public class CompanyRegistrationDto {
-    @NotBlank @Size(max = 30)
+    @NotBlank @Size(max = 100)
     private String companyName;
 
     private MultipartFile companyLogo;
@@ -23,28 +23,28 @@ public class CompanyRegistrationDto {
     @NotNull
     private CompanyCategory companyCategory;
 
-    @Size(max = 20)
+    @Size(max = 50)
     private String companyRegNo;
 
-    @Size(max = 20)
+    @Size(max = 50)
     private String tinNo;
 
     @NotNull
     private Boolean isVatRegistered;
 
-    @Size(max = 20)
+    @Size(max = 50)
     private String vatNo;
 
-    @NotBlank @Size(max = 15)
+    @NotBlank @Size(max = 20)
     private String phoneNo;
 
-    @Size(max = 15)
+    @Size(max = 20)
     private String mobileNo;
 
-    @NotBlank @Size(max = 200)
+    @NotBlank @Size(max = 250)
     private String companyRegisteredAddress;
 
-    @Size(max = 200)
+    @Size(max = 250)
     private String companyFactoryAddress;
 
     @NotNull
@@ -53,14 +53,13 @@ public class CompanyRegistrationDto {
     @NotNull
     private Integer currencyId;
 
-    @NotBlank @Email @Size(max = 30)
+    @NotBlank @Email @Size(max = 100)
     private String email;
 
-    @Size(max = 20)
+    @Size(max = 100)
     private String websiteUrl;
 
-    @NotBlank @Size(min = 8, max = 50)
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).*$", message = "Password must contain at least one digit, one lowercase, one uppercase, and one special character")
+    @NotBlank @Size(min = 6, max = 100)
     private String password;
 
     @NotNull
