@@ -2,16 +2,18 @@ package com.example.GinumApps.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.util.Properties;
+
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
@@ -23,6 +25,32 @@ public class EmailService {
 
     @Value("${app.email.from:b88e59001@smtp-brevo.com}")
     private String emailFrom;
+
+    public EmailService(
+            ObjectProvider<JavaMailSender> mailSenderProvider,
+            @Value("${spring.mail.host:smtp-relay.brevo.com}") String mailHost,
+            @Value("${spring.mail.port:587}") int mailPort,
+            @Value("${spring.mail.username:b88e59001@smtp-brevo.com}") String mailUsername,
+            @Value("${spring.mail.password:}") String mailPassword
+    ) {
+        JavaMailSender sender = mailSenderProvider.getIfAvailable();
+        if (sender == null) {
+            JavaMailSenderImpl impl = new JavaMailSenderImpl();
+            impl.setHost(mailHost);
+            impl.setPort(mailPort);
+            impl.setUsername(mailUsername);
+            impl.setPassword(mailPassword);
+
+            Properties props = impl.getJavaMailProperties();
+            props.put("mail.transport.protocol", "smtp");
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+            this.mailSender = impl;
+        } else {
+            this.mailSender = sender;
+        }
+    }
 
     public void sendVerificationEmail(String recipientEmail, String companyName, String token) {
         String verificationUrl = frontendUrl + "/verify-email?token=" + token;
