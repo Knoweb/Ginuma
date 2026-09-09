@@ -11,7 +11,9 @@ import {
   FaSpinner,
   FaArrowRight,
   FaExclamationTriangle,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaShieldAlt,
+  FaMobileAlt
 } from "react-icons/fa";
 import { apiUrl } from "../../utils/api";
 
@@ -48,6 +50,15 @@ const SettingsPage = () => {
     newPassword: "",
     confirmPassword: ""
   });
+
+  // MFA states
+  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [mfaLoading, setMfaLoading] = useState(false);
+  const [mfaQrUri, setMfaQrUri] = useState(null);
+  const [mfaStep, setMfaStep] = useState("idle"); // idle | setup | verify | done
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaError, setMfaError] = useState("");
+  const [mfaSuccess, setMfaSuccess] = useState("");
 
   // Load preferences from localStorage and profile details from API
   useEffect(() => {
@@ -96,7 +107,64 @@ const SettingsPage = () => {
     } else {
       setLoadingProfile(false);
     }
+
+    // Load MFA status from sessionStorage
+    const mfaStatus = sessionStorage.getItem("mfa_enabled");
+    setMfaEnabled(mfaStatus === "true");
   }, []);
+
+  // Request QR Code from backend
+  const handleSetupMfa = async () => {
+    setMfaLoading(true);
+    setMfaError("");
+    setMfaSuccess("");
+    const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("token");
+    try {
+      const res = await fetch(`${apiUrl}/api/auth/mfa/setup`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to get QR code.");
+      const data = await res.json();
+      setMfaQrUri(data.qrCodeUri || data.qrCode || data.uri);
+      setMfaStep("setup");
+    } catch (err) {
+      setMfaError(err.message || "Failed to initialize MFA setup.");
+    } finally {
+      setMfaLoading(false);
+    }
+  };
+
+  // Verify and enable MFA
+  const handleEnableMfa = async () => {
+    if (!mfaCode || mfaCode.length !== 6) {
+      setMfaError("Please enter the 6-digit code from your authenticator app.");
+      return;
+    }
+    setMfaLoading(true);
+    setMfaError("");
+    const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("token");
+    try {
+      const res = await fetch(`${apiUrl}/api/auth/mfa/enable`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ code: mfaCode })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Invalid code. Please try again.");
+      }
+      sessionStorage.setItem("mfa_enabled", "true");
+      setMfaEnabled(true);
+      setMfaStep("done");
+      setMfaQrUri(null);
+      setMfaCode("");
+      setMfaSuccess("Two-Factor Authentication has been enabled successfully!");
+    } catch (err) {
+      setMfaError(err.message || "Failed to verify code.");
+    } finally {
+      setMfaLoading(false);
+    }
+  };
 
   // Save System Preferences
   const handleSaveSystemPrefs = (e) => {
@@ -347,61 +415,176 @@ const SettingsPage = () => {
 
           {/* TAB 2: Security & Passwords */}
           {activeTab === "security" && (
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-6">
-              <div>
-                <h3 className="text-lg font-bold text-gray-855">Security Settings</h3>
-                <p className="text-sm text-gray-405 mt-1">
-                  Ensure your account credentials remain private and secure by updating passwords routinely.
-                </p>
+            <div className="space-y-6">
+
+              {/* Change Password Panel */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-855">Change Password</h3>
+                  <p className="text-sm text-gray-405 mt-1">
+                    Ensure your account credentials remain private and secure by updating passwords routinely.
+                  </p>
+                </div>
+
+                <form onSubmit={handleChangePassword} className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-bold text-gray-600 block">Current Password</label>
+                      <input
+                        type="password"
+                        value={passwordForm.oldPassword}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-base transition"
+                        placeholder="••••••••"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-bold text-gray-600 block">New Password</label>
+                      <input
+                        type="password"
+                        value={passwordForm.newPassword}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-base transition"
+                        placeholder="Min 7 chars"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-bold text-gray-600 block">Confirm New Password</label>
+                      <input
+                        type="password"
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                        className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-base transition"
+                        placeholder="Confirm new password"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-3">
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:bg-rose-400 text-white rounded-xl text-sm font-bold shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      {saving ? <FaSpinner className="animate-spin" /> : <FaLock />} Update Password
+                    </button>
+                  </div>
+                </form>
               </div>
 
-              <form onSubmit={handleChangePassword} className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-bold text-gray-600 block">Current Password</label>
-                    <input
-                      type="password"
-                      value={passwordForm.oldPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-base transition"
-                      placeholder="••••••••"
-                      required
-                    />
+              {/* MFA / 2FA Panel */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-855 flex items-center gap-2">
+                      <FaShieldAlt className="text-blue-600" />
+                      Two-Factor Authentication (2FA)
+                    </h3>
+                    <p className="text-sm text-gray-405 mt-1">
+                      Add an extra layer of security. On login, you'll need a time-based code from your Authenticator App.
+                    </p>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-bold text-gray-600 block">New Password</label>
-                    <input
-                      type="password"
-                      value={passwordForm.newPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-base transition"
-                      placeholder="Min 7 chars"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-bold text-gray-600 block">Confirm New Password</label>
-                    <input
-                      type="password"
-                      value={passwordForm.confirmPassword}
-                      onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-base transition"
-                      placeholder="Confirm new password"
-                      required
-                    />
-                  </div>
+                  <span className={`shrink-0 px-3 py-1 rounded-full text-xs font-bold ${
+                    mfaEnabled ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"
+                  }`}>
+                    {mfaEnabled ? "✓ Enabled" : "Not Enabled"}
+                  </span>
                 </div>
 
-                <div className="flex justify-end pt-3">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:bg-rose-400 text-white rounded-xl text-sm font-bold shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    {saving ? <FaSpinner className="animate-spin" /> : <FaLock />} Update Password
-                  </button>
-                </div>
-              </form>
+                {/* MFA Success/Error */}
+                {mfaError && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-2">
+                    <FaTimes /> {mfaError}
+                  </div>
+                )}
+                {mfaSuccess && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm flex items-center gap-2">
+                    <FaCheck /> {mfaSuccess}
+                  </div>
+                )}
+
+                {/* IDLE - not yet setup */}
+                {mfaStep === "idle" && !mfaEnabled && (
+                  <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 space-y-3">
+                    <p className="text-sm text-blue-800 font-medium">How it works:</p>
+                    <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                      <li>Install <strong>Google Authenticator</strong> or <strong>Authy</strong> on your phone.</li>
+                      <li>Click the button below to get a QR Code.</li>
+                      <li>Scan the QR Code with your app.</li>
+                      <li>Enter the 6-digit code shown in the app to confirm.</li>
+                    </ol>
+                    <button
+                      onClick={handleSetupMfa}
+                      disabled={mfaLoading}
+                      className="mt-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl text-sm font-bold shadow-sm transition cursor-pointer flex items-center gap-2"
+                    >
+                      {mfaLoading ? <FaSpinner className="animate-spin" /> : <FaMobileAlt />}
+                      Set Up 2FA Now
+                    </button>
+                  </div>
+                )}
+
+                {/* SETUP - show QR code */}
+                {mfaStep === "setup" && mfaQrUri && (
+                  <div className="space-y-5">
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 flex flex-col items-center gap-4">
+                      <p className="text-sm font-semibold text-gray-700 text-center">
+                        Scan this QR Code with <strong>Google Authenticator</strong> or <strong>Authy</strong>
+                      </p>
+                      <img
+                        src={mfaQrUri}
+                        alt="MFA QR Code"
+                        className="w-48 h-48 border-4 border-white shadow-lg rounded-xl"
+                      />
+                      <p className="text-xs text-gray-400 text-center">After scanning, enter the 6-digit code below to verify and activate.</p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-sm font-bold text-gray-600 block">Enter 6-Digit Code from App</label>
+                      <div className="flex gap-3">
+                        <input
+                          type="text"
+                          maxLength={6}
+                          value={mfaCode}
+                          onChange={(e) => { setMfaCode(e.target.value.replace(/\D/g, "")); setMfaError(""); }}
+                          placeholder="e.g. 123456"
+                          className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-lg font-mono tracking-[0.4em] text-center transition"
+                        />
+                        <button
+                          onClick={handleEnableMfa}
+                          disabled={mfaLoading || mfaCode.length !== 6}
+                          className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-xl text-sm font-bold shadow-sm transition cursor-pointer flex items-center gap-2"
+                        >
+                          {mfaLoading ? <FaSpinner className="animate-spin" /> : <FaCheck />}
+                          Verify & Enable
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => { setMfaStep("idle"); setMfaQrUri(null); setMfaCode(""); setMfaError(""); }}
+                      className="text-xs text-gray-400 hover:text-gray-600 underline cursor-pointer"
+                    >
+                      Cancel Setup
+                    </button>
+                  </div>
+                )}
+
+                {/* Already enabled */}
+                {mfaEnabled && mfaStep !== "setup" && (
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
+                    <FaShieldAlt className="text-emerald-600 text-2xl shrink-0" />
+                    <div>
+                      <p className="text-sm font-bold text-emerald-800">2FA is Active</p>
+                      <p className="text-xs text-emerald-600 mt-0.5">Your account is protected. Every login requires a code from your Authenticator App.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
             </div>
           )}
 
