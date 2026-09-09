@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Alert from "../components/Alert/Alert";
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/Topbar/Header";
 import Sidebar from "../components/Sidebar/Sidebar";
@@ -9,6 +10,25 @@ const MainLayout = () => {
   const location = useLocation();
 
   const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target && e.target.tagName === 'INPUT' && e.target.type === 'number') {
+        const key = e.key;
+        // If it's a single character key (not Backspace/Arrow/Tab etc)
+        if (key.length === 1) {
+          // Block if it's not a digit, dot, or minus sign
+          if (!/[0-9.\-]/.test(key)) {
+            e.preventDefault();
+            Alert.error(`"${key}" is not allowed. Please enter only numbers.`);
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <div className="flex h-screen w-full">
