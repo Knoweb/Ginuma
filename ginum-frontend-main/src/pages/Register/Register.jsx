@@ -101,6 +101,29 @@ const Register = () => {
 
     try {
       const formDataToSend = new FormData();
+      const companyObject = {
+        companyName: formData.companyName,
+        companyCategory: formData.companyCategory,
+        phoneNo: formData.phoneNo,
+        companyRegisteredAddress: formData.registeredAddress,
+        countryId: parseInt(formData.countryId),
+        currencyId: parseInt(formData.currencyId),
+        email: formData.email,
+        password: formData.password,
+        dateJoined: new Date().toISOString().split("T")[0],
+        isVatRegistered: isVatRegistered,
+        companyRegNo: formData.registrationNo || null,
+        tinNo: formData.tinNo || null,
+        vatNo: isVatRegistered ? formData.vatNo : null,
+        mobileNo: formData.mobileNo || null,
+        companyFactoryAddress: formData.factoryAddress || null,
+        websiteUrl: formData.website || null,
+      };
+
+      formDataToSend.append(
+        "company",
+        new Blob([JSON.stringify(companyObject)], { type: "application/json" })
+      );
 
       formDataToSend.append("companyName", formData.companyName);
       formDataToSend.append("companyCategory", formData.companyCategory);

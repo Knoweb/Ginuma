@@ -30,10 +30,10 @@ public class CompanyRegistrationController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> registerCompany(
-            @RequestPart("company") @Valid CompanyRegistrationDto dto,
+            @Valid @ModelAttribute CompanyRegistrationDto dto,
             org.springframework.validation.BindingResult bindingResult,
-            @RequestPart(value = "companyLogo", required = false) MultipartFile companyLogo,
-            @RequestPart(value = "brReport", required = false) MultipartFile brReport
+            @RequestParam(value = "companyLogo", required = false) MultipartFile companyLogo,
+            @RequestParam(value = "brReport", required = false) MultipartFile brReport
     ) throws IOException {
 
         if (bindingResult.hasErrors()) {
