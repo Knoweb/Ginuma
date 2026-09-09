@@ -62,7 +62,7 @@ public class CompanyRegistrationDto {
     @NotBlank @Size(min = 6, max = 100)
     private String password;
 
-    @NotNull
+    @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
     private LocalDate dateJoined;
 
     private Integer packageId;
