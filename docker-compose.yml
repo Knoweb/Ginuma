@@ -41,7 +41,7 @@ services:
       context: ./ginum-frontend-main
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=${VITE_API_URL:-http://localhost:8081}
+        - VITE_API_URL=${VITE_API_URL-http://localhost:8081}
     container_name: ginum-frontend
     restart: always
     depends_on:
