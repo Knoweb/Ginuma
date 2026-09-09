@@ -76,10 +76,14 @@ public class Company {
     private String password;
 
     @Column(name = "mfa_enabled")
-    private boolean mfaEnabled = false;
+    private Boolean mfaEnabled;
 
     @Column(name = "mfa_secret")
     private String mfaSecret;
+
+    public boolean isMfaEnabled() {
+        return mfaEnabled == null ? false : mfaEnabled;
+    }
 
     @Lob
     @Column(name = "company_logo", columnDefinition = "MEDIUMBLOB")

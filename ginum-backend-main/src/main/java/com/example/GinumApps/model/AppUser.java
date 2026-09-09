@@ -32,17 +32,22 @@ public class AppUser {
     private Company company;
 
     @Column(name = "failed_attempts")
-    private int failedAttempts = 0;
+    private Integer failedAttempts;
 
     @Column(name = "lock_time")
     private LocalDateTime lockTime;
 
     @Column(name = "mfa_enabled")
-    private boolean mfaEnabled = false;
+    private Boolean mfaEnabled;
 
     @Column(name = "mfa_secret")
     private String mfaSecret;
 
+    public int getFailedAttempts() {
+        return failedAttempts == null ? 0 : failedAttempts;
+    }
+
+    public boolean isMfaEnabled() {
+        return mfaEnabled == null ? false : mfaEnabled;
+    }
 }
-
-
