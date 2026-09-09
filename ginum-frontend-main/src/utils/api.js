@@ -1,7 +1,8 @@
 import axios from "axios";
 
 // Export base API URL
-export const apiUrl = import.meta.env.VITE_API_URL; // Ensure this matches your environment variable
+// In development, use VITE_API_URL or localhost. In production, use empty string to hit the Nginx reverse proxy.
+export const apiUrl = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || 'http://localhost:8081') : '';
 
 // Create an Axios instance
 const api = axios.create({
