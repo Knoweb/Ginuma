@@ -4,7 +4,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -18,46 +17,42 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
+    private static final String DEFAULT_BREVO_KEY = "xsmtpsib-" + "47b1727fa340826e5a43a29b9a51b98d0ca519ca6d25c9e4cc70192c0deff729" + "-" + "g7rJwzlGGfLi9u1w";
+
     private final JavaMailSender mailSender;
 
     @Value("${app.frontend.url:http://129.212.237.50}")
     private String frontendUrl;
 
-    @Value("${app.email.from:noreply@ginuma.com}")
+    @Value("${app.email.from:b88e59001@smtp-brevo.com}")
     private String emailFrom;
 
-    private static final String DEFAULT_BREVO_KEY = "xsmtpsib-" + "47b1727fa340826e5a43a29b9a51b98d0ca519ca6d25c9e4cc70192c0deff729" + "-" + "g7rJwzlGGfLi9u1w";
-
-    private final String mailPassword;
-    private final String mailUsername;
-
     public EmailService(
-            ObjectProvider<JavaMailSender> mailSenderProvider,
             @Value("${spring.mail.host:smtp-relay.brevo.com}") String mailHost,
             @Value("${spring.mail.port:587}") int mailPort,
             @Value("${spring.mail.username:b88e59001@smtp-brevo.com}") String mailUsername,
             @Value("${spring.mail.password:}") String mailPassword
     ) {
-        this.mailUsername = mailUsername;
-        this.mailPassword = (mailPassword != null && !mailPassword.trim().isEmpty()) ? mailPassword.trim() : DEFAULT_BREVO_KEY;
+        String activePassword = (mailPassword != null && !mailPassword.trim().isEmpty()) ? mailPassword.trim() : DEFAULT_BREVO_KEY;
+        String activeHost = (mailHost != null && !mailHost.trim().isEmpty()) ? mailHost.trim() : "smtp-relay.brevo.com";
+        String activeUsername = (mailUsername != null && !mailUsername.trim().isEmpty()) ? mailUsername.trim() : "b88e59001@smtp-brevo.com";
+        int activePort = mailPort > 0 ? mailPort : 587;
 
-        JavaMailSender sender = mailSenderProvider.getIfAvailable();
-        if (sender == null) {
-            JavaMailSenderImpl impl = new JavaMailSenderImpl();
-            impl.setHost(mailHost);
-            impl.setPort(mailPort);
-            impl.setUsername(mailUsername);
-            impl.setPassword(this.mailPassword);
+        JavaMailSenderImpl impl = new JavaMailSenderImpl();
+        impl.setHost(activeHost);
+        impl.setPort(activePort);
+        impl.setUsername(activeUsername);
+        impl.setPassword(activePassword);
 
-            Properties props = impl.getJavaMailProperties();
-            props.put("mail.transport.protocol", "smtp");
-            props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.starttls.enable", "true");
-            props.put("mail.smtp.starttls.required", "true");
-            this.mailSender = impl;
-        } else {
-            this.mailSender = sender;
-        }
+        Properties props = impl.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.starttls.required", "true");
+        props.put("mail.smtp.ssl.trust", activeHost);
+
+        this.mailSender = impl;
+        logger.info("EmailService initialized with SMTP host: {}, port: {}, username: {}", activeHost, activePort, activeUsername);
     }
 
     public void sendVerificationEmail(String recipientEmail, String companyName, String token) {
@@ -103,84 +98,24 @@ public class EmailService {
                 + "</body>"
                 + "</html>";
 
-        // Attempt 1: Try Brevo REST API over HTTPS (Port 443 - never blocked by cloud firewalls)
-        if (sendViaBrevoApi(recipientEmail, companyName, subject, htmlContent)) {
-            return;
-        }
-
-        // Attempt 2: Fall back to JavaMail SMTP
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            String from = (emailFrom != null && !emailFrom.trim().isEmpty()) ? emailFrom : mailUsername;
+            String from = (emailFrom != null && !emailFrom.trim().isEmpty()) ? emailFrom : "b88e59001@smtp-brevo.com";
             helper.setFrom(from, "Ginuma ERP");
             helper.setTo(recipientEmail);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            logger.info("Verification email sent successfully via JavaMail to {}", recipientEmail);
+            logger.info("Verification email sent successfully via Brevo SMTP to {}", recipientEmail);
         } catch (MessagingException e) {
-            logger.error("Failed to send verification email via JavaMail to {}", recipientEmail, e);
+            logger.error("Failed to send verification email via Brevo SMTP to {}", recipientEmail, e);
             throw new RuntimeException("Failed to send verification email: " + e.getMessage());
         } catch (Exception e) {
-            logger.error("Error creating verification email for {}", recipientEmail, e);
+            logger.error("Error sending verification email for {}", recipientEmail, e);
             throw new RuntimeException("Error sending verification email: " + e.getMessage());
         }
-    }
-
-    private boolean sendViaBrevoApi(String recipientEmail, String companyName, String subject, String htmlContent) {
-        if (mailPassword == null || mailPassword.trim().isEmpty()) {
-            return false;
-        }
-        try {
-            java.net.URL url = new java.net.URL("https://api.brevo.com/v3/smtp/email");
-            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("api-key", mailPassword.trim());
-            conn.setDoOutput(true);
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(10000);
-
-            String fromEmail = (emailFrom != null && !emailFrom.trim().isEmpty()) ? emailFrom : mailUsername;
-
-            StringBuilder json = new StringBuilder();
-            json.append("{");
-            json.append("\"sender\":{\"name\":\"Ginuma ERP\",\"email\":\"").append(fromEmail).append("\"},");
-            json.append("\"to\":[{\"email\":\"").append(recipientEmail).append("\",\"name\":\"").append(escapeJson(companyName)).append("\"}],");
-            json.append("\"subject\":\"").append(escapeJson(subject)).append("\",");
-            json.append("\"htmlContent\":\"").append(escapeJson(htmlContent)).append("\"");
-            json.append("}");
-
-            try (java.io.OutputStream os = conn.getOutputStream()) {
-                byte[] input = json.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
-
-            int code = conn.getResponseCode();
-            if (code >= 200 && code < 300) {
-                logger.info("Verification email sent successfully via Brevo REST API to {}", recipientEmail);
-                return true;
-            } else {
-                String errorBody = "";
-                try (java.io.InputStream es = conn.getErrorStream()) {
-                    if (es != null) {
-                        errorBody = new String(es.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-                    }
-                } catch (Exception ex) {}
-                logger.warn("Brevo REST API status {}: {}. Falling back to JavaMail.", code, errorBody);
-            }
-        } catch (Exception e) {
-            logger.warn("Failed sending email via Brevo REST API: {}. Falling back to JavaMail.", e.getMessage());
-        }
-        return false;
-    }
-
-    private String escapeJson(String text) {
-        if (text == null) return "";
-        return text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
     }
 
     private String escapeHtml(String input) {
