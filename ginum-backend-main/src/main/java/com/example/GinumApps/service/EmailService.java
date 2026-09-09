@@ -24,7 +24,7 @@ public class EmailService {
     @Value("${app.frontend.url:http://129.212.237.50}")
     private String frontendUrl;
 
-    @Value("${app.email.from:b88e59001@smtp-brevo.com}")
+    @Value("${app.email.from:pavaniedirisinghe18@gmail.com}")
     private String emailFrom;
 
     public EmailService(
@@ -101,7 +101,9 @@ public class EmailService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            String from = (emailFrom != null && !emailFrom.trim().isEmpty()) ? emailFrom : "b88e59001@smtp-brevo.com";
+            String from = (emailFrom != null && !emailFrom.trim().isEmpty() && !emailFrom.contains("smtp-brevo.com"))
+                    ? emailFrom.trim()
+                    : "pavaniedirisinghe18@gmail.com";
             helper.setFrom(from, "Ginuma ERP");
             helper.setTo(recipientEmail);
             helper.setSubject(subject);
