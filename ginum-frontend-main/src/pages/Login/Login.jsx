@@ -43,6 +43,7 @@ const Login = () => {
 
       // Save authentication details
       if (response.role === "ROLE_SUPER_ADMIN") {
+        sessionStorage.setItem("auth_token", response.token);
         sessionStorage.setItem("role", response.role);
         sessionStorage.setItem("userId", response.userId ?? "");
 
@@ -56,6 +57,7 @@ const Login = () => {
         response.role === "ROLE_APP_USER" ||
         response.role === "APP_USER"
       ) {
+        sessionStorage.setItem("auth_token", response.token);
         sessionStorage.setItem("role", response.role);
         sessionStorage.setItem("companyId", response.companyId ?? "");
         sessionStorage.setItem("userId", response.userId ?? "");

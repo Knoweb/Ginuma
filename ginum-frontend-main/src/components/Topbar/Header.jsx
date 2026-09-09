@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaBell, FaBars, FaUser, FaCog, FaSignOutAlt, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import PropTypes from "prop-types";
-import { apiUrl } from "../../utils/api";
+import api, { apiUrl } from "../../utils/api";
 
 const Header = ({ toggleSidebar, isSidebarVisible }) => {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
