@@ -35,6 +35,7 @@ public class CompanyService {
     private final CountryRepository countryRepository;
     private final CurrencyRepository currencyRepository;
     private final AccountService accountService;
+    private final EmailService emailService;
 
     @Transactional
     public Company registerCompany(CompanyRegistrationDto dto) {
@@ -89,7 +90,9 @@ public class CompanyService {
         // Set default values
         company.setStatus(true); // Assuming active on registration
         company.setRole("COMPANY");
-//        company.setDateUpdated(LocalDate.now());
+        company.setEmailVerified(false);
+        String verificationToken = java.util.UUID.randomUUID().toString();
+        company.setVerificationToken(verificationToken);
 
         try {
             if (dto.getCompanyLogo() != null && !dto.getCompanyLogo().isEmpty()) {
@@ -104,7 +107,12 @@ public class CompanyService {
 
         Company savedCompany = companyRepository.save(company);
 
-        // Default accounts are no longer auto-created per requirement
+        // Send verification email
+        try {
+            emailService.sendVerificationEmail(savedCompany.getEmail(), savedCompany.getCompanyName(), verificationToken);
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(CompanyService.class).error("Failed to send verification email during registration to " + savedCompany.getEmail(), e);
+        }
 
         return savedCompany;
     }

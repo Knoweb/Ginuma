@@ -74,9 +74,35 @@ const Login = () => {
       if (err.response && err.response.data && err.response.data.error) {
         errorMsg = err.response.data.error;
       }
+      if (err.response && err.response.data && err.response.data.emailUnverified) {
+        setEmailUnverified(true);
+      } else {
+        setEmailUnverified(false);
+      }
       setError(errorMsg);
       Alert.error(errorMsg);
       console.error("Login error:", err);
+    }
+  };
+
+  const [emailUnverified, setEmailUnverified] = useState(false);
+  const [resendStatus, setResendStatus] = useState("");
+  const [isResending, setIsResending] = useState(false);
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      setResendStatus("Please enter your email address above first.");
+      return;
+    }
+    setIsResending(true);
+    setResendStatus("");
+    try {
+      const res = await axios.post(`${apiUrl}/api/auth/resend-verification`, { email });
+      setResendStatus(res.data.message || "Verification link sent! Check your inbox.");
+    } catch (err) {
+      setResendStatus(err.response?.data?.error || "Failed to resend verification link.");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -110,7 +136,24 @@ const Login = () => {
 
           {/* Error message display */}
           {error && (
-            <div className="mt-4 text-center text-red-500 text-sm">{error}</div>
+            <div className="mt-4 text-center text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+              <p>{error}</p>
+              {emailUnverified && (
+                <div className="mt-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={isResending}
+                    className="font-semibold text-blue-600 hover:underline disabled:opacity-50"
+                  >
+                    {isResending ? "Sending link..." : "Resend Verification Email"}
+                  </button>
+                  {resendStatus && (
+                    <p className="mt-1 text-slate-700 font-medium">{resendStatus}</p>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Login Form */}

@@ -64,7 +64,7 @@ public class Company {
     @Column(length = 15)
     private String mobileNo;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 100)
     private String email;
 
     @Column(length = 50)
@@ -80,6 +80,16 @@ public class Company {
 
     @Column(name = "mfa_secret")
     private String mfaSecret;
+
+    @Column(name = "email_verified")
+    private Boolean emailVerified = true;
+
+    @Column(name = "verification_token", length = 100)
+    private String verificationToken;
+
+    public boolean isEmailVerified() {
+        return emailVerified == null ? true : emailVerified;
+    }
 
     public boolean isMfaEnabled() {
         return mfaEnabled == null ? false : mfaEnabled;

@@ -1,3 +1,6 @@
 Requirements/
 Sources/
 ginum-php-main/
+.env
+*.env
+

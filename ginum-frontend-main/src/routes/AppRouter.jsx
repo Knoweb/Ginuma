@@ -60,6 +60,8 @@ import InventoryDashboard from "../components/Inventory/InventoryDashboard";
 import Depreciation from "../components/depreciation/Depreciation";
 import RequestsPage from "../components/requests/RequestsPage";
 
+import VerifyEmailPage from "../pages/VerifyEmail/VerifyEmailPage";
+
 function AppRouter() {
   return (
     <Router>
@@ -74,6 +76,7 @@ function AppRouter() {
             </PublicRoute>
           }
         />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
         {/* Super Admin Routes */}
         <Route

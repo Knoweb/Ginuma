@@ -46,11 +46,21 @@ public class AuthController {
     private final CompanyRepository companyRepository;
     private final AppUserRepository userRepository;
     private final com.example.GinumApps.service.MfaService mfaService;
+    private final com.example.GinumApps.service.EmailService emailService;
 
     @CrossOrigin
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest) {
         try {
+            java.util.Optional<Company> checkCompanyOpt = companyRepository.findByEmail(authRequest.getEmail());
+            if (checkCompanyOpt.isPresent()) {
+                Company company = checkCompanyOpt.get();
+                if (!company.isEmailVerified()) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(java.util.Map.of("error", "Email not verified. Please check your inbox and click the verification link before logging in.", "emailUnverified", true));
+                }
+            }
+
             java.util.Optional<AppUser> userOpt = userRepository.findByEmail(authRequest.getEmail());
             if (userOpt.isPresent()) {
                 AppUser user = userOpt.get();
@@ -282,6 +292,58 @@ public class AuthController {
             return ResponseEntity.ok(java.util.Map.of("message", "MFA Enabled successfully"));
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(java.util.Map.of("error", "Invalid MFA Code"));
+        }
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam("token") String token) {
+        if (token == null || token.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Verification token is required"));
+        }
+
+        java.util.Optional<Company> companyOpt = companyRepository.findByVerificationToken(token);
+        if (companyOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid or expired verification token"));
+        }
+
+        Company company = companyOpt.get();
+        company.setEmailVerified(true);
+        company.setVerificationToken(null);
+        companyRepository.save(company);
+
+        logger.info("Email verified successfully for company: {}", company.getEmail());
+
+        return ResponseEntity.ok(java.util.Map.of("message", "Email verified successfully! You may now log in to your account."));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@RequestBody java.util.Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Email is required"));
+        }
+
+        java.util.Optional<Company> companyOpt = companyRepository.findByEmail(email);
+        if (companyOpt.isEmpty()) {
+            // For security, return success even if email not found
+            return ResponseEntity.ok(java.util.Map.of("message", "If an account exists with this email, a verification link has been sent."));
+        }
+
+        Company company = companyOpt.get();
+        if (company.isEmailVerified()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Email is already verified. You can log in directly."));
+        }
+
+        String newToken = java.util.UUID.randomUUID().toString();
+        company.setVerificationToken(newToken);
+        companyRepository.save(company);
+
+        try {
+            emailService.sendVerificationEmail(company.getEmail(), company.getCompanyName(), newToken);
+            return ResponseEntity.ok(java.util.Map.of("message", "Verification email sent! Please check your inbox."));
+        } catch (Exception e) {
+            logger.error("Failed to resend verification email", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(java.util.Map.of("error", "Failed to send email. Please try again later."));
         }
     }
 }

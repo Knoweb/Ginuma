@@ -55,6 +55,9 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers(
                                 "/api/auth/login",
+                                "/api/auth/verify-email",
+                                "/api/auth/resend-verification",
+                                "/api/companies",
                                 "/api/companies/register",
                                 "/api/countries",
                                 "/api/countries/**",

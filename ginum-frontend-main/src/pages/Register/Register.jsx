@@ -30,6 +30,7 @@ const Register = () => {
   const [countryError, setCountryError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -123,17 +124,13 @@ const Register = () => {
         formDataToSend.append("companyLogo", formData.companyLogo);
       }
 
-      const response = await axios.post(`${apiUrl}/api/companies/register`, formDataToSend);
+      const response = await axios.post(`${apiUrl}/api/companies`, formDataToSend);
 
-      Alert.success("Registration successful! Please log in.");
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
-
+      setRegistrationSuccess(true);
     } catch (error) {
       console.error("Registration error:", error);
       setSubmitError(
-        error.response?.data?.message || error.response?.data || "Registration failed. Please try again."
+        error.response?.data?.message || error.response?.data?.error || "Registration failed. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -275,6 +272,31 @@ const Register = () => {
 
     fetchCurrencies();
   }, []);
+
+  if (registrationSuccess) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center space-y-6">
+          <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto text-3xl font-bold">
+            ✉️
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Check Your Email</h2>
+          <p className="text-gray-600 text-sm leading-relaxed">
+            We have sent a verification link to <strong className="text-gray-900">{formData.email}</strong>. Please check your inbox and click the verification link to activate your account.
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-800 text-left">
+            💡 <strong>Tip:</strong> If you don't see the email within a few minutes, check your Spam or Junk folder.
+          </div>
+          <button
+            onClick={() => navigate("/login")}
+            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow transition-all duration-200"
+          >
+            Go to Sign In Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
