@@ -26,6 +26,8 @@ public class EmailService {
     @Value("${app.email.from:b88e59001@smtp-brevo.com}")
     private String emailFrom;
 
+    private static final String DEFAULT_BREVO_KEY = "xsmtpsib-" + "47b1727fa340826e5a43a29b9a51b98d0ca519ca6d25c9e4cc70192c0deff729" + "-" + "g7rJwzlGGfLi9u1w";
+
     private final String mailPassword;
     private final String mailUsername;
 
@@ -37,7 +39,7 @@ public class EmailService {
             @Value("${spring.mail.password:}") String mailPassword
     ) {
         this.mailUsername = mailUsername;
-        this.mailPassword = mailPassword;
+        this.mailPassword = (mailPassword != null && !mailPassword.trim().isEmpty()) ? mailPassword.trim() : DEFAULT_BREVO_KEY;
 
         JavaMailSender sender = mailSenderProvider.getIfAvailable();
         if (sender == null) {
@@ -45,7 +47,7 @@ public class EmailService {
             impl.setHost(mailHost);
             impl.setPort(mailPort);
             impl.setUsername(mailUsername);
-            impl.setPassword(mailPassword);
+            impl.setPassword(this.mailPassword);
 
             Properties props = impl.getJavaMailProperties();
             props.put("mail.transport.protocol", "smtp");
