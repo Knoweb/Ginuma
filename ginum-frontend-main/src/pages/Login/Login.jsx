@@ -70,9 +70,13 @@ const Login = () => {
         Alert.error("Unknown user role. Please contact support.");
       }
     } catch (err) {
-      setError("Invalid email or password. Please try again.");
-      Alert.error("Invalid email or password. Please try again.");
-      console.error("Login error:", err.message || err);
+      let errorMsg = "Invalid email or password. Please try again.";
+      if (err.response && err.response.data && err.response.data.error) {
+        errorMsg = err.response.data.error;
+      }
+      setError(errorMsg);
+      Alert.error(errorMsg);
+      console.error("Login error:", err);
     }
   };
 
