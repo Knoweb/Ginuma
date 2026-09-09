@@ -26,6 +26,9 @@ public class EmailService {
     @Value("${app.email.from:b88e59001@smtp-brevo.com}")
     private String emailFrom;
 
+    private final String mailPassword;
+    private final String mailUsername;
+
     public EmailService(
             ObjectProvider<JavaMailSender> mailSenderProvider,
             @Value("${spring.mail.host:smtp-relay.brevo.com}") String mailHost,
@@ -33,6 +36,9 @@ public class EmailService {
             @Value("${spring.mail.username:b88e59001@smtp-brevo.com}") String mailUsername,
             @Value("${spring.mail.password:}") String mailPassword
     ) {
+        this.mailUsername = mailUsername;
+        this.mailPassword = mailPassword;
+
         JavaMailSender sender = mailSenderProvider.getIfAvailable();
         if (sender == null) {
             JavaMailSenderImpl impl = new JavaMailSenderImpl();
@@ -95,23 +101,78 @@ public class EmailService {
                 + "</body>"
                 + "</html>";
 
+        // Attempt 1: Try Brevo REST API over HTTPS (Port 443 - never blocked by cloud firewalls)
+        if (sendViaBrevoApi(recipientEmail, companyName, subject, htmlContent)) {
+            return;
+        }
+
+        // Attempt 2: Fall back to JavaMail SMTP
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(emailFrom, "Ginuma ERP");
+            String from = (emailFrom != null && !emailFrom.trim().isEmpty()) ? emailFrom : mailUsername;
+            helper.setFrom(from, "Ginuma ERP");
             helper.setTo(recipientEmail);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
 
             mailSender.send(message);
-            logger.info("Verification email sent successfully to {}", recipientEmail);
+            logger.info("Verification email sent successfully via JavaMail to {}", recipientEmail);
         } catch (MessagingException e) {
-            logger.error("Failed to send verification email to {}", recipientEmail, e);
+            logger.error("Failed to send verification email via JavaMail to {}", recipientEmail, e);
             throw new RuntimeException("Failed to send verification email: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error creating verification email for {}", recipientEmail, e);
             throw new RuntimeException("Error sending verification email: " + e.getMessage());
         }
+    }
+
+    private boolean sendViaBrevoApi(String recipientEmail, String companyName, String subject, String htmlContent) {
+        if (mailPassword == null || mailPassword.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            java.net.URL url = new java.net.URL("https://api.brevo.com/v3/smtp/email");
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("api-key", mailPassword.trim());
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+
+            String fromEmail = (emailFrom != null && !emailFrom.trim().isEmpty()) ? emailFrom : mailUsername;
+
+            StringBuilder json = new StringBuilder();
+            json.append("{");
+            json.append("\"sender\":{\"name\":\"Ginuma ERP\",\"email\":\"").append(fromEmail).append("\"},");
+            json.append("\"to\":[{\"email\":\"").append(recipientEmail).append("\",\"name\":\"").append(escapeJson(companyName)).append("\"}],");
+            json.append("\"subject\":\"").append(escapeJson(subject)).append("\",");
+            json.append("\"htmlContent\":\"").append(escapeJson(htmlContent)).append("\"");
+            json.append("}");
+
+            try (java.io.OutputStream os = conn.getOutputStream()) {
+                byte[] input = json.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            int code = conn.getResponseCode();
+            if (code >= 200 && code < 300) {
+                logger.info("Verification email sent successfully via Brevo REST API to {}", recipientEmail);
+                return true;
+            } else {
+                logger.warn("Brevo REST API returned status code {}. Falling back to JavaMail.", code);
+            }
+        } catch (Exception e) {
+            logger.warn("Failed sending email via Brevo REST API: {}. Falling back to JavaMail.", e.getMessage());
+        }
+        return false;
+    }
+
+    private String escapeJson(String text) {
+        if (text == null) return "";
+        return text.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r");
     }
 
     private String escapeHtml(String input) {
