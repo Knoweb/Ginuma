@@ -342,8 +342,9 @@ public class AuthController {
             emailService.sendVerificationEmail(company.getEmail(), company.getCompanyName(), newToken);
             return ResponseEntity.ok(java.util.Map.of("message", "Verification email sent! Please check your inbox."));
         } catch (Exception e) {
-            logger.error("Failed to resend verification email", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(java.util.Map.of("error", "Failed to send email. Please try again later."));
+            logger.error("Failed to resend verification email to " + email, e);
+            String errMsg = e.getMessage() != null ? e.getMessage() : "Failed to send email";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(java.util.Map.of("error", errMsg));
         }
     }
 }

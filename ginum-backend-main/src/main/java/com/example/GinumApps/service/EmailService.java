@@ -23,7 +23,7 @@ public class EmailService {
     @Value("${app.frontend.url:http://129.212.237.50}")
     private String frontendUrl;
 
-    @Value("${app.email.from:b88e59001@smtp-brevo.com}")
+    @Value("${app.email.from:noreply@ginuma.com}")
     private String emailFrom;
 
     private static final String DEFAULT_BREVO_KEY = "xsmtpsib-" + "47b1727fa340826e5a43a29b9a51b98d0ca519ca6d25c9e4cc70192c0deff729" + "-" + "g7rJwzlGGfLi9u1w";
@@ -164,7 +164,13 @@ public class EmailService {
                 logger.info("Verification email sent successfully via Brevo REST API to {}", recipientEmail);
                 return true;
             } else {
-                logger.warn("Brevo REST API returned status code {}. Falling back to JavaMail.", code);
+                String errorBody = "";
+                try (java.io.InputStream es = conn.getErrorStream()) {
+                    if (es != null) {
+                        errorBody = new String(es.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                    }
+                } catch (Exception ex) {}
+                logger.warn("Brevo REST API status {}: {}. Falling back to JavaMail.", code, errorBody);
             }
         } catch (Exception e) {
             logger.warn("Failed sending email via Brevo REST API: {}. Falling back to JavaMail.", e.getMessage());
