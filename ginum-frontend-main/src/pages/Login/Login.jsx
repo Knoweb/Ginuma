@@ -75,7 +75,11 @@ const Login = () => {
       let errorMsg = "Invalid email or password. Please try again.";
       if (err.response && err.response.data) {
         if (typeof err.response.data === "string") {
-          errorMsg = err.response.data;
+          if (err.response.data.includes("<html") || err.response.data.includes("502 Bad Gateway")) {
+            errorMsg = "Backend server is currently initializing or restarting. Please try again in a few seconds.";
+          } else {
+            errorMsg = err.response.data;
+          }
         } else if (err.response.data.error) {
           errorMsg = err.response.data.error;
         } else if (err.response.data.message) {
