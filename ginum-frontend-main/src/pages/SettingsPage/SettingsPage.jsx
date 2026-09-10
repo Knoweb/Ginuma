@@ -1038,6 +1038,8 @@ const SettingsPage = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
       {/* Role Create/Edit Modal */}
       {showRoleModal && (
         <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
