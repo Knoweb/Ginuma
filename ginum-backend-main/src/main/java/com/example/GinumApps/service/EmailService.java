@@ -21,7 +21,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${app.frontend.url:https://ginumapps.com}")
+    @Value("${app.frontend.url:http://ginumapps.com}")
     private String frontendUrl;
 
     @Value("${app.email.from:pavaniedirisinghe18@gmail.com}")
