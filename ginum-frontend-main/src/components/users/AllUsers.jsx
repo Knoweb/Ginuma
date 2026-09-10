@@ -22,6 +22,7 @@ function AllUsers() {
 
   const [users, setUsers] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [companyRoles, setCompanyRoles] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filter States
@@ -31,7 +32,7 @@ function AllUsers() {
   // Edit Modal States
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [editRole, setEditRole] = useState("USER");
+  const [editRole, setEditRole] = useState("COMPANY_ADMIN");
   const [editPassword, setEditPassword] = useState("");
   const [editConfirmPassword, setEditConfirmPassword] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
@@ -48,9 +49,10 @@ function AllUsers() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [usersRes, empRes] = await Promise.all([
+      const [usersRes, empRes, rolesRes] = await Promise.all([
         fetch(`${apiUrl}/api/users/companies/${companyId}`, { headers: getAuthHeaders() }),
         fetch(`${apiUrl}/api/employees/${companyId}`, { headers: getAuthHeaders() }),
+        fetch(`${apiUrl}/api/roles?companyId=${companyId}`, { headers: getAuthHeaders() }),
       ]);
 
       if (usersRes.ok) {
@@ -61,6 +63,13 @@ function AllUsers() {
       if (empRes.ok) {
         const empData = await empRes.json();
         setEmployees(Array.isArray(empData) ? empData : []);
+      }
+
+      if (rolesRes.ok) {
+        const rolesData = await rolesRes.json();
+        if (Array.isArray(rolesData)) {
+          setCompanyRoles(rolesData);
+        }
       }
     } catch (err) {
       console.error("Error fetching system users data:", err);
@@ -192,14 +201,17 @@ function AllUsers() {
   };
 
   const getRoleBadgeStyle = (role) => {
-    switch (role) {
-      case "ADMIN":
-        return "bg-purple-50 text-purple-700 border-purple-200";
-      case "MANAGER":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      default:
-        return "bg-blue-50 text-blue-700 border-blue-200";
+    const clean = (role || "").toUpperCase();
+    if (clean.includes("ADMIN") || clean.includes("COMPANY_ADMIN")) {
+      return "bg-purple-50 text-purple-700 border-purple-200";
+    } else if (clean.includes("ACCOUNT") || clean.includes("FINANCE")) {
+      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    } else if (clean.includes("SALE") || clean.includes("MANAGER")) {
+      return "bg-amber-50 text-amber-700 border-amber-200";
+    } else if (clean.includes("VIEW")) {
+      return "bg-slate-100 text-slate-700 border-slate-300";
     }
+    return "bg-blue-50 text-blue-700 border-blue-200";
   };
 
   return (
@@ -280,9 +292,17 @@ function AllUsers() {
             className="px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 outline-none cursor-pointer transition-all"
           >
             <option value="ALL">All Roles</option>
-            <option value="ADMIN">ADMIN</option>
-            <option value="MANAGER">MANAGER</option>
-            <option value="USER">USER</option>
+            {companyRoles.length > 0
+              ? companyRoles.map((r) => (
+                  <option key={r.roleName} value={r.roleName}>
+                    {r.roleName}
+                  </option>
+                ))
+              : ["COMPANY_ADMIN", "ACCOUNTANT", "SALES", "VIEWER"].map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
           </select>
         </div>
       </div>
@@ -412,16 +432,24 @@ function AllUsers() {
 
               {/* System Role Selection */}
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">System Role *</label>
+                <label className="block text-gray-700 font-semibold mb-2">Company Role *</label>
                 <select
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 cursor-pointer outline-none text-gray-900 font-medium transition-all"
                   required
                 >
-                  <option value="USER">USER</option>
-                  <option value="MANAGER">MANAGER</option>
-                  <option value="ADMIN">ADMIN</option>
+                  {companyRoles.length > 0
+                    ? companyRoles.map((r) => (
+                        <option key={r.roleName} value={r.roleName}>
+                          {r.roleName} {r.otpRequired ? "🔒 (OTP Required)" : ""}
+                        </option>
+                      ))
+                    : ["COMPANY_ADMIN", "ACCOUNTANT", "SALES", "VIEWER"].map((r) => (
+                        <option key={r} value={r}>
+                          {r}
+                        </option>
+                      ))}
                 </select>
               </div>
 

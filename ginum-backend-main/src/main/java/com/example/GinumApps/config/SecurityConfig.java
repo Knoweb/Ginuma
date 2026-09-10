@@ -182,6 +182,21 @@ public class SecurityConfig {
                                 "ROLE_SUPER_ADMIN"
                         )
 
+                        // User management endpoints
+                        .requestMatchers(
+                                "/api/users/**"
+                        )
+                        .hasAnyAuthority(
+                                "COMPANY",
+                                "ROLE_COMPANY",
+                                "EMPLOYEE",
+                                "ROLE_EMPLOYEE",
+                                "APP_USER",
+                                "ROLE_APP_USER",
+                                "SUPER_ADMIN",
+                                "ROLE_SUPER_ADMIN"
+                        )
+
                         // All other endpoints need login
                         .anyRequest().authenticated()
                 )

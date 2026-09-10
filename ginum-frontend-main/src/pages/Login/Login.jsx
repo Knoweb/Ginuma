@@ -58,12 +58,7 @@ const Login = () => {
         setTimeout(() => {
           window.location.href = "/super-admin/dashboard";
         }, 1500);
-      } else if (
-        response.role === "ROLE_COMPANY" ||
-        response.role === "COMPANY" ||
-        response.role === "ROLE_APP_USER" ||
-        response.role === "APP_USER"
-      ) {
+      } else if (response.companyId || response.role) {
         sessionStorage.setItem("auth_token", response.token);
         sessionStorage.setItem("role", response.role);
         sessionStorage.setItem("companyId", response.companyId ?? "");

@@ -31,30 +31,40 @@ public class AppUserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public AppUser createUser(@PathVariable Integer companyId, AppUserRequestDto request) {
-
-        // Check if company exists
+    public AppUser createUser(Integer companyId, AppUserRequestDto request) {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-        // 1. Check if employee exists in the company
-        Employee employee = employeeRepository.findByEmailAndCompanyCompanyId(
-                request.getEmail(),
-                companyId
-        ).orElseThrow(() -> new RuntimeException(
-                "Employee not found in the specified company"
-        ));
-
-        // 2. Check if email is already registered as a user
         if (appUserRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already registered as a user");
         }
 
+        String cleanRole = request.getRole() != null ? request.getRole().replace("ROLE_", "").toUpperCase() : "USER";
+
         AppUser newUser = new AppUser();
         newUser.setEmail(request.getEmail());
         newUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        newUser.setRole(request.getRole());
+        newUser.setRole(cleanRole);
         newUser.setCompany(company);
+
+        // Auto-create Employee if record does not exist
+        Optional<Employee> optEmp = employeeRepository.findByEmailAndCompanyCompanyId(request.getEmail(), companyId);
+        if (optEmp.isEmpty()) {
+            Employee newEmp = new Employee();
+            newEmp.setEmail(request.getEmail());
+            newEmp.setCompany(company);
+            String name = request.getName();
+            if (name != null && !name.trim().isEmpty()) {
+                String[] parts = name.trim().split("\\s+", 2);
+                newEmp.setFirstName(parts[0]);
+                newEmp.setLastName(parts.length > 1 ? parts[1] : "");
+            } else {
+                newEmp.setFirstName(request.getEmail().split("@")[0]);
+                newEmp.setLastName("");
+            }
+            newEmp.setDateAdded(java.time.LocalDate.now());
+            employeeRepository.save(newEmp);
+        }
 
         return appUserRepository.save(newUser);
     }
@@ -66,14 +76,16 @@ public class AppUserService {
     @Transactional
     public AppUser assignUser(Integer companyId, AppUser user) {
         Optional<AppUser> existingUser = appUserRepository.findByEmail(user.getEmail());
+        String cleanRole = user.getRole() != null ? user.getRole().replace("ROLE_", "").toUpperCase() : "USER";
 
+        AppUser savedUser;
         if (existingUser.isPresent()) {
             AppUser userToUpdate = existingUser.get();
-            userToUpdate.setRole(user.getRole());
+            userToUpdate.setRole(cleanRole);
             if (user.getPassword() != null && !user.getPassword().isEmpty()) {
                 userToUpdate.setPassword(passwordEncoder.encode(user.getPassword()));
             }
-            return appUserRepository.save(userToUpdate);
+            savedUser = appUserRepository.save(userToUpdate);
         } else {
             Company company = companyRepository.findById(companyId)
                     .orElseThrow(() -> new RuntimeException("Company not found"));
@@ -83,10 +95,27 @@ public class AppUserService {
             if (user.getPassword() != null && !user.getPassword().isEmpty()) {
                 newUser.setPassword(passwordEncoder.encode(user.getPassword()));
             }
-            newUser.setRole(user.getRole());
+            newUser.setRole(cleanRole);
             newUser.setCompany(company);
-            return appUserRepository.save(newUser);
+            savedUser = appUserRepository.save(newUser);
         }
+
+        // Auto-create Employee if record does not exist
+        Optional<Employee> optEmp = employeeRepository.findByEmailAndCompanyCompanyId(user.getEmail(), companyId);
+        if (optEmp.isEmpty()) {
+            Company company = companyRepository.findById(companyId).orElse(null);
+            if (company != null) {
+                Employee newEmp = new Employee();
+                newEmp.setEmail(user.getEmail());
+                newEmp.setCompany(company);
+                newEmp.setFirstName(user.getEmail().split("@")[0]);
+                newEmp.setLastName("");
+                newEmp.setDateAdded(java.time.LocalDate.now());
+                employeeRepository.save(newEmp);
+            }
+        }
+
+        return savedUser;
     }
 
     @Transactional
