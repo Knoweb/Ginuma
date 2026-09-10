@@ -10,12 +10,12 @@ import {
   FaArrowLeft,
   FaSpinner,
   FaShieldAlt,
-  FaLock
 } from "react-icons/fa";
 import axios from "axios";
 import { apiUrl } from "../../utils/api";
 import api from "../../utils/api";
 import { useNavigate } from "react-router-dom";
+import "../Login/Login.css"; // Reuse premium light theme background & button styles
 
 const COMPANY_CATEGORIES = [
   { value: "EDUCATION_AND_EDTECH", label: "Education and EdTech" },
@@ -69,9 +69,8 @@ const Register = () => {
   });
   const [errors, setErrors] = useState({});
 
-  // Password strength calculation
   const calculatePasswordStrength = (pass) => {
-    if (!pass) return { score: 0, label: "", color: "bg-gray-200" };
+    if (!pass) return { score: 0, label: "", color: "bg-slate-200" };
     let score = 0;
     if (pass.length >= 8) score++;
     if (/[A-Z]/.test(pass)) score++;
@@ -306,11 +305,19 @@ const Register = () => {
     fetchCurrencies();
   }, []);
 
+  const inputClass = "w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15 focus:outline-none text-sm text-slate-900 transition-all placeholder:text-slate-400";
+  const labelClass = "block text-[11px] uppercase tracking-wider font-bold text-slate-500 mb-1.5";
+
   if (registrationSuccess) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-slate-50 p-4">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 text-center space-y-6 border border-slate-100">
-          <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-inner">
+      <div className="gl-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+        <div className="gl-bg"></div>
+        <div className="gl-orb gl-orb-1"></div>
+        <div className="gl-orb gl-orb-2"></div>
+        <div className="gl-orb gl-orb-3"></div>
+        
+        <div className="relative z-10 w-full max-w-md bg-white/80 backdrop-blur-xl rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.06)] p-8 text-center space-y-6 border border-white/60 animate-fadeIn">
+          <div className="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto text-4xl shadow-inner border border-indigo-100">
             ✉️
           </div>
           <div className="space-y-2">
@@ -319,7 +326,7 @@ const Register = () => {
               We have sent a verification link to <strong className="text-slate-900">{formData.email}</strong>. Please check your inbox and verify your email to activate your company account.
             </p>
           </div>
-          <div className="bg-blue-50/70 border border-blue-150 rounded-2xl p-4 text-xs text-blue-800 text-left space-y-1">
+          <div className="bg-indigo-50/70 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-800 text-left space-y-1">
             <p className="font-bold flex items-center gap-1.5">
               <span>💡</span> Tip for users:
             </p>
@@ -327,7 +334,8 @@ const Register = () => {
           </div>
           <button
             onClick={() => navigate("/login")}
-            className="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/25 transition duration-200 cursor-pointer"
+            className="gl-btn w-full"
+            style={{ padding: '0.875rem' }}
           >
             Proceed to Sign In
           </button>
@@ -343,17 +351,22 @@ const Register = () => {
   ];
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4 py-8">
-      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+    <div className="gl-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
+      <div className="gl-bg"></div>
+      <div className="gl-orb gl-orb-1"></div>
+      <div className="gl-orb gl-orb-2"></div>
+      <div className="gl-orb gl-orb-3"></div>
+
+      <div className="relative z-10 w-full max-w-3xl bg-white/75 backdrop-blur-xl border border-white/80 shadow-[0_24px_64px_rgba(0,0,0,0.06)] rounded-[24px] overflow-hidden animate-fadeIn">
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 p-8 text-white text-center relative">
-          <img src="/ginum_logo.png" alt="Ginum Logo" className="h-10 mx-auto mb-3 invert brightness-200" />
-          <h1 className="text-2xl font-bold tracking-tight">Create Your Enterprise Account</h1>
-          <p className="text-slate-400 text-xs mt-1">Setup your organization profile and administrative account</p>
+        <div className="px-8 pt-10 pb-6 text-center relative border-b border-slate-200/50">
+          <img src="/ginum_logo.png" alt="Ginum Logo" className="h-9 mx-auto mb-5 drop-shadow-sm" />
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">Create Your Enterprise Account</h1>
+          <p className="text-slate-500 text-sm mt-2 font-medium">Setup your organization profile and administrative account</p>
 
           {/* Stepper Bar */}
-          <div className="grid grid-cols-3 gap-2 mt-8 max-w-lg mx-auto">
+          <div className="grid grid-cols-3 gap-3 mt-8 max-w-lg mx-auto">
             {steps.map((step) => {
               const Icon = step.icon;
               const isActive = currentStep === step.number;
@@ -361,19 +374,19 @@ const Register = () => {
               return (
                 <div
                   key={step.number}
-                  className={`flex flex-col items-center p-2.5 rounded-2xl transition ${
+                  className={`flex flex-col items-center p-3 rounded-2xl transition-all duration-300 ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30 font-bold"
+                      ? "bg-white border border-indigo-100 shadow-[0_4px_20px_rgba(99,102,241,0.12)] text-indigo-600 font-bold"
                       : isCompleted
-                      ? "bg-slate-800/80 text-emerald-400 font-semibold"
-                      : "bg-slate-800/40 text-slate-500"
+                      ? "bg-emerald-50/50 border border-emerald-100/50 text-emerald-600 font-semibold"
+                      : "bg-slate-50/50 border border-slate-100/50 text-slate-400"
                   }`}
                 >
                   <div className="flex items-center gap-1.5 text-xs">
-                    {isCompleted ? <FaCheckCircle /> : <Icon />}
+                    {isCompleted ? <FaCheckCircle className="text-emerald-500" /> : <Icon />}
                     <span>Step {step.number}</span>
                   </div>
-                  <span className="text-[11px] truncate max-w-[100px] mt-0.5 opacity-90">{step.title}</span>
+                  <span className="text-[11px] truncate max-w-[100px] mt-1 opacity-90">{step.title}</span>
                 </div>
               );
             })}
@@ -382,34 +395,34 @@ const Register = () => {
 
         {/* Submit Error */}
         {submitError && (
-          <div className="mx-8 mt-6 p-4 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-2xl">
+          <div className="mx-8 mt-6 p-4 text-sm text-rose-700 bg-rose-50/80 border border-rose-200 rounded-2xl backdrop-blur-sm">
             {submitError}
           </div>
         )}
 
-        {/* Form Form Body */}
+        {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
 
           {/* STEP 1: Company Profile */}
           {currentStep === 1 && (
-            <div className="space-y-5 animate-fadeIn">
-              <div className="border-b border-slate-100 pb-3">
-                <h3 className="text-base font-bold text-slate-850 flex items-center gap-2">
-                  <FaBuilding className="text-blue-600" /> Step 1: Organization Details
+            <div className="space-y-6 animate-fadeIn">
+              <div className="pb-2 border-b border-slate-100">
+                <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                  <FaBuilding className="text-indigo-600" /> Step 1: Organization Details
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">Enter core identity and contact details for your business</p>
+                <p className="text-xs text-slate-500 mt-1 font-medium">Enter core identity and contact details for your business</p>
               </div>
 
               {/* Company Logo & Name */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-center">
-                <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 hover:bg-slate-100/60 transition cursor-pointer text-center relative">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 hover:bg-slate-100/80 transition cursor-pointer text-center relative h-full min-h-[140px]">
                   {logoPreview ? (
-                    <img src={logoPreview} alt="Logo Preview" className="h-16 w-16 object-contain mb-1 rounded-xl" />
+                    <img src={logoPreview} alt="Logo Preview" className="h-16 w-16 object-contain mb-2 rounded-xl drop-shadow-md" />
                   ) : (
-                    <div className="text-slate-400 text-2xl mb-1">🏢</div>
+                    <div className="text-slate-400 text-3xl mb-2 drop-shadow-sm">🏢</div>
                   )}
                   <span className="text-xs font-bold text-slate-600">Company Logo</span>
-                  <span className="text-[10px] text-slate-400">PNG, JPG up to 5MB</span>
+                  <span className="text-[10px] text-slate-400 mt-0.5">PNG, JPG up to 5MB</span>
                   <input
                     type="file"
                     name="companyLogo"
@@ -419,9 +432,9 @@ const Register = () => {
                   />
                 </div>
 
-                <div className="md:col-span-2 space-y-4">
+                <div className="md:col-span-2 space-y-5">
                   <div>
-                    <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                    <label className={labelClass}>
                       Company Name <span className="text-rose-500">*</span>
                     </label>
                     <input
@@ -430,35 +443,35 @@ const Register = () => {
                       value={formData.companyName}
                       onChange={handleChange}
                       placeholder="e.g. Acme Global Logistics Ltd."
-                      className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm transition"
+                      className={inputClass}
                     />
-                    {errors.companyName && <p className="text-rose-500 text-xs mt-1">{errors.companyName}</p>}
+                    {errors.companyName && <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.companyName}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                    <label className={labelClass}>
                       Industry Category <span className="text-rose-500">*</span>
                     </label>
                     <select
                       name="companyCategory"
                       value={formData.companyCategory}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm bg-white transition"
+                      className={inputClass}
                     >
                       <option value="">Select Category</option>
                       {COMPANY_CATEGORIES.map((cat) => (
                         <option key={cat.value} value={cat.value}>{cat.label}</option>
                       ))}
                     </select>
-                    {errors.companyCategory && <p className="text-rose-500 text-xs mt-1">{errors.companyCategory}</p>}
+                    {errors.companyCategory && <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.companyCategory}</p>}
                   </div>
                 </div>
               </div>
 
               {/* Phone & Mobile */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                  <label className={labelClass}>
                     Primary Phone Number <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -467,45 +480,45 @@ const Register = () => {
                     value={formData.phoneNo}
                     onChange={handleChange}
                     placeholder="+94 11 234 5678"
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm transition"
+                    className={inputClass}
                   />
-                  {errors.phoneNo && <p className="text-rose-500 text-xs mt-1">{errors.phoneNo}</p>}
+                  {errors.phoneNo && <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.phoneNo}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs uppercase font-bold text-slate-600 mb-1">Mobile Hotline (Optional)</label>
+                  <label className={labelClass}>Mobile Hotline (Optional)</label>
                   <input
                     type="text"
                     name="mobileNo"
                     value={formData.mobileNo}
                     onChange={handleChange}
                     placeholder="+94 77 123 4567"
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm transition"
+                    className={inputClass}
                   />
                 </div>
               </div>
 
               {/* Registration No & Website */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs uppercase font-bold text-slate-600 mb-1">Business Registration No. (BRN)</label>
+                  <label className={labelClass}>Business Registration No. (BRN)</label>
                   <input
                     type="text"
                     name="registrationNo"
                     value={formData.registrationNo}
                     onChange={handleChange}
                     placeholder="PV 12345"
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm transition"
+                    className={inputClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase font-bold text-slate-600 mb-1">Website URL</label>
+                  <label className={labelClass}>Website URL</label>
                   <input
                     type="text"
                     name="website"
                     value={formData.website}
                     onChange={handleChange}
                     placeholder="https://www.acme.com"
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm transition"
+                    className={inputClass}
                   />
                 </div>
               </div>
@@ -514,17 +527,17 @@ const Register = () => {
 
           {/* STEP 2: Location & Tax Details */}
           {currentStep === 2 && (
-            <div className="space-y-5 animate-fadeIn">
-              <div className="border-b border-slate-100 pb-3">
-                <h3 className="text-base font-bold text-slate-850 flex items-center gap-2">
-                  <FaMapMarkerAlt className="text-blue-600" /> Step 2: Addresses, Country & Tax Info
+            <div className="space-y-6 animate-fadeIn">
+              <div className="pb-2 border-b border-slate-100">
+                <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                  <FaMapMarkerAlt className="text-indigo-600" /> Step 2: Addresses, Country & Tax Info
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">Specify geographical region, currency formatting, and tax numbers</p>
+                <p className="text-xs text-slate-500 mt-1 font-medium">Specify geographical region, currency formatting, and tax numbers</p>
               </div>
 
               {/* Registered Address */}
               <div>
-                <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                <label className={labelClass}>
                   Registered Address <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -533,32 +546,32 @@ const Register = () => {
                   value={formData.registeredAddress}
                   onChange={handleChange}
                   placeholder="Street name, City, State/Province"
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm transition"
+                  className={inputClass}
                 />
-                {errors.registeredAddress && <p className="text-rose-500 text-xs mt-1">{errors.registeredAddress}</p>}
+                {errors.registeredAddress && <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.registeredAddress}</p>}
               </div>
 
               {/* Factory Address */}
               <div>
-                <label className="block text-xs uppercase font-bold text-slate-600 mb-1">Factory / Operation Address (Optional)</label>
+                <label className={labelClass}>Factory / Operation Address (Optional)</label>
                 <input
                   type="text"
                   name="factoryAddress"
                   value={formData.factoryAddress}
                   onChange={handleChange}
                   placeholder="Factory facility address if different from registered office"
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm transition"
+                  className={inputClass}
                 />
               </div>
 
               {/* Country & Currency Select */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                  <label className={labelClass}>
                     Operating Country <span className="text-rose-500">*</span>
                   </label>
                   {loadingCountries ? (
-                    <div className="px-4 py-2.5 border rounded-xl bg-slate-50 animate-pulse text-xs text-slate-400">
+                    <div className="px-4 py-3 border rounded-xl bg-slate-50/50 animate-pulse text-xs text-slate-400">
                       Loading countries list...
                     </div>
                   ) : (
@@ -566,7 +579,7 @@ const Register = () => {
                       name="countryId"
                       value={formData.countryId}
                       onChange={handleCountryChange}
-                      className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm bg-white transition"
+                      className={inputClass}
                     >
                       <option value="">Select Country</option>
                       {countries.map((c) => (
@@ -574,15 +587,15 @@ const Register = () => {
                       ))}
                     </select>
                   )}
-                  {errors.country && <p className="text-rose-500 text-xs mt-1">{errors.country}</p>}
+                  {errors.country && <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.country}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                  <label className={labelClass}>
                     Primary Currency <span className="text-rose-500">*</span>
                   </label>
                   {loadingCurrencies ? (
-                    <div className="px-4 py-2.5 border rounded-xl bg-slate-50 animate-pulse text-xs text-slate-400">
+                    <div className="px-4 py-3 border rounded-xl bg-slate-50/50 animate-pulse text-xs text-slate-400">
                       Loading currencies list...
                     </div>
                   ) : (
@@ -590,7 +603,7 @@ const Register = () => {
                       name="currencyId"
                       value={formData.currencyId}
                       onChange={handleChange}
-                      className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm bg-white transition"
+                      className={inputClass}
                     >
                       <option value="">Select Currency</option>
                       {currencies.map((curr) => (
@@ -598,48 +611,48 @@ const Register = () => {
                       ))}
                     </select>
                   )}
-                  {errors.currency && <p className="text-rose-500 text-xs mt-1">{errors.currency}</p>}
+                  {errors.currency && <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.currency}</p>}
                 </div>
               </div>
 
               {/* Tax Numbers */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
                 <div>
-                  <label className="block text-xs uppercase font-bold text-slate-600 mb-1">TIN Number</label>
+                  <label className={labelClass}>TIN Number</label>
                   <input
                     type="text"
                     name="tinNo"
                     value={formData.tinNo}
                     onChange={handleChange}
                     placeholder="e.g. 10029384"
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm transition"
+                    className={inputClass}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                  <label className={labelClass}>
                     VAT Registered? <span className="text-rose-500">*</span>
                   </label>
-                  <div className="flex gap-4 mt-2">
-                    <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
+                  <div className="flex gap-4 mt-3">
+                    <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer text-slate-700">
                       <input
                         type="radio"
                         name="vatRegistered"
                         value="yes"
                         checked={isVatRegistered}
                         onChange={handleVatRegistrationChange}
-                        className="text-blue-600"
+                        className="text-indigo-600 accent-indigo-600 scale-110"
                       />
                       <span>Yes</span>
                     </label>
-                    <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
+                    <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer text-slate-700">
                       <input
                         type="radio"
                         name="vatRegistered"
                         value="no"
                         checked={!isVatRegistered}
                         onChange={handleVatRegistrationChange}
-                        className="text-blue-600"
+                        className="text-indigo-600 accent-indigo-600 scale-110"
                       />
                       <span>No</span>
                     </label>
@@ -648,7 +661,7 @@ const Register = () => {
 
                 {isVatRegistered && (
                   <div>
-                    <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                    <label className={labelClass}>
                       VAT Number <span className="text-rose-500">*</span>
                     </label>
                     <input
@@ -657,9 +670,9 @@ const Register = () => {
                       value={formData.vatNo}
                       onChange={handleChange}
                       placeholder="e.g. VAT987654"
-                      className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm transition"
+                      className={inputClass}
                     />
-                    {errors.vatNo && <p className="text-rose-500 text-xs mt-1">{errors.vatNo}</p>}
+                    {errors.vatNo && <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.vatNo}</p>}
                   </div>
                 )}
               </div>
@@ -668,17 +681,17 @@ const Register = () => {
 
           {/* STEP 3: Admin Credentials & Password */}
           {currentStep === 3 && (
-            <div className="space-y-5 animate-fadeIn">
-              <div className="border-b border-slate-100 pb-3">
-                <h3 className="text-base font-bold text-slate-850 flex items-center gap-2">
-                  <FaUserLock className="text-blue-600" /> Step 3: Administrator Credentials
+            <div className="space-y-6 animate-fadeIn">
+              <div className="pb-2 border-b border-slate-100">
+                <h3 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                  <FaUserLock className="text-indigo-600" /> Step 3: Administrator Credentials
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">Set up the master admin email and password for logging into Ginuma ERP</p>
+                <p className="text-xs text-slate-500 mt-1 font-medium">Set up the master admin email and password for logging into Ginuma ERP</p>
               </div>
 
               {/* Admin Email */}
               <div>
-                <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                <label className={labelClass}>
                   Master Admin Email Address <span className="text-rose-500">*</span>
                 </label>
                 <input
@@ -687,16 +700,16 @@ const Register = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="admin@yourcompany.com"
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm transition"
+                  className={inputClass}
                 />
-                {errors.email && <p className="text-rose-500 text-xs mt-1">{errors.email}</p>}
-                <p className="text-[11px] text-slate-400 mt-1">Verification link will be sent to this email address.</p>
+                {errors.email && <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.email}</p>}
+                <p className="text-[11px] text-slate-400 mt-1.5">Verification link will be sent to this email address.</p>
               </div>
 
               {/* Password Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                  <label className={labelClass}>
                     Password <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
@@ -706,21 +719,21 @@ const Register = () => {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="Min 8 characters"
-                      className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm pr-10 transition"
+                      className={`${inputClass} pr-10`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600"
+                      className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 transition"
                     >
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </button>
                   </div>
-                  {errors.password && <p className="text-rose-500 text-xs mt-1">{errors.password}</p>}
+                  {errors.password && <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.password}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs uppercase font-bold text-slate-600 mb-1">
+                  <label className={labelClass}>
                     Confirm Password <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
@@ -730,32 +743,32 @@ const Register = () => {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="Re-enter password"
-                      className="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm pr-10 transition"
+                      className={`${inputClass} pr-10`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600"
+                      className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 transition"
                     >
                       {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                     </button>
                   </div>
-                  {errors.confirmPassword && <p className="text-rose-500 text-xs mt-1">{errors.confirmPassword}</p>}
+                  {errors.confirmPassword && <p className="text-rose-500 text-[11px] mt-1 font-medium">{errors.confirmPassword}</p>}
                 </div>
               </div>
 
               {/* Password Strength Meter */}
               {formData.password && (
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-600 flex items-center gap-1">
-                      <FaShieldAlt className="text-blue-600" /> Password Strength:
+                <div className="bg-slate-50/50 border border-slate-200 rounded-2xl p-4 space-y-2.5">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="font-bold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
+                      <FaShieldAlt className="text-indigo-500" /> Password Strength:
                     </span>
-                    <span className={`font-black ${passwordStrength.text}`}>
+                    <span className={`font-black uppercase tracking-wider ${passwordStrength.text}`}>
                       {passwordStrength.label}
                     </span>
                   </div>
-                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-300 ${passwordStrength.color}`}
                       style={{ width: `${passwordStrength.score}%` }}
@@ -768,12 +781,12 @@ const Register = () => {
           )}
 
           {/* Buttons Navigation */}
-          <div className="flex items-center justify-between pt-6 border-t border-slate-100">
+          <div className="flex items-center justify-between pt-6 mt-4">
             {currentStep > 1 ? (
               <button
                 type="button"
                 onClick={handlePrev}
-                className="px-5 py-2.5 border border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 font-bold text-xs transition flex items-center gap-2 cursor-pointer"
+                className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-sm"
               >
                 <FaArrowLeft /> Back
               </button>
@@ -785,7 +798,8 @@ const Register = () => {
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-md shadow-blue-500/20 transition flex items-center gap-2 cursor-pointer"
+                className="gl-btn !w-auto px-6 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md"
+                style={{ height: 'auto', padding: '0.75rem 1.5rem' }}
               >
                 Next Step <FaArrowRight />
               </button>
@@ -793,7 +807,13 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-xl font-bold text-xs shadow-lg shadow-emerald-600/25 transition flex items-center gap-2 cursor-pointer"
+                className="gl-btn !w-auto px-8 py-3 rounded-xl font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md"
+                style={{ 
+                  height: 'auto', 
+                  padding: '0.75rem 2rem',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  boxShadow: '0 4px 14px rgba(16,185,129,0.25)' 
+                }}
               >
                 {isSubmitting ? (
                   <>
@@ -811,9 +831,9 @@ const Register = () => {
         </form>
 
         {/* Footer Link */}
-        <div className="bg-slate-50 border-t border-slate-100 p-4 text-center text-xs text-slate-500">
+        <div className="bg-slate-50/50 border-t border-slate-100/50 p-5 text-center text-xs text-slate-500 backdrop-blur-md">
           Already registered?{" "}
-          <a href="/login" className="text-blue-600 font-bold hover:underline">
+          <a href="/login" className="text-indigo-600 font-bold hover:text-indigo-700 transition">
             Sign in to your account
           </a>
         </div>
