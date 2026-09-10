@@ -19,7 +19,7 @@ public class Role {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "otp_required", nullable = false)
+    @Column(name = "otp_required")
     private Boolean otpRequired = false;
 
     @Column(name = "permissions", columnDefinition = "TEXT")
@@ -31,7 +31,7 @@ public class Role {
         this.companyId = companyId;
         this.roleName = roleName;
         this.description = description;
-        this.otpRequired = otpRequired != null ? otpRequired : false;
+        this.otpRequired = Boolean.TRUE.equals(otpRequired);
         this.permissions = permissions;
     }
 
@@ -68,11 +68,11 @@ public class Role {
     }
 
     public Boolean getOtpRequired() {
-        return otpRequired;
+        return Boolean.TRUE.equals(otpRequired);
     }
 
     public void setOtpRequired(Boolean otpRequired) {
-        this.otpRequired = otpRequired != null ? otpRequired : false;
+        this.otpRequired = Boolean.TRUE.equals(otpRequired);
     }
 
     public String getPermissions() {
