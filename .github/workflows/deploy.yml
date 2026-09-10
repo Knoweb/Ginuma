@@ -3,10 +3,10 @@ name: Deploy to DigitalOcean
 on:
   push:
     branches:
-      - main # Or your default branch name
+      - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,33 +17,49 @@ jobs:
         run: |
           echo "${{ secrets.ENV_FILE }}" > .env
 
-      - name: Copy files to DigitalOcean via scp
+      # ── Build Docker images on the GitHub Actions runner (7GB RAM, free) ──
+      - name: Build Docker images on runner
+        run: docker compose -p ginuma-app build
+
+      # ── Save the built images to compressed tar archives ──
+      - name: Save Docker images to tar
+        run: |
+          docker save ginuma-app-backend:latest | gzip > backend.tar.gz
+          docker save ginuma-app-frontend:latest | gzip > frontend.tar.gz
+
+      # ── Copy the pre-built tars + compose/env files to the VPS ──
+      - name: Copy artifacts to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
-          source: "."
+          source: "backend.tar.gz,frontend.tar.gz,docker-compose.yml,.env"
           target: "/root/ginuma-app"
           strip_components: 0
           rm: false
 
-      - name: Execute Docker Compose on DigitalOcean
+      # ── Load images and restart containers — NO build on VPS ──
+      - name: Load images and restart containers on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
+          command_timeout: 10m
           script: |
             cd /root/ginuma-app
-            # Ensure script exits if any command fails
             set -e
-            
-            # Stop existing containers if running
+
+            # Load the pre-built images (no compile, no vite build — very low RAM)
+            docker load < backend.tar.gz
+            docker load < frontend.tar.gz
+
+            # Restart containers using the loaded images (no --build flag)
             docker compose down || true
-            
-            # Rebuild and start containers in detached mode
-            docker compose up --build -d
-            
-            # Clean up dangling images to save space
+            docker compose up -d
+
+            # Clean up tars and dangling images to save disk space
+            rm -f backend.tar.gz frontend.tar.gz
             docker image prune -f
+
