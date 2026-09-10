@@ -48,23 +48,9 @@ public class AppUserService {
         newUser.setCompany(company);
 
         // Auto-create Employee if record does not exist
-        Optional<Employee> optEmp = employeeRepository.findByEmailAndCompanyCompanyId(request.getEmail(), companyId);
-        if (optEmp.isEmpty()) {
-            Employee newEmp = new Employee();
-            newEmp.setEmail(request.getEmail());
-            newEmp.setCompany(company);
-            String name = request.getName();
-            if (name != null && !name.trim().isEmpty()) {
-                String[] parts = name.trim().split("\\s+", 2);
-                newEmp.setFirstName(parts[0]);
-                newEmp.setLastName(parts.length > 1 ? parts[1] : "");
-            } else {
-                newEmp.setFirstName(request.getEmail().split("@")[0]);
-                newEmp.setLastName("");
-            }
-            newEmp.setDateAdded(java.time.LocalDate.now());
-            employeeRepository.save(newEmp);
-        }
+        // Note: Disabled because Employee table has non-null constraints (address, designation, etc.)
+        // which cause DataIntegrityViolationException and rollback the entire user creation.
+        // The system already handles cases where an AppUser does not have a matching Employee.
 
         return appUserRepository.save(newUser);
     }
