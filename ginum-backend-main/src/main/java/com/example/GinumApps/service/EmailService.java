@@ -56,7 +56,13 @@ public class EmailService {
     }
 
     public void sendVerificationEmail(String recipientEmail, String companyName, String token) {
-        String verificationUrl = frontendUrl + "/verify-email?token=" + token;
+        String baseUrl = (frontendUrl != null && !frontendUrl.trim().isEmpty()) ? frontendUrl.trim() : "http://ginumapps.com";
+        if (baseUrl.startsWith("https://")) {
+            baseUrl = baseUrl.replace("https://", "http://");
+        } else if (!baseUrl.startsWith("http://")) {
+            baseUrl = "http://" + baseUrl;
+        }
+        String verificationUrl = baseUrl + "/verify-email?token=" + token;
 
         String subject = "Verify your Ginuma ERP Account";
         String htmlContent = "<!DOCTYPE html>"
