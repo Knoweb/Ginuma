@@ -56,10 +56,29 @@ const Sidebar = ({ isVisible }) => {
     );
   };
 
-  const filteredNavItems = navItems.filter(item => {
-    if (item.sectionTitle) return true; // We'll filter sections later or let them render empty
-    return hasAccess(item);
-  });
+  const filteredNavItems = navItems.map(item => {
+    if (item.sectionTitle) return item; // We'll clean up empty sections later
+    
+    // Check if top-level has access
+    if (!hasAccess(item)) return null;
+
+    // Filter subItems if user is VIEW_ONLY
+    const isViewOnly = userPermissions.includes("VIEW_ONLY") && !userPermissions.includes("ALL") && !userPermissions.includes("*");
+    
+    let filteredSubItems = item.subItems;
+    if (isViewOnly && item.subItems) {
+      filteredSubItems = item.subItems.filter(subItem => {
+        const lowerId = subItem.id.toLowerCase();
+        const lowerPath = subItem.path.toLowerCase();
+        // Hide anything with 'new', 'create', 'edit' for view-only users
+        if (lowerId.includes("new") || lowerId.includes("create") || lowerId.includes("edit")) return false;
+        if (lowerPath.includes("new") || lowerPath.includes("create") || lowerPath.includes("edit")) return false;
+        return true;
+      });
+    }
+
+    return { ...item, subItems: filteredSubItems };
+  }).filter(Boolean);
   
   // Clean up empty section titles
   const finalNavItems = [];
