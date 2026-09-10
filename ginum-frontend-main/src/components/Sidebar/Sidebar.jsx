@@ -41,6 +41,39 @@ const Sidebar = ({ isVisible }) => {
     }
   }, [location.pathname]);
 
+  // Filter navItems based on permissions
+  const userPermissionsStr = sessionStorage.getItem("permissions");
+  let userPermissions = [];
+  try {
+    userPermissions = userPermissionsStr ? JSON.parse(userPermissionsStr) : [];
+  } catch(e) {}
+  
+  const hasAccess = (item) => {
+    if (userPermissions.includes("*")) return true; // Super Admin or Company Admin
+    if (!item.permissions || item.permissions.length === 0) return true; // Items without permission requirement
+    return item.permissions.some(p => userPermissions.includes(p));
+  };
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.sectionTitle) return true; // We'll filter sections later or let them render empty
+    return hasAccess(item);
+  });
+  
+  // Clean up empty section titles
+  const finalNavItems = [];
+  let currentSection = null;
+  filteredNavItems.forEach(item => {
+    if (item.sectionTitle) {
+      currentSection = item;
+    } else {
+      if (currentSection) {
+        finalNavItems.push(currentSection);
+        currentSection = null;
+      }
+      finalNavItems.push(item);
+    }
+  });
+
   return (
     <div
       className={`bg-gray-50 min-h-screen px-1.5 w-72 fixed left-0 top-0 
@@ -58,7 +91,7 @@ const Sidebar = ({ isVisible }) => {
 
       <nav className="mt-6 mb-10">
         <ul className="space-y-4">
-          {navItems.map((item) => {
+          {finalNavItems.map((item) => {
             const hasSubItems = item.subItems && item.subItems.length > 0;
             // Render section titles
             if (item.sectionTitle) {

@@ -49,6 +49,12 @@ const Login = () => {
       }
 
       // Save authentication details
+      if (response.permissions) {
+        sessionStorage.setItem("permissions", JSON.stringify(response.permissions));
+      } else {
+        sessionStorage.setItem("permissions", JSON.stringify([]));
+      }
+
       if (response.role === "ROLE_SUPER_ADMIN") {
         sessionStorage.setItem("auth_token", response.token);
         sessionStorage.setItem("role", response.role);

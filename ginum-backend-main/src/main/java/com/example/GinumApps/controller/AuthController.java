@@ -243,10 +243,29 @@ public class AuthController {
         if (appUserOpt.isPresent()) {
             AppUser appUser = appUserOpt.get();
             response.setUserId(appUser.getId());
+            Long compId = null;
             if (appUser.getCompany() != null) {
+                compId = appUser.getCompany().getCompanyId().longValue();
                 response.setCompanyId(appUser.getCompany().getCompanyId());
                 response.setCompanyName(appUser.getCompany().getCompanyName());
             }
+
+            // Assign permissions
+            if ("ROLE_COMPANY".equals(role) || "ROLE_SUPER_ADMIN".equals(role)) {
+                response.setPermissions(java.util.List.of("*"));
+            } else if (compId != null) {
+                String cleanRoleName = role.replace("ROLE_", "");
+                java.util.Optional<com.example.GinumApps.model.Role> customRoleOpt = roleService.findByCompanyAndName(compId, cleanRoleName);
+                if (customRoleOpt.isPresent() && customRoleOpt.get().getPermissions() != null && !customRoleOpt.get().getPermissions().isEmpty()) {
+                    String[] permsArray = customRoleOpt.get().getPermissions().split(",");
+                    response.setPermissions(java.util.Arrays.asList(permsArray));
+                } else {
+                    response.setPermissions(java.util.List.of());
+                }
+            } else {
+                response.setPermissions(java.util.List.of());
+            }
+
             return response;
         }
 
@@ -255,17 +274,20 @@ public class AuthController {
             Company company = companyOpt.get();
             response.setCompanyId(company.getCompanyId());
             response.setCompanyName(company.getCompanyName());
+            response.setPermissions(java.util.List.of("*"));
             return response;
         }
 
         java.util.Optional<Admin> adminOpt = adminRepository.findByEmail(email);
         if (adminOpt.isPresent()) {
             Admin admin = adminOpt.get();
-            response.setUserId(admin.getId());
+            response.setUserId(admin.getId().intValue());
+            response.setPermissions(java.util.List.of("*"));
             return response;
         }
 
-        throw new RuntimeException("Missing company mapping for email: " + email);
+        response.setPermissions(java.util.List.of());
+        return response;
     }
 
     @GetMapping("/mfa/setup")

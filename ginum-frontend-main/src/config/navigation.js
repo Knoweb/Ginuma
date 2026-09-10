@@ -22,6 +22,7 @@ export const navItems = [
   },
   {
     id: "dashboard",
+    permissions: ["DASHBOARD"],
     path: "/dashboard",
     label: "Dashboard",
     icon: FaTachometerAlt,
@@ -33,6 +34,7 @@ export const navItems = [
   },
   {
     id: "employee",
+    permissions: ["EMPLOYEES"],
     path: "/employee",
     label: "Employees",
     icon: FaUsers,
@@ -43,6 +45,7 @@ export const navItems = [
   },
   {
     id: "department",
+    permissions: ["EMPLOYEES"],
     path: "/department",
     label: "Department",
     icon: FaBuilding,
@@ -80,6 +83,7 @@ export const navItems = [
   },
   {
     id: "supplier",
+    permissions: ["SUPPLIERS"],
     path: "/supplier",
     label: "Supplier",
     icon: FaTruck,
@@ -105,6 +109,7 @@ export const navItems = [
   },
   {
     id: "customer",
+    permissions: ["CUSTOMERS"],
     path: "/customer",
     label: "Customer",
     icon: FaUserTie,
@@ -122,6 +127,7 @@ export const navItems = [
   },
   {
     id: "projects",
+    permissions: ["PROJECTS"],
     path: "/projects",
     label: "projects",
     icon: FaClipboardList,
@@ -132,6 +138,7 @@ export const navItems = [
   },
   {
     id: "inventory",
+    permissions: ["PROJECTS"],
     path: "/inventory",
     label: "Inventory",
     icon: FaWarehouse,
@@ -162,6 +169,7 @@ export const navItems = [
   // },
   {
     id: "transactions",
+    permissions: ["INVOICES"],
     path: "/transactions",
     label: "Transactions",
     icon: FaExchangeAlt,
@@ -175,6 +183,7 @@ export const navItems = [
   },
   {
     id: "bank",
+    permissions: ["BANK"],
     path: "/bank/reconsilation",
     label: "Bank Statement",
     icon: FaUniversity,
@@ -194,6 +203,7 @@ export const navItems = [
   },
   {
     id: "account",
+    permissions: ["BANK"],
     path: "/account",
     label: "Accounts",
     icon: FaBook,
@@ -204,6 +214,7 @@ export const navItems = [
   },
   {
     id: "depreciation",
+    permissions: ["REPORTS"],
     path: "/depreciation",
     label: "Depreciation",
     icon: FaFileAlt,
@@ -215,6 +226,7 @@ export const navItems = [
   },
   {
     id: "reports",
+    permissions: ["REPORTS"],
     path: "/reports",
     label: "Reports",
     icon: FaFileAlt,
@@ -273,6 +285,7 @@ export const navItems = [
   },
   {
     id: "users",
+    permissions: ["SETTINGS"],
     path: "/users",
     label: "Users",
     icon: FaUsers,
@@ -283,6 +296,7 @@ export const navItems = [
   },
   {
     id: "requests",
+    permissions: ["SETTINGS"],
     path: "/edit-requests",
     label: "Requests",
     icon: RiContractLeftFill,

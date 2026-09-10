@@ -11,4 +11,5 @@ public class LoginResponse {
     private String email;
     private String companyName;
     private boolean mfaRequired;
+    private java.util.List<String> permissions;
 }
