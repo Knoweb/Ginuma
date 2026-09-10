@@ -120,6 +120,55 @@ public class EmailService {
         }
     }
 
+    public void sendOtpEmail(String recipientEmail, String otpCode) {
+        String subject = "Your Ginuma ERP Login Verification Code: " + otpCode;
+        String htmlContent = "<!DOCTYPE html>"
+                + "<html>"
+                + "<head>"
+                + "<meta charset='UTF-8'>"
+                + "<style>"
+                + "  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }"
+                + "  .container { max-width: 500px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }"
+                + "  .header { background: linear-gradient(135deg, #1e3a8a, #2563eb); padding: 24px; text-align: center; color: #ffffff; }"
+                + "  .header h1 { margin: 0; font-size: 24px; font-weight: 700; }"
+                + "  .content { padding: 30px 24px; color: #334155; line-height: 1.6; text-align: center; }"
+                + "  .otp-code { display: inline-block; font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #2563eb; background: #eff6ff; padding: 16px 32px; border-radius: 12px; border: 2px dashed #93c5fd; margin: 20px 0; }"
+                + "  .footer { background-color: #f8fafc; padding: 16px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; }"
+                + "</style>"
+                + "</head>"
+                + "<body>"
+                + "  <div class='container'>"
+                + "    <div class='header'><h1>Ginuma ERP</h1></div>"
+                + "    <div class='content'>"
+                + "      <h2 style='color:#1e293b;margin-top:0;'>Login Verification Code</h2>"
+                + "      <p>Use the following 6-digit One-Time Password (OTP) to complete your login process:</p>"
+                + "      <div class='otp-code'>" + escapeHtml(otpCode) + "</div>"
+                + "      <p style='font-size: 13px; color: #64748b;'>This code is valid for 10 minutes. If you did not request this code, please secure your account immediately.</p>"
+                + "    </div>"
+                + "    <div class='footer'>&copy; " + java.time.Year.now().getValue() + " Ginuma ERP. All rights reserved.</div>"
+                + "  </div>"
+                + "</body>"
+                + "</html>";
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            String from = (emailFrom != null && !emailFrom.trim().isEmpty() && !emailFrom.contains("smtp-brevo.com"))
+                    ? emailFrom.trim()
+                    : "pavaniedirisinghe18@gmail.com";
+            helper.setFrom(from, "Ginuma Security");
+            helper.setTo(recipientEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Login OTP email sent successfully to {}", recipientEmail);
+        } catch (Exception e) {
+            logger.error("Failed to send OTP email to {}", recipientEmail, e);
+            throw new RuntimeException("Failed to send OTP email: " + e.getMessage());
+        }
+    }
+
     private String escapeHtml(String input) {
         if (input == null) return "";
         return input.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");

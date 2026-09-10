@@ -14,22 +14,29 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
   const [mfaRequired, setMfaRequired] = useState(false);
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [loginOtp, setLoginOtp] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // api.post වෙනුවට axios.post භාවිතා කරන්න (Full URL එක දෙන්න)
       const res = await axios.post(`${apiUrl}/api/auth/login`, {
         email,
         password,
         mfaCode: mfaRequired ? mfaCode : null,
+        loginOtp: otpRequired ? loginOtp : null,
       }, { withCredentials: true });
 
-      // axios වලදී actual data එක තියෙන්නේ res.data කියන එක ඇතුළෙයි
       const response = res.data; 
       console.log("Login response:", response);
+
+      if (response.otpRequired) {
+        setOtpRequired(true);
+        setError("");
+        return;
+      }
 
       if (response.mfaRequired) {
         setMfaRequired(true);
@@ -158,7 +165,33 @@ const Login = () => {
 
           {/* Login Form */}
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            {!mfaRequired ? (
+            {otpRequired ? (
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                  <span className="text-2xl">🔐</span>
+                  <h3 className="text-sm font-bold text-blue-900 mt-1">Role Security Verification</h3>
+                  <p className="text-xs text-blue-700 mt-1">
+                    An OTP code has been sent to <strong>{email}</strong>. Enter the 6-digit code below to log in.
+                  </p>
+                </div>
+                <div>
+                  <label htmlFor="loginOtp" className="block text-sm font-medium text-gray-700 text-center">
+                    6-Digit OTP Code
+                  </label>
+                  <input
+                    id="loginOtp"
+                    name="loginOtp"
+                    type="text"
+                    required
+                    value={loginOtp}
+                    onChange={(e) => setLoginOtp(e.target.value.replace(/\D/g, ""))}
+                    className="mt-2 block w-full rounded-xl border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-xl text-center tracking-[0.4em] font-mono"
+                    placeholder="000000"
+                    maxLength={6}
+                  />
+                </div>
+              </div>
+            ) : !mfaRequired ? (
               <>
                 <div className="space-y-4">
                   {/* Email Input Field */}
@@ -271,14 +304,16 @@ const Login = () => {
                 type="submit"
                 className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                {mfaRequired ? "Verify Code" : "Sign in"}
+                {otpRequired ? "Verify OTP & Log In" : mfaRequired ? "Verify Code" : "Sign in"}
               </button>
-              {mfaRequired && (
+              {(mfaRequired || otpRequired) && (
                 <button
                   type="button"
                   onClick={() => {
                     setMfaRequired(false);
+                    setOtpRequired(false);
                     setMfaCode("");
+                    setLoginOtp("");
                   }}
                   className="mt-3 group relative flex w-full justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
                 >

@@ -36,6 +36,7 @@ public class CompanyService {
     private final CurrencyRepository currencyRepository;
     private final AccountService accountService;
     private final EmailService emailService;
+    private final RoleService roleService;
 
     @Transactional
     public Company registerCompany(CompanyRegistrationDto dto) {
@@ -106,6 +107,13 @@ public class CompanyService {
         }
 
         Company savedCompany = companyRepository.save(company);
+
+        // Create default roles for company
+        try {
+            roleService.createDefaultRolesForCompany(savedCompany.getCompanyId().longValue());
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(CompanyService.class).error("Failed to create default roles for company " + savedCompany.getCompanyId(), e);
+        }
 
         // Send verification email
         try {

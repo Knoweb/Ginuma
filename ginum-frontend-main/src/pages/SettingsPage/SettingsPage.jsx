@@ -13,7 +13,11 @@ import {
   FaExclamationTriangle,
   FaSignOutAlt,
   FaShieldAlt,
-  FaMobileAlt
+  FaMobileAlt,
+  FaUserShield,
+  FaPlus,
+  FaEdit,
+  FaTrash
 } from "react-icons/fa";
 import { apiUrl } from "../../utils/api";
 
@@ -59,6 +63,129 @@ const SettingsPage = () => {
   const [mfaCode, setMfaCode] = useState("");
   const [mfaError, setMfaError] = useState("");
   const [mfaSuccess, setMfaSuccess] = useState("");
+
+  // Role Management states
+  const [roles, setRoles] = useState([]);
+  const [loadingRoles, setLoadingRoles] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [editingRole, setEditingRole] = useState(null);
+  const [roleForm, setRoleForm] = useState({
+    roleName: "",
+    description: "",
+    otpRequired: false,
+    permissions: []
+  });
+
+  const AVAILABLE_PERMISSIONS = [
+    { id: "INVOICES", label: "Invoices & Billing" },
+    { id: "CUSTOMERS", label: "Customer Management" },
+    { id: "SUPPLIERS", label: "Supplier Management" },
+    { id: "REPORTS", label: "Financial Reports" },
+    { id: "BANK", label: "Bank & Cash Accounts" },
+    { id: "PROJECTS", label: "Projects & Tracking" },
+    { id: "EMPLOYEES", label: "Employees & Payroll" },
+    { id: "SETTINGS", label: "Company Settings" }
+  ];
+
+  const fetchRoles = async () => {
+    setLoadingRoles(true);
+    try {
+      const companyId = sessionStorage.getItem("companyId") || "1";
+      const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("token");
+      const res = await fetch(`${apiUrl}/api/roles?companyId=${companyId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRoles(data);
+      }
+    } catch (err) {
+      console.error("Error fetching roles:", err);
+    } finally {
+      setLoadingRoles(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "roles") {
+      fetchRoles();
+    }
+  }, [activeTab]);
+
+  const handleToggleOtp = async (roleId, currentOtpStatus) => {
+    try {
+      const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("token");
+      const res = await fetch(`${apiUrl}/api/roles/${roleId}/toggle-otp`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ otpRequired: !currentOtpStatus })
+      });
+      if (res.ok) {
+        setSuccessMsg("OTP requirement updated successfully!");
+        fetchRoles();
+        setTimeout(() => setSuccessMsg(""), 3000);
+      }
+    } catch (err) {
+      setErrorMsg("Failed to update OTP requirement.");
+    }
+  };
+
+  const handleSaveRole = async (e) => {
+    e.preventDefault();
+    if (!roleForm.roleName) {
+      setErrorMsg("Role Name is required.");
+      return;
+    }
+    const companyId = parseInt(sessionStorage.getItem("companyId") || "1");
+    const payload = {
+      companyId,
+      roleName: roleForm.roleName.toUpperCase().replace(/\s+/g, "_"),
+      description: roleForm.description,
+      otpRequired: roleForm.otpRequired,
+      permissions: roleForm.permissions.join(",")
+    };
+    try {
+      setSaving(true);
+      const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("token");
+      const url = editingRole ? `${apiUrl}/api/roles/${editingRole.id}` : `${apiUrl}/api/roles`;
+      const method = editingRole ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        setSuccessMsg(editingRole ? "Role updated!" : "Role created!");
+        setShowRoleModal(false);
+        setEditingRole(null);
+        setRoleForm({ roleName: "", description: "", otpRequired: false, permissions: [] });
+        fetchRoles();
+        setTimeout(() => setSuccessMsg(""), 3000);
+      }
+    } catch (err) {
+      setErrorMsg("Failed to save role.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteRole = async (roleId) => {
+    if (!window.confirm("Are you sure you want to delete this role?")) return;
+    try {
+      const token = sessionStorage.getItem("auth_token") || sessionStorage.getItem("token");
+      const res = await fetch(`${apiUrl}/api/roles/${roleId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setSuccessMsg("Role deleted successfully!");
+        fetchRoles();
+        setTimeout(() => setSuccessMsg(""), 3000);
+      }
+    } catch (err) {
+      setErrorMsg("Failed to delete role.");
+    }
+  };
 
   // Load preferences from localStorage and profile details from API
   useEffect(() => {
@@ -278,6 +405,7 @@ const SettingsPage = () => {
 
   const tabs = [
     { id: "general", label: "System Preferences", icon: FaGlobe },
+    { id: "roles", label: "Roles & OTP Security", icon: FaUserShield },
     { id: "security", label: "Security & Passwords", icon: FaLock },
     { id: "notifications", label: "Notifications", icon: FaBell },
     { id: "account", label: "Account Info", icon: FaUser },
@@ -410,6 +538,123 @@ const SettingsPage = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          )}
+
+          {/* TAB: User Roles & OTP Security */}
+          {activeTab === "roles" && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-5">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-850 flex items-center gap-2">
+                    <FaUserShield className="text-blue-600" /> User Roles & OTP Security
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Manage role permissions and configure mandatory 2FA / OTP login verification per role.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingRole(null);
+                    setRoleForm({ roleName: "", description: "", otpRequired: false, permissions: [] });
+                    setShowRoleModal(true);
+                  }}
+                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-sm transition flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  <FaPlus /> Add New Role
+                </button>
+              </div>
+
+              {loadingRoles ? (
+                <div className="flex items-center justify-center py-10">
+                  <FaSpinner className="animate-spin text-2xl text-blue-600" />
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-200 bg-gray-50/50 text-xs uppercase font-bold text-gray-500">
+                        <th className="py-3 px-4">Role Name</th>
+                        <th className="py-3 px-4">Description</th>
+                        <th className="py-3 px-4 text-center">OTP Verification</th>
+                        <th className="py-3 px-4">Permissions</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 text-sm">
+                      {roles.map((r) => (
+                        <tr key={r.id} className="hover:bg-gray-50/50 transition">
+                          <td className="py-3.5 px-4 font-bold text-gray-800">
+                            {r.roleName}
+                          </td>
+                          <td className="py-3.5 px-4 text-gray-600 text-xs max-w-xs">
+                            {r.description || "-"}
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            <button
+                              onClick={() => handleToggleOtp(r.id, r.otpRequired)}
+                              className={`px-3 py-1.5 rounded-full text-xs font-bold transition cursor-pointer flex items-center gap-1.5 mx-auto ${
+                                r.otpRequired
+                                  ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                              }`}
+                              title="Click to toggle OTP requirement for this role"
+                            >
+                              <span className={`w-2 h-2 rounded-full ${r.otpRequired ? "bg-emerald-500 animate-pulse" : "bg-gray-400"}`}></span>
+                              {r.otpRequired ? "OTP Required" : "OTP Disabled"}
+                            </button>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <div className="flex flex-wrap gap-1 max-w-xs">
+                              {r.permissions ? (
+                                r.permissions.split(",").slice(0, 3).map((p, idx) => (
+                                  <span key={idx} className="bg-blue-50 text-blue-700 text-[11px] font-semibold px-2 py-0.5 rounded-md">
+                                    {p.trim()}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-gray-400 text-xs">Standard</span>
+                              )}
+                              {r.permissions && r.permissions.split(",").length > 3 && (
+                                <span className="text-xs text-gray-400">+{r.permissions.split(",").length - 3} more</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => {
+                                  setEditingRole(r);
+                                  setRoleForm({
+                                    roleName: r.roleName,
+                                    description: r.description || "",
+                                    otpRequired: r.otpRequired || false,
+                                    permissions: r.permissions ? r.permissions.split(",") : []
+                                  });
+                                  setShowRoleModal(true);
+                                }}
+                                className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                                title="Edit Role"
+                              >
+                                <FaEdit />
+                              </button>
+                              {r.roleName !== "COMPANY_ADMIN" && (
+                                <button
+                                  onClick={() => handleDeleteRole(r.id)}
+                                  className="p-2 text-gray-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                                  title="Delete Role"
+                                >
+                                  <FaTrash />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
@@ -792,6 +1037,107 @@ const SettingsPage = () => {
                 Confirm Logout
               </button>
             </div>
+          </div>
+      {/* Role Create/Edit Modal */}
+      {showRoleModal && (
+        <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full border border-gray-150 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <FaUserShield className="text-blue-600" />
+                {editingRole ? "Edit Role" : "Create New Role"}
+              </h3>
+              <button
+                onClick={() => setShowRoleModal(false)}
+                className="text-gray-400 hover:text-gray-600 font-bold text-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveRole} className="space-y-4">
+              <div>
+                <label className="block text-xs uppercase font-bold text-gray-600 mb-1">Role Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={roleForm.roleName}
+                  onChange={(e) => setRoleForm({ ...roleForm, roleName: e.target.value })}
+                  placeholder="e.g. ACCOUNTANT, MANAGER, SALES"
+                  className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase font-bold text-gray-600 mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={roleForm.description}
+                  onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
+                  placeholder="Role responsibilities and access description"
+                  className="w-full px-3.5 py-2 border border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none text-sm"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                <div>
+                  <p className="text-sm font-bold text-gray-800">Require OTP Verification on Login</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Users with this role will be emailed a 6-digit OTP code when signing in.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={roleForm.otpRequired}
+                    onChange={(e) => setRoleForm({ ...roleForm, otpRequired: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase font-bold text-gray-600 mb-2">Module Permissions</label>
+                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-xl bg-gray-50/50">
+                  {AVAILABLE_PERMISSIONS.map((perm) => {
+                    const isChecked = roleForm.permissions.includes(perm.id);
+                    return (
+                      <label key={perm.id} className="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-100 cursor-pointer text-xs font-medium hover:bg-blue-50/30">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setRoleForm({ ...roleForm, permissions: [...roleForm.permissions, perm.id] });
+                            } else {
+                              setRoleForm({ ...roleForm, permissions: roleForm.permissions.filter(p => p !== perm.id) });
+                            }
+                          }}
+                          className="rounded text-blue-600 focus:ring-blue-500"
+                        />
+                        {perm.label}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShowRoleModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 text-sm font-bold transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-xl text-sm font-bold shadow-sm transition"
+                >
+                  {saving ? "Saving..." : editingRole ? "Update Role" : "Create Role"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

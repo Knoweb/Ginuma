@@ -47,6 +47,9 @@ public class AuthController {
     private final AppUserRepository userRepository;
     private final com.example.GinumApps.service.MfaService mfaService;
     private final com.example.GinumApps.service.EmailService emailService;
+    private final com.example.GinumApps.service.RoleService roleService;
+
+    private static final java.util.concurrent.ConcurrentHashMap<String, String> otpStorage = new java.util.concurrent.ConcurrentHashMap<>();
 
     @CrossOrigin
     @PostMapping("/login")
@@ -107,6 +110,46 @@ public class AuthController {
                 } else {
                     if (!mfaService.verifyTotp(authRequest.getMfaCode(), mfaSecret)) {
                         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(java.util.Map.of("error", "Invalid MFA Code"));
+                    }
+                }
+            }
+
+            // Per-role OTP requirement check
+            Long compId = null;
+            if (userOpt.isPresent() && userOpt.get().getCompany() != null) {
+                compId = userOpt.get().getCompany().getCompanyId().longValue();
+            } else {
+                java.util.Optional<Company> companyOpt = companyRepository.findByEmail(authRequest.getEmail());
+                if (companyOpt.isPresent()) {
+                    compId = companyOpt.get().getCompanyId().longValue();
+                }
+            }
+
+            if (compId != null) {
+                String cleanRoleName = role.replace("ROLE_", "");
+                java.util.Optional<com.example.GinumApps.model.Role> roleEntityOpt = roleService.findByCompanyAndName(compId, cleanRoleName);
+                if (roleEntityOpt.isPresent() && Boolean.TRUE.equals(roleEntityOpt.get().getOtpRequired())) {
+                    String providedOtp = authRequest.getLoginOtp();
+                    if (providedOtp == null || providedOtp.trim().isEmpty()) {
+                        // Generate & send OTP
+                        String generatedOtp = String.format("%06d", new java.util.Random().nextInt(900000) + 100000);
+                        otpStorage.put(authRequest.getEmail().toLowerCase(), generatedOtp);
+                        try {
+                            emailService.sendOtpEmail(authRequest.getEmail(), generatedOtp);
+                        } catch (Exception ex) {
+                            logger.error("Failed to send login OTP to " + authRequest.getEmail(), ex);
+                        }
+                        return ResponseEntity.ok(java.util.Map.of(
+                                "otpRequired", true,
+                                "email", authRequest.getEmail(),
+                                "message", "OTP required for your role. A 6-digit verification code has been sent to your email."
+                        ));
+                    } else {
+                        String storedOtp = otpStorage.get(authRequest.getEmail().toLowerCase());
+                        if (storedOtp == null || !storedOtp.equals(providedOtp.trim())) {
+                            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(java.util.Map.of("error", "Invalid or expired OTP code"));
+                        }
+                        otpStorage.remove(authRequest.getEmail().toLowerCase());
                     }
                 }
             }
