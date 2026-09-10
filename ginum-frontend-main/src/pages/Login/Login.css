@@ -502,7 +502,7 @@
 .gl-dashboard {
   position: relative;
   width: 100%;
-  max-width: 720px;
+  max-width: 610px;
   height: 640px;
 }
 
@@ -699,7 +699,7 @@
 
 .gl-card-expenses {
   top: 10px;
-  right: 10px;
+  right: 0px;
   width: 245px;
 }
 
@@ -711,7 +711,7 @@
 
 .gl-card-invoices {
   top: 210px;
-  right: 10px;
+  right: 0px;
   width: 270px;
 }
 
@@ -723,7 +723,7 @@
 
 .gl-card-balance {
   bottom: 25px;
-  right: 10px;
+  right: 15px;
   width: 230px;
 }
 
@@ -737,7 +737,7 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 @media (max-width: 1300px) {
   .gl-left { width: 500px; padding: 2.5rem 3.5rem; }
-  .gl-dashboard { max-width: 580px; transform: scale(0.88); transform-origin: center; }
+  .gl-dashboard { max-width: 560px; transform: scale(0.88); transform-origin: center; }
 }
 
 @media (max-width: 860px) {
