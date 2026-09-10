@@ -22,7 +22,7 @@ export const navItems = [
   },
   {
     id: "dashboard",
-    permissions: ["DASHBOARD"],
+    permissions: [],
     path: "/dashboard",
     label: "Dashboard",
     icon: FaTachometerAlt,
@@ -34,7 +34,7 @@ export const navItems = [
   },
   {
     id: "employee",
-    permissions: ["EMPLOYEES"],
+    permissions: ["EMPLOYEE"],
     path: "/employee",
     label: "Employees",
     icon: FaUsers,
@@ -45,7 +45,7 @@ export const navItems = [
   },
   {
     id: "department",
-    permissions: ["EMPLOYEES"],
+    permissions: ["EMPLOYEE"],
     path: "/department",
     label: "Department",
     icon: FaBuilding,
@@ -83,7 +83,7 @@ export const navItems = [
   },
   {
     id: "supplier",
-    permissions: ["SUPPLIERS"],
+    permissions: ["BILL", "SUPPLIER"],
     path: "/supplier",
     label: "Supplier",
     icon: FaTruck,
@@ -109,7 +109,7 @@ export const navItems = [
   },
   {
     id: "customer",
-    permissions: ["CUSTOMERS"],
+    permissions: ["CUSTOMER", "SALES"],
     path: "/customer",
     label: "Customer",
     icon: FaUserTie,
@@ -127,7 +127,7 @@ export const navItems = [
   },
   {
     id: "projects",
-    permissions: ["PROJECTS"],
+    permissions: ["PROJECT", "ITEM"],
     path: "/projects",
     label: "projects",
     icon: FaClipboardList,
@@ -138,7 +138,7 @@ export const navItems = [
   },
   {
     id: "inventory",
-    permissions: ["PROJECTS"],
+    permissions: ["PROJECT", "ITEM"],
     path: "/inventory",
     label: "Inventory",
     icon: FaWarehouse,
@@ -169,7 +169,7 @@ export const navItems = [
   // },
   {
     id: "transactions",
-    permissions: ["INVOICES"],
+    permissions: ["INVOICES", "BILL"],
     path: "/transactions",
     label: "Transactions",
     icon: FaExchangeAlt,

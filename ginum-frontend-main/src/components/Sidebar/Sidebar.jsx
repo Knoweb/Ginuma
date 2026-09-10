@@ -49,9 +49,11 @@ const Sidebar = ({ isVisible }) => {
   } catch(e) {}
   
   const hasAccess = (item) => {
-    if (userPermissions.includes("*")) return true; // Super Admin or Company Admin
+    if (userPermissions.includes("*") || userPermissions.includes("ALL") || userPermissions.includes("VIEW_ONLY")) return true; 
     if (!item.permissions || item.permissions.length === 0) return true; // Items without permission requirement
-    return item.permissions.some(p => userPermissions.includes(p));
+    return item.permissions.some(requiredPerm => 
+      userPermissions.some(userPerm => userPerm.includes(requiredPerm))
+    );
   };
 
   const filteredNavItems = navItems.filter(item => {
