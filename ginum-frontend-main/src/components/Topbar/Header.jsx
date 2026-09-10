@@ -185,10 +185,10 @@ const Header = ({ toggleSidebar, isSidebarVisible }) => {
               <img
                 src={companyDetails.logo}
                 alt="Company Logo"
-                className="w-8.5 h-8.5 rounded-xl object-cover border border-gray-200"
+                className="w-10 h-10 rounded-xl object-cover border border-gray-200"
               />
             ) : (
-              <div className="w-8.5 h-8.5 rounded-xl bg-blue-50 text-blue-700 font-bold border border-blue-100 flex items-center justify-center text-sm uppercase">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 font-bold border border-blue-100 flex items-center justify-center text-sm uppercase">
                 {companyDetails.name.substring(0, 2)}
               </div>
             )}
