@@ -39,6 +39,13 @@ public class AppUserService {
             throw new RuntimeException("Email already registered as a user");
         }
 
+        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            throw new RuntimeException("Password is required for new users");
+        }
+        if (request.getPassword().length() < 6) {
+            throw new RuntimeException("Password must be at least 6 characters");
+        }
+
         String cleanRole = request.getRole() != null ? request.getRole().replace("ROLE_", "").toUpperCase() : "USER";
 
         AppUser newUser = new AppUser();
