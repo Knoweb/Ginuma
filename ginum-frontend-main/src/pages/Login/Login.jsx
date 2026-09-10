@@ -143,7 +143,7 @@ const FinanceDashboard = () => (
       />
       <div style={{ display:"flex", justifyContent:"space-between", marginTop:"6px" }}>
         {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].map(m => (
-          <div key={m} style={{ fontSize:"0.55rem", color:"rgba(255,255,255,0.2)" }}>{m}</div>
+          <div key={m} style={{ fontSize:"0.55rem", color:"rgba(0,0,0,0.4)" }}>{m}</div>
         ))}
       </div>
     </div>
@@ -160,13 +160,13 @@ const FinanceDashboard = () => (
         ].map(row => (
           <div key={row.label}>
             <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"3px" }}>
-              <span style={{ fontSize:"0.72rem", color:"rgba(255,255,255,0.5)", display:"flex", alignItems:"center", gap:"5px" }}>
+              <span style={{ fontSize:"0.72rem", color:"rgba(0,0,0,0.6)", display:"flex", alignItems:"center", gap:"5px" }}>
                 <span className="gl-dot gl-dot-glow" style={{ background:row.color, color:row.color }} />
                 {row.label}
               </span>
-              <span style={{ fontSize:"0.72rem", fontWeight:700, color:"rgba(255,255,255,0.7)" }}>{row.count}</span>
+              <span style={{ fontSize:"0.72rem", fontWeight:700, color:"rgba(0,0,0,0.8)" }}>{row.count}</span>
             </div>
-            <div style={{ height:"3px", background:"rgba(255,255,255,0.06)", borderRadius:"999px" }}>
+            <div style={{ height:"3px", background:"rgba(0,0,0,0.06)", borderRadius:"999px" }}>
               <div style={{ height:"100%", width:`${row.pct}%`, background:row.color, borderRadius:"999px", opacity:0.8 }} />
             </div>
           </div>
@@ -327,7 +327,7 @@ const Login = () => {
               <div className="gl-mfa-icon">🔐</div>
               <div className="gl-mfa-title">Security Verification</div>
               <p className="gl-mfa-desc">
-                A 6-digit code was sent to <strong style={{ color:"#a5b4fc" }}>{email}</strong>
+                A 6-digit code was sent to <strong style={{ color:"#4f46e5" }}>{email}</strong>
               </p>
             </div>
 
