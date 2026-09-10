@@ -73,8 +73,14 @@ const Login = () => {
       }
     } catch (err) {
       let errorMsg = "Invalid email or password. Please try again.";
-      if (err.response && err.response.data && err.response.data.error) {
-        errorMsg = err.response.data.error;
+      if (err.response && err.response.data) {
+        if (typeof err.response.data === "string") {
+          errorMsg = err.response.data;
+        } else if (err.response.data.error) {
+          errorMsg = err.response.data.error;
+        } else if (err.response.data.message) {
+          errorMsg = err.response.data.message;
+        }
       }
       if (err.response && err.response.data && err.response.data.emailUnverified) {
         setEmailUnverified(true);

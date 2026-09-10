@@ -55,8 +55,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest) {
         try {
-            java.util.Optional<Company> checkCompanyOpt = companyRepository.findByEmail(authRequest.getEmail());
-            if (checkCompanyOpt.isPresent()) {
+            String cleanEmail = authRequest.getEmail() != null ? authRequest.getEmail().trim() : "";
+
+            java.util.Optional<AppUser> userOpt = userRepository.findByEmailIgnoreCase(cleanEmail);
+            java.util.Optional<Company> checkCompanyOpt = companyRepository.findByEmailIgnoreCase(cleanEmail);
+
+            if (userOpt.isEmpty() && checkCompanyOpt.isPresent()) {
                 Company company = checkCompanyOpt.get();
                 if (!company.isEmailVerified()) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -64,7 +68,6 @@ public class AuthController {
                 }
             }
 
-            java.util.Optional<AppUser> userOpt = userRepository.findByEmail(authRequest.getEmail());
             if (userOpt.isPresent()) {
                 AppUser user = userOpt.get();
                 if (user.getLockTime() != null) {
@@ -81,7 +84,7 @@ public class AuthController {
 
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            authRequest.getEmail(),
+                            cleanEmail,
                             authRequest.getPassword()
                     )
             );
@@ -94,12 +97,9 @@ public class AuthController {
             if (userOpt.isPresent()) {
                 mfaEnabled = userOpt.get().isMfaEnabled();
                 mfaSecret = userOpt.get().getMfaSecret();
-            } else {
-                java.util.Optional<Company> companyOpt = companyRepository.findByEmail(authRequest.getEmail());
-                if (companyOpt.isPresent()) {
-                    mfaEnabled = companyOpt.get().isMfaEnabled();
-                    mfaSecret = companyOpt.get().getMfaSecret();
-                }
+            } else if (checkCompanyOpt.isPresent()) {
+                mfaEnabled = checkCompanyOpt.get().isMfaEnabled();
+                mfaSecret = checkCompanyOpt.get().getMfaSecret();
             }
 
             if (mfaEnabled) {
@@ -118,11 +118,8 @@ public class AuthController {
             Long compId = null;
             if (userOpt.isPresent() && userOpt.get().getCompany() != null) {
                 compId = userOpt.get().getCompany().getCompanyId().longValue();
-            } else {
-                java.util.Optional<Company> companyOpt = companyRepository.findByEmail(authRequest.getEmail());
-                if (companyOpt.isPresent()) {
-                    compId = companyOpt.get().getCompanyId().longValue();
-                }
+            } else if (checkCompanyOpt.isPresent()) {
+                compId = checkCompanyOpt.get().getCompanyId().longValue();
             }
 
             if (compId != null) {
@@ -242,7 +239,7 @@ public class AuthController {
         response.setRole(role);
         response.setEmail(email);
 
-        java.util.Optional<AppUser> appUserOpt = userRepository.findByEmail(email);
+        java.util.Optional<AppUser> appUserOpt = userRepository.findByEmailIgnoreCase(email);
         if (appUserOpt.isPresent()) {
             AppUser appUser = appUserOpt.get();
             response.setUserId(appUser.getId());
@@ -253,7 +250,7 @@ public class AuthController {
             return response;
         }
 
-        java.util.Optional<Company> companyOpt = companyRepository.findByEmail(email);
+        java.util.Optional<Company> companyOpt = companyRepository.findByEmailIgnoreCase(email);
         if (companyOpt.isPresent()) {
             Company company = companyOpt.get();
             response.setCompanyId(company.getCompanyId());

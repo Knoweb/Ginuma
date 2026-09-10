@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-// CustomUserDetailsService.java
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
@@ -26,15 +25,22 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Check in all user types
-        Optional<Admin> admin = adminRepository.findByEmail(email);
+        if (email == null || email.trim().isEmpty()) {
+            throw new UsernameNotFoundException("Email cannot be empty");
+        }
+        String cleanEmail = email.trim();
+
+        // 1. Check Super Admin
+        Optional<Admin> admin = adminRepository.findByEmail(cleanEmail);
         if (admin.isPresent()) return createUserDetails(admin.get());
 
-        Optional<Company> company = companyRepository.findByEmail(email);
-        if (company.isPresent()) return createUserDetails(company.get());
-
-        Optional<AppUser> user = userRepository.findByEmail(email);
+        // 2. Check AppUser (Role / Employee user)
+        Optional<AppUser> user = userRepository.findByEmailIgnoreCase(cleanEmail);
         if (user.isPresent()) return createUserDetails(user.get());
+
+        // 3. Check Company Admin
+        Optional<Company> company = companyRepository.findByEmailIgnoreCase(cleanEmail);
+        if (company.isPresent()) return createUserDetails(company.get());
 
         throw new UsernameNotFoundException("User not found with email: " + email);
     }
@@ -59,7 +65,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .roles(user.getRole().replace("ROLE_", ""))
+                .roles(user.getRole() != null ? user.getRole().replace("ROLE_", "") : "USER")
                 .build();
     }
 }
