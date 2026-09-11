@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import usePageTitle from "../../hooks/usePageTitle";
+import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaShieldAlt, FaArrowRight, FaUser } from "react-icons/fa";
 import axios from "axios";
 import { apiUrl } from "../../utils/api";
@@ -622,7 +623,7 @@ const Login = () => {
                   <input type="checkbox" className="gl-checkbox" />
                   Remember me
                 </label>
-                <a href="#" className="gl-forgot">Forgot password?</a>
+                <Link to="/forgot-password" className="gl-forgot">Forgot password?</Link>
               </div>
 
               {/* CTA */}

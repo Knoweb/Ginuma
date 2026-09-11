@@ -61,6 +61,7 @@ import Depreciation from "../components/depreciation/Depreciation";
 import RequestsPage from "../components/requests/RequestsPage";
 
 import VerifyEmailPage from "../pages/VerifyEmail/VerifyEmailPage";
+import ForgotPassword from "../pages/ForgotPassword/ForgotPassword";
 
 function AppRouter() {
   return (
@@ -76,6 +77,7 @@ function AppRouter() {
             </PublicRoute>
           }
         />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
         <Route path="/verify-email" element={<VerifyEmailPage />} />
 
         {/* Super Admin Routes */}
