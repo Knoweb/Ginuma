@@ -413,7 +413,7 @@ const SpendMoney = () => {
           <div className="xl:col-span-2 space-y-5">
             
             {/* Step 1: Transaction Details */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="gl-card mb-6">
               <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
                 <span className="w-6 h-6 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                   1
@@ -518,7 +518,7 @@ const SpendMoney = () => {
             </div>
 
             {/* Step 2: Payee Information (Supplier / Employee) */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="gl-card mb-6">
               <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
                 <span className="w-6 h-6 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                   2
@@ -659,7 +659,7 @@ const SpendMoney = () => {
 
             {/* Step 3: Payment Amount (For Employee or when PO is selected) */}
             {(payeeType === "Employee" || (payeeType === "Supplier" && selectedPoId && currentPo)) && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="gl-card mb-6">
                 <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
                   <span className="w-6 h-6 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                     3
@@ -849,7 +849,7 @@ const SpendMoney = () => {
       </form>
 
       {/* Transaction List Table Card */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="gl-card mb-6">
         <div className="px-6 py-5 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h3 className="font-bold text-gray-800 text-lg">

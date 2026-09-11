@@ -26,7 +26,7 @@ const accountTypeMap = {
 const inputClass =
   "w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 bg-gray-50 transition-all";
 
-const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5";
+const labelClass = "gl-label";
 
 const AddAccountForm = () => {
   const [accountType, setAccountType] = useState("");
@@ -97,7 +97,7 @@ const AddAccountForm = () => {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="gl-card mb-6">
       {/* Header */}
       <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
         <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -280,7 +280,7 @@ const AddAccountForm = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm shadow-blue-500/20 disabled:bg-blue-300 disabled:cursor-not-allowed cursor-pointer"
+            className="gl-btn gl-btn-primary flex items-center gap-2"
           >
             {isSubmitting ? (
               <>

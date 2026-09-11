@@ -11,7 +11,7 @@ const PrivateRoute = ({ children }) => {
     return null;
   };
 
-  const isAuthenticated = getCookie("isLoggedIn") === "true";
+  const isAuthenticated = getCookie("isLoggedIn") === "true" || !!sessionStorage.getItem("auth_token") || !!sessionStorage.getItem("token");
 
   // If the user is not authenticated, redirect to login
   if (!isAuthenticated) {

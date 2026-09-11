@@ -277,7 +277,7 @@ const ReceiveMoney = () => {
           <div className="xl:col-span-2 space-y-5">
 
             {/* Step 1: Transaction Info */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="gl-card mb-6">
               <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
                 <span className="w-6 h-6 bg-green-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                   1
@@ -341,7 +341,7 @@ const ReceiveMoney = () => {
             </div>
 
             {/* Step 2: Customer & Sales Order */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="gl-card mb-6">
               <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
                 <span className="w-6 h-6 bg-green-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                   2
@@ -413,7 +413,7 @@ const ReceiveMoney = () => {
 
             {/* Step 3: Payment Amount (shown after SO selected) */}
             {selectedSoId && currentSo && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="gl-card mb-6">
                 <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center gap-2">
                   <span className="w-6 h-6 bg-green-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                     3
@@ -472,7 +472,7 @@ const ReceiveMoney = () => {
           <div className="space-y-5">
             {/* SO Financial Summary Card */}
             {selectedSoId && currentSo ? (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="gl-card mb-6">
                 <div className="px-5 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white">
                   <p className="text-xs font-semibold uppercase tracking-wider opacity-80">
                     Sales Order Summary

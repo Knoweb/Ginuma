@@ -45,7 +45,7 @@
 @layer components {
   /* Cards & Panels */
   .gl-card {
-    @apply bg-white border border-slate-200/60 shadow-sm rounded-2xl overflow-hidden;
+    @apply bg-white border border-slate-200/60 shadow-sm rounded-[14px] overflow-hidden;
   }
   .gl-card-hover {
     @apply transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 hover:border-slate-300;
@@ -53,21 +53,24 @@
 
   /* Typography */
   .gl-heading {
-    @apply text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight;
+    @apply text-2xl md:text-[28px] font-bold text-slate-900 tracking-tight leading-[1.2];
   }
   .gl-subheading {
-    @apply text-sm text-slate-500 font-medium;
+    @apply text-[14px] text-slate-500 font-normal;
   }
   .gl-section-title {
-    @apply text-lg font-bold text-slate-800 tracking-tight;
+    @apply text-[18px] font-semibold text-slate-800 tracking-tight;
+  }
+  .gl-card-title {
+    @apply text-[15px] font-semibold text-slate-800;
   }
 
   /* Inputs & Forms */
   .gl-label {
-    @apply block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5;
+    @apply block text-[13px] font-semibold text-slate-700 mb-1.5;
   }
   .gl-input {
-    @apply w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm text-slate-800 transition-all duration-200 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 hover:border-slate-300;
+    @apply w-full h-11 bg-slate-50 border border-slate-200 rounded-[10px] px-4 text-[14px] text-slate-800 transition-all duration-200 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 hover:border-slate-300;
   }
   .gl-input-error {
     @apply border-rose-300 focus:border-rose-500 focus:ring-rose-500/10;
@@ -75,7 +78,7 @@
 
   /* Buttons */
   .gl-btn {
-    @apply inline-flex items-center justify-center h-11 px-6 rounded-xl text-sm font-bold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center w-auto h-10 px-4 md:px-5 rounded-[10px] text-[14px] font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
   }
   .gl-btn-primary {
     @apply bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 hover:to-indigo-500 border border-indigo-600/20;

@@ -215,17 +215,17 @@ const ForgotPassword = () => {
   const handleRequestReset = async (e) => {
     e.preventDefault();
     if (!username) {
-      setError("Please enter your username/email.");
+      setError("Please enter your email address.");
       return;
     }
     setError("");
     setIsLoading(true);
     try {
       const res = await axios.post(`${apiUrl}/api/auth/forgot-password`, { email: username });
-      setSuccessMsg(res.data.message || "Reset code sent.");
+      setSuccessMsg(res.data.message || "Reset code sent to your email.");
       setStep(2);
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to request password reset.");
+      setError(err.response?.data?.error || err.response?.data?.message || "Failed to request password reset. Make sure the email is correct.");
     } finally {
       setIsLoading(false);
     }
@@ -283,18 +283,18 @@ const ForgotPassword = () => {
 
             <form onSubmit={handleRequestReset} noValidate>
               <div className="gl-field">
-                <label htmlFor="username" className="gl-label">USERNAME / EMAIL</label>
+                <label htmlFor="username" className="gl-label">EMAIL ADDRESS</label>
                 <div className="gl-input-wrap">
                   <span className="gl-input-icon"><FaUser size={13} /></span>
                   <input
                     id="username"
                     name="username"
-                    type="text"
+                    type="email"
                     required
                     value={username}
                     onChange={e => setUsername(e.target.value)}
                     className="gl-input gl-input-with-icon"
-                    placeholder="Enter your username"
+                    placeholder="Enter your registered email"
                   />
                 </div>
               </div>
@@ -345,6 +345,12 @@ const ForgotPassword = () => {
                     required
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleResetPassword(e);
+                      }
+                    }}
                     className="gl-input gl-input-with-icon"
                     placeholder="••••••••"
                   />

@@ -11,7 +11,7 @@ const PublicRoute = ({ children }) => {
     return null;
   };
 
-  const isAuthenticated = getCookie("isLoggedIn") === "true";
+  const isAuthenticated = getCookie("isLoggedIn") === "true" || !!sessionStorage.getItem("auth_token") || !!sessionStorage.getItem("token");
 
   // Redirect authenticated users to the dashboard
   if (isAuthenticated) {

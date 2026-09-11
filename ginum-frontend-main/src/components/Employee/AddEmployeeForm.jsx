@@ -5,11 +5,12 @@ import AddDepartmentForm from "../department/AddDepartmentForm";
 import AddDesignationForm from "../department/AddDesignationForm";
 import { apiUrl } from "../../utils/api";
 import Alert from "../../components/Alert/Alert";
+import PageHeader from "../../components/common/PageHeader";
 
 const inputClass =
   "w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 bg-gray-50 transition-all";
 
-const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5";
+const labelClass = "gl-label";
 
 const Field = ({ label, error, required, children }) => (
   <div>
@@ -232,24 +233,20 @@ const AddEmployeeForm = ({ onClose }) => {
 
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 lg:p-8 max-w-5xl mx-auto min-h-screen">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8 max-w-3xl mx-auto">
-        <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-          <FiUsers className="text-blue-600 text-xl" />
-        </div>
-        <div>
-          <h1 className="gl-heading">New Employee</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Add a new employee to the company</p>
-        </div>
-      </div>
+      <PageHeader
+        title="New Employee"
+        subtitle="Add a new employee to the company"
+        icon={FiUsers}
+      />
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
         {/* Personal Information */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="gl-card mb-6">
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
             <span className="w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">1</span>
-            <h3 className="font-bold text-gray-800 text-sm flex items-center gap-1.5"><FiUser className="text-blue-500" /> Personal Information</h3>
+            <h3 className="gl-card-title flex items-center gap-1.5"><FiUser className="text-blue-500" /> Personal Information</h3>
           </div>
           <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
             <Field label="First Name" required error={errors.firstName}>
@@ -287,10 +284,10 @@ const AddEmployeeForm = ({ onClose }) => {
         </div>
 
         {/* Contact Information */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="gl-card mb-6">
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
             <span className="w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">2</span>
-            <h3 className="font-bold text-gray-800 text-sm flex items-center gap-1.5"><FiPhone className="text-blue-500" /> Contact Information</h3>
+            <h3 className="gl-card-title flex items-center gap-1.5"><FiPhone className="text-blue-500" /> Contact Information</h3>
           </div>
           <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
             <Field label="Mobile No." required error={errors.mobileNo}>
@@ -312,10 +309,10 @@ const AddEmployeeForm = ({ onClose }) => {
         </div>
 
         {/* Work Information */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="gl-card mb-6">
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
             <span className="w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">3</span>
-            <h3 className="font-bold text-gray-800 text-sm flex items-center gap-1.5"><FiHash className="text-blue-500" /> Work Information</h3>
+            <h3 className="gl-card-title flex items-center gap-1.5"><FiHash className="text-blue-500" /> Work Information</h3>
           </div>
           <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-5">
             <Field label="Date Added" required error={errors.dateAdded}>
@@ -383,12 +380,12 @@ const AddEmployeeForm = ({ onClose }) => {
         <div className="flex justify-end gap-3">
           {onClose && (
             <button type="button" onClick={onClose} disabled={isSubmitting}
-              className="px-6 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-semibold text-sm transition-colors cursor-pointer">
+              className="gl-btn gl-btn-secondary">
               Cancel
             </button>
           )}
           <button type="submit" disabled={isSubmitting}
-            className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm shadow-blue-500/20 disabled:bg-blue-300 disabled:cursor-not-allowed cursor-pointer">
+            className="gl-btn gl-btn-primary flex items-center gap-2">
             {isSubmitting ? (
               <><FaSpinner className="animate-spin" /> Saving Employee...</>
             ) : (

@@ -97,8 +97,8 @@ const Sidebar = ({ isVisible }) => {
 
   return (
     <div
-      className={`bg-white border-r border-slate-200/60 min-h-screen px-3 w-72 fixed left-0 top-0 
-            transition-transform duration-700 ${
+      className={`bg-white border-r border-slate-200/60 min-h-screen w-[260px] fixed left-0 top-0 
+            transition-transform duration-500 ${
               isVisible ? "translate-x-0" : "-translate-x-full"
             } max-h-screen overflow-y-auto z-50`}
     >
@@ -126,10 +126,7 @@ const Sidebar = ({ isVisible }) => {
               );
             }
             return (
-              <div key={item.id}>
-                <h4 className="px-4 text-slate-400 font-bold text-[10px] uppercase tracking-wider mt-6 mb-2">
-                  {item.sectionTitle}
-                </h4>
+              <div key={item.id} className="px-3">
 
                 <li>
                   <button
@@ -142,10 +139,10 @@ const Sidebar = ({ isVisible }) => {
                       handleNavigation(item.path);
                       toggleExpanded(item.id, hasSubItems);
                     }}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 
-                                      rounded-xl text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600 transition-colors cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-3 h-[42px] 
+                                      rounded-[10px] text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600 transition-colors cursor-pointer ${
                                         location.pathname.startsWith(item.path)
-                                          ? "bg-indigo-50 text-indigo-700 font-bold shadow-sm shadow-indigo-100"
+                                          ? "bg-indigo-50 text-indigo-700 font-bold shadow-sm"
                                           : "font-medium"
                                       }`}
                   >
@@ -171,12 +168,12 @@ const Sidebar = ({ isVisible }) => {
                   {/* Sub-items */}
                   {hasSubItems && (
                     <ul
-                      className={`ml-12 mt-2 space-y-2 overflow-hidden transition-all duration-700 ease-in-out`}
+                      className={`ml-9 mt-1 space-y-1 overflow-hidden transition-all duration-500 ease-in-out`}
                       style={{
                         maxHeight: expandedTabs.has(item.id) ? "1000px" : "0",
                         opacity: expandedTabs.has(item.id) ? "1" : "0",
-                        paddingBottom: expandedTabs.has(item.id) ? "20px" : "0",
-                        paddingTop: expandedTabs.has(item.id) ? "10px" : "0",
+                        paddingBottom: expandedTabs.has(item.id) ? "8px" : "0",
+                        paddingTop: expandedTabs.has(item.id) ? "4px" : "0",
                       }}
                     >
                       {expandedTabs.has(item.id) &&
@@ -189,7 +186,7 @@ const Sidebar = ({ isVisible }) => {
                                   : null
                               }
                               onClick={() => handleNavigation(subItem.path)}
-                              className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors
+                              className={`w-full text-left px-4 h-[38px] flex items-center rounded-[8px] text-[13.5px] transition-colors
                                                         text-slate-500 hover:bg-slate-50 hover:text-indigo-600 ${
                                                           location.pathname ===
                                                           subItem.path

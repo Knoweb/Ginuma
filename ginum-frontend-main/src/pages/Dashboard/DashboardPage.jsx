@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Line, Bar, Pie, Doughnut, Radar } from "react-chartjs-2";
 import { Chart as ChartJS } from "chart.js/auto";
-import { FiRefreshCw } from "react-icons/fi";
+import { FiRefreshCw, FiPieChart } from "react-icons/fi";
 import { apiUrl } from "../../utils/api";
+import PageHeader from "../../components/common/PageHeader";
 
 // Helper Functions
 const getAmount = (item) => Number(item.totalAmount || item.grandTotal || item.total || item.amount || 0);
@@ -402,12 +403,16 @@ const DashboardPage = () => {
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-8">
 
-      <div className="flex justify-between items-center mb-2">
-        <h1 className="gl-heading">Dashboard</h1>
-        <button onClick={fetchData} className="gl-btn gl-btn-primary">
-          <FiRefreshCw className="mr-1" /> Refresh
-        </button>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        subtitle="A clear snapshot of your business performance"
+        icon={FiPieChart}
+        actions={
+          <button onClick={fetchData} className="gl-btn gl-btn-secondary">
+            <FiRefreshCw className="mr-1.5" /> Refresh
+          </button>
+        }
+      />
 
       <FinanceStats
         revenue={currentRevenue} prevRevenue={prevRevenue}

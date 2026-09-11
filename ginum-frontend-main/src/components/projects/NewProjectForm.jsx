@@ -8,7 +8,7 @@ import Alert from "../Alert/Alert";
 const inputClass =
   "w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 bg-gray-50 transition-all";
 
-const labelClass = "block text-sm font-semibold text-gray-700 mb-1.5";
+const labelClass = "gl-label";
 
 const WORKING_STATUS_OPTIONS = [
   { id: "ACTIVE", name: "Active" },
@@ -167,7 +167,7 @@ const NewProjectForm = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">
         {/* Project Info Card */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="gl-card mb-6">
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
             <span className="w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">1</span>
             <h3 className="font-bold text-gray-800 text-sm">Project Information</h3>
@@ -216,7 +216,7 @@ const NewProjectForm = () => {
         </div>
 
         {/* Customer & Schedule Card */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="gl-card mb-6">
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
             <span className="w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">2</span>
             <h3 className="font-bold text-gray-800 text-sm">Customer & Schedule</h3>
@@ -321,14 +321,14 @@ const NewProjectForm = () => {
             type="button"
             onClick={resetForm}
             disabled={saving}
-            className="px-6 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-semibold text-sm transition-colors cursor-pointer"
+            className="gl-btn gl-btn-secondary"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm shadow-blue-500/20 disabled:bg-blue-300 disabled:cursor-not-allowed cursor-pointer"
+            className="gl-btn gl-btn-primary flex items-center gap-2"
           >
             {saving ? (
               <><FaSpinner className="animate-spin" /> Saving Project...</>

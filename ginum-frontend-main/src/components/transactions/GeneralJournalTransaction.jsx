@@ -209,7 +209,7 @@ const CreateGeneralJournalTransaction = () => {
 
       <div className="space-y-6 max-w-5xl mx-auto">
         {/* Transaction Header Info */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="gl-card mb-6">
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
             <span className="w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">1</span>
             <h3 className="font-bold text-gray-800 text-sm">Transaction Details</h3>
@@ -255,7 +255,7 @@ const CreateGeneralJournalTransaction = () => {
         </div>
 
         {/* Journal Entries Table */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="gl-card mb-6">
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">2</span>
@@ -423,7 +423,7 @@ const CreateGeneralJournalTransaction = () => {
         </div>
 
         {/* Balance Summary */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="gl-card mb-6">
           <div className="px-6 py-5">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="text-center p-3 bg-blue-50 rounded-xl">
@@ -463,7 +463,7 @@ const CreateGeneralJournalTransaction = () => {
             type="button"
             onClick={handleSaveTransaction}
             disabled={!isBalanced || isSaving}
-            className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-sm shadow-blue-500/20 disabled:bg-blue-300 disabled:cursor-not-allowed cursor-pointer"
+            className="gl-btn gl-btn-primary flex items-center gap-2"
           >
             {isSaving ? (
               <><FaSpinner className="animate-spin" /> Saving...</>

@@ -115,8 +115,8 @@ const Header = ({ toggleSidebar, isSidebarVisible }) => {
   return (
     <div
       className={`bg-white/80 backdrop-blur-lg border-b border-slate-200/60 shadow-sm px-6 py-3.5 flex justify-between items-center fixed top-0 ${
-        isSidebarVisible ? "left-72" : "left-0"
-      } right-0 transition-all duration-300 z-50 h-16`}
+        isSidebarVisible ? "left-[260px]" : "left-0"
+      } right-0 transition-all duration-500 z-50 h-16`}
     >
       {/* Sidebar Toggle Button */}
       <div className="flex items-center">
