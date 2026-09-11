@@ -28,7 +28,7 @@
   flex-direction: column;
   justify-content: center;
   padding: 2rem 4rem;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-right: 1px solid rgba(0,0,0,0.05);
@@ -36,7 +36,7 @@
   animation: panelIn 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
   position: relative;
   z-index: 10;
-  overflow-y: auto; /* graceful fallback */
+  overflow-y: auto;
 }
 
 @keyframes panelIn {
@@ -337,6 +337,7 @@
   justify-content: center;
   padding: 3rem 2rem;
   overflow: hidden;
+  background-color: #f1f5f9; /* Slightly darker to contrast white cards */
 }
 
 /* Background grid */
@@ -351,10 +352,30 @@
   z-index: 0;
 }
 
+/* Ambient glow */
+.gl-ambient-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 600px;
+  height: 600px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  filter: blur(100px);
+  z-index: 1;
+  transition: background 1.5s ease-in-out, transform 1.5s ease-in-out;
+  opacity: 0.35;
+  pointer-events: none;
+}
+.gl-glow-0 { background: radial-gradient(circle, #8b5cf6, transparent 60%); transform: translate(-40%, -60%); }
+.gl-glow-1 { background: radial-gradient(circle, #22d3ee, transparent 60%); transform: translate(-60%, -40%); }
+.gl-glow-2 { background: radial-gradient(circle, #10b981, transparent 60%); transform: translate(-50%, -50%); }
+.gl-glow-3 { background: radial-gradient(circle, #f43f5e, transparent 60%); transform: translate(-40%, -40%); }
+
 .gl-showcase {
   position: relative;
   width: 100%;
-  max-width: 640px;
+  max-width: 800px;
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -366,8 +387,8 @@
 .gl-showcase-stage {
   position: relative;
   width: 100%;
-  height: 400px;
-  margin-bottom: 1.5rem;
+  height: 480px;
+  margin-bottom: 2rem;
 }
 
 .gl-scene {
@@ -376,7 +397,7 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.8s ease, transform 0.8s ease;
-  transform: scale(0.96) translateY(10px);
+  transform: scale(0.97) translateY(10px);
   pointer-events: none;
 }
 
@@ -387,50 +408,80 @@
   pointer-events: auto;
 }
 
-/* ── CARD POSITIONING ── */
+/* ── CARD POSITIONING & ANIMATIONS ── */
 .gl-main-card {
   position: absolute;
   top: 50%;
-  left: 45%;
+  left: 48%;
   transform: translate(-50%, -50%);
-  width: 360px;
-  z-index: 2;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.08);
+  width: 380px;
+  z-index: 5;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.1);
+  transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
 }
 
 .gl-float-card {
   position: absolute;
   width: 250px;
-  z-index: 1;
-  transition: transform 0.6s cubic-bezier(0.22,1,0.36,1) 0.15s;
+  z-index: 3;
+  transition: transform 0.8s cubic-bezier(0.22,1,0.36,1), opacity 0.8s ease;
+  opacity: 0;
+}
+.gl-scene.active .gl-float-card {
+  opacity: 1;
 }
 
+.gl-float-widget {
+  position: absolute;
+  z-index: 4;
+  transition: transform 0.8s cubic-bezier(0.22,1,0.36,1), opacity 0.8s ease;
+  opacity: 0;
+}
+.gl-scene.active .gl-float-widget {
+  opacity: 1;
+}
+
+/* Stagger Delays */
+.delay-1 { transition-delay: 0.1s; }
+.delay-2 { transition-delay: 0.2s; }
+.delay-3 { transition-delay: 0.3s; }
+
+/* Positions & Transforms */
 .gl-float-tr {
-  top: 20px;
-  right: -10px;
+  top: 10px;
+  right: 30px;
   transform: translateY(-20px);
 }
-.gl-scene.active .gl-float-tr {
-  transform: translateY(0);
+.gl-scene.active .gl-float-tr { transform: translateY(0); }
+
+.gl-float-tl {
+  top: 30px;
+  left: 10px;
+  transform: translateX(-20px);
 }
+.gl-scene.active .gl-float-tl { transform: translateX(0); }
 
 .gl-float-bl {
-  bottom: 10px;
-  left: -10px;
+  bottom: 20px;
+  left: 30px;
   transform: translateY(20px);
 }
-.gl-scene.active .gl-float-bl {
-  transform: translateY(0);
-}
+.gl-scene.active .gl-float-bl { transform: translateY(0); }
 
 .gl-float-br {
-  bottom: 30px;
-  right: -20px;
+  bottom: 40px;
+  right: 20px;
   transform: translateX(20px);
 }
-.gl-scene.active .gl-float-br {
-  transform: translateX(0);
+.gl-scene.active .gl-float-br { transform: translateX(0); }
+
+.gl-float-tc {
+  top: -20px;
+  left: 50%;
+  transform: translate(-50%, -20px);
 }
+.gl-scene.active .gl-float-tc { transform: translate(-50%, 0); }
+
 
 /* ── INDIVIDUAL CARD STYLES (gl-fcard) ── */
 .gl-fcard {
@@ -438,13 +489,16 @@
   border: 1px solid rgba(255, 255, 255, 1);
   border-radius: 18px;
   padding: 1.375rem 1.5rem;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   box-shadow:
     0 12px 36px rgba(0,0,0,0.06),
     0 2px 8px rgba(0,0,0,0.03);
   overflow: hidden;
   position: relative;
+}
+.gl-fcard-sm {
+  padding: 1rem 1.25rem;
 }
 
 .gl-fcard-accent {
@@ -563,6 +617,66 @@
 .gl-tx-amount { font-size: 0.75rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 
+/* ── MINI WIDGETS ── */
+.gl-mini-toast {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(255,255,255,0.8);
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  backdrop-filter: blur(12px);
+  gap: 0.75rem;
+}
+.gl-mini-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+}
+.gl-mini-info {
+  display: flex;
+  flex-direction: column;
+}
+.gl-mini-text {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.gl-mini-amount {
+  font-size: 0.85rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.gl-mini-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(255,255,255,0.8);
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  backdrop-filter: blur(12px);
+}
+.gl-chip-lbl {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #475569;
+}
+.gl-chip-val {
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
 /* ── SHOWCASE BOTTOM (INDICATORS & TEXT) ── */
 .gl-showcase-bottom {
   display: flex;
@@ -570,6 +684,7 @@
   align-items: center;
   text-align: center;
   margin-top: 1rem;
+  z-index: 5;
 }
 
 .gl-showcase-indicators {
@@ -615,10 +730,13 @@
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    RESPONSIVE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-@media (max-width: 1100px) {
-  .gl-left { width: 420px; padding: 2rem 2.5rem; }
-  .gl-main-card { transform: translate(-50%, -50%) scale(0.9); left: 50%; }
-  .gl-float-card { transform: scale(0.85); }
+@media (max-width: 1200px) {
+  .gl-showcase { transform: scale(0.9); }
+}
+
+@media (max-width: 1024px) {
+  .gl-left { width: 400px; padding: 2rem; }
+  .gl-showcase { transform: scale(0.8); }
 }
 
 @media (max-width: 860px) {

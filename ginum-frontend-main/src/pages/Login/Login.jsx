@@ -204,6 +204,46 @@ const NetProfitCard = () => (
 );
 
 /* ────────────────────────────────────────────
+   MINI WIDGETS
+──────────────────────────────────────────── */
+const MiniToast = ({ icon, text, amount, color }) => (
+  <div className="gl-mini-toast">
+    <div className="gl-mini-icon" style={{ background: `rgba(${hexToRgb(color)}, 0.15)` }}>{icon}</div>
+    <div className="gl-mini-info">
+      <div className="gl-mini-text">{text}</div>
+      <div className="gl-mini-amount" style={{ color }}>{amount}</div>
+    </div>
+  </div>
+);
+
+const MiniStatusChip = ({ label, value, color }) => (
+  <div className="gl-mini-chip">
+    <span className="gl-dot gl-dot-glow" style={{ background: color, color }} />
+    <span className="gl-chip-lbl">{label}</span>
+    <span className="gl-chip-val" style={{ color }}>{value}</span>
+  </div>
+);
+
+const MiniDonutCard = () => (
+  <div className="gl-fcard gl-fcard-sm">
+    <div className="gl-card-label" style={{ marginBottom:"0.5rem" }}>Expense Split</div>
+    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+      <div style={{ transform: "scale(0.8)", transformOrigin: "left center" }}>
+        <MiniDonut segments={[
+          { pct: 42, color: "#6366f1" },
+          { pct: 28, color: "#f43f5e" },
+          { pct: 30, color: "#22d3ee" },
+        ]} />
+      </div>
+      <div>
+        <div className="gl-legend-item" style={{fontSize:"0.65rem"}}><span className="gl-dot" style={{background:"#6366f1", width:"6px", height:"6px"}} /> Ops</div>
+        <div className="gl-legend-item" style={{fontSize:"0.65rem"}}><span className="gl-dot" style={{background:"#f43f5e", width:"6px", height:"6px"}} /> Sales</div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ────────────────────────────────────────────
    ANIMATED FINANCIAL SHOWCASE
 ──────────────────────────────────────────── */
 
@@ -213,12 +253,15 @@ const FinanceShowcase = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setSlide((s) => (s + 1) % 4);
-    }, 5500); // 5.5s per scene
+    }, 5500);
     return () => clearInterval(timer);
   }, []);
 
   return (
     <div className="gl-showcase" aria-hidden="true">
+      {/* Ambient background that subtly shifts */}
+      <div className={`gl-ambient-glow gl-glow-${slide}`} />
+
       <div className="gl-showcase-stage">
         
         {/* Slide 0: Financial Overview */}
@@ -226,8 +269,14 @@ const FinanceShowcase = () => {
           <div className="gl-main-card">
             <RevenueCard />
           </div>
-          <div className="gl-float-card gl-float-tr">
+          <div className="gl-float-card gl-float-tr delay-1">
             <NetProfitCard />
+          </div>
+          <div className="gl-float-card gl-float-bl delay-2" style={{width: "220px"}}>
+            <MiniDonutCard />
+          </div>
+          <div className="gl-float-widget gl-float-tl delay-3">
+            <MiniStatusChip label="System Health" value="Online" color="#10b981" />
           </div>
         </div>
 
@@ -236,8 +285,14 @@ const FinanceShowcase = () => {
           <div className="gl-main-card">
             <CashFlowCard />
           </div>
-          <div className="gl-float-card gl-float-bl">
+          <div className="gl-float-card gl-float-br delay-1">
             <ExpensesCard />
+          </div>
+          <div className="gl-float-widget gl-float-tc delay-2">
+            <MiniStatusChip label="Cash Runway" value="8.4 Months" color="#3b82f6" />
+          </div>
+          <div className="gl-float-widget gl-float-bl delay-3">
+            <MiniToast icon="💳" text="Payment Cleared" amount="+$12,400" color="#10b981" />
           </div>
         </div>
 
@@ -246,13 +301,19 @@ const FinanceShowcase = () => {
           <div className="gl-main-card">
             <InvoicesCard />
           </div>
-          <div className="gl-float-card gl-float-br">
+          <div className="gl-float-card gl-float-tl delay-1" style={{width: "220px"}}>
             <div className="gl-fcard">
               <div className="gl-fcard-accent" style={{ background: "linear-gradient(90deg,#6366f1,#8b5cf6)" }} />
-              <div className="gl-card-label">Total Revenue</div>
-              <div className="gl-card-value-sm">$284,920</div>
-              <span className="gl-badge gl-badge-up">↑ 12.8%</span>
+              <div className="gl-card-label">Revenue Target</div>
+              <div className="gl-card-value-sm">$284k</div>
+              <span className="gl-badge gl-badge-up" style={{margin:0}}>↑ 12.8%</span>
             </div>
+          </div>
+          <div className="gl-float-widget gl-float-bl delay-2">
+            <MiniToast icon="✉️" text="Invoice Sent" amount="INV-204" color="#f59e0b" />
+          </div>
+          <div className="gl-float-widget gl-float-br delay-3">
+            <MiniToast icon="🏦" text="Wire Received" amount="+$4,000" color="#10b981" />
           </div>
         </div>
 
@@ -261,8 +322,14 @@ const FinanceShowcase = () => {
           <div className="gl-main-card">
             <TransactionsCard />
           </div>
-          <div className="gl-float-card gl-float-tr">
+          <div className="gl-float-card gl-float-bl delay-1">
             <NetProfitCard />
+          </div>
+          <div className="gl-float-widget gl-float-tr delay-2">
+            <MiniStatusChip label="Reconciliation" value="Up to date" color="#8b5cf6" />
+          </div>
+          <div className="gl-float-widget gl-float-br delay-3">
+            <MiniToast icon="⚠️" text="Tax Filing Due" amount="3 Days" color="#f43f5e" />
           </div>
         </div>
 
