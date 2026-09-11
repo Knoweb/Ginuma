@@ -463,7 +463,11 @@ const Login = () => {
       sessionStorage.setItem("jwtToken", response.token);
       sessionStorage.setItem("userRole", response.role);
 
-      window.location.href = response.role === "EMPLOYEE" ? "/pos" : "/";
+      if (response.role === "ROLE_SUPER_ADMIN") {
+        window.location.href = "/super-admin";
+      } else {
+        window.location.href = response.role === "EMPLOYEE" ? "/pos" : "/dashboard";
+      }
     } catch (err) {
       if (err.response?.status === 403 && err.response?.data?.error === "Email not verified") {
         setEmailUnverified(true);

@@ -236,6 +236,70 @@ public class AuthController {
                 .body(java.util.Map.of("message", "Logged out successfully"));
     }
 
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody com.example.GinumApps.dto.ForgotPasswordRequest request) {
+        String email = request.getEmail();
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Email is required"));
+        }
+        
+        java.util.Optional<AppUser> userOpt = userRepository.findByEmailIgnoreCase(email.trim());
+        if (userOpt.isEmpty()) {
+            // For security, always return success so we don't leak which emails exist
+            return ResponseEntity.ok(java.util.Map.of("message", "If your email is registered, you will receive a reset code shortly."));
+        }
+        
+        AppUser user = userOpt.get();
+        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+        user.setResetOtp(otp);
+        user.setResetOtpExpiry(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+        
+        try {
+            emailService.sendResetPasswordEmail(user.getEmail(), otp);
+            return ResponseEntity.ok(java.util.Map.of("message", "If your email is registered, you will receive a reset code shortly."));
+        } catch (Exception e) {
+            logger.error("Failed to send reset email to " + email, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(java.util.Map.of("error", "Failed to send reset email"));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody com.example.GinumApps.dto.ResetPasswordRequest request) {
+        String email = request.getEmail();
+        String otp = request.getOtp();
+        String newPassword = request.getNewPassword();
+
+        if (email == null || otp == null || newPassword == null) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "All fields are required"));
+        }
+
+        java.util.Optional<AppUser> userOpt = userRepository.findByEmailIgnoreCase(email.trim());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid or expired reset code."));
+        }
+
+        AppUser user = userOpt.get();
+        if (user.getResetOtp() == null || !user.getResetOtp().equals(otp)) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid or expired reset code."));
+        }
+
+        if (user.getResetOtpExpiry() == null || user.getResetOtpExpiry().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid or expired reset code."));
+        }
+
+        // OTP is valid
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetOtp(null);
+        user.setResetOtpExpiry(null);
+        // Unlock account if it was locked
+        user.setFailedAttempts(0);
+        user.setLockTime(null);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(java.util.Map.of("message", "Password has been successfully reset."));
+    }
+
     private LoginResponse buildLoginResponse(String email, String role, String token) {
         LoginResponse response = new LoginResponse();
         response.setToken(token);
