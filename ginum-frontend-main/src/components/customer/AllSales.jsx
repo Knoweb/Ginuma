@@ -237,9 +237,10 @@ function AllSales() {
           </div>
         ) : (
           <div className="gl-table-container">
-            <table className="gl-table">
-              <thead>
-                <tr>
+            <div className="overflow-x-auto">
+              <table className="gl-table">
+                <thead>
+                  <tr>
                   <th>SO Number</th>
                   <th>Customer</th>
                   <th>Date</th>
