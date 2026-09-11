@@ -1,6 +1,8 @@
 package com.example.GinumApps.controller;
 
 import com.example.GinumApps.dto.AuthRequest;
+import com.example.GinumApps.dto.ForgotPasswordRequest;
+import com.example.GinumApps.dto.ResetPasswordRequest;
 import com.example.GinumApps.dto.LoginResponse;
 import com.example.GinumApps.model.Admin;
 import com.example.GinumApps.model.AppUser;
@@ -48,6 +50,7 @@ public class AuthController {
     private final com.example.GinumApps.service.MfaService mfaService;
     private final com.example.GinumApps.service.EmailService emailService;
     private final com.example.GinumApps.service.RoleService roleService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     private static final java.util.concurrent.ConcurrentHashMap<String, String> otpStorage = new java.util.concurrent.ConcurrentHashMap<>();
 

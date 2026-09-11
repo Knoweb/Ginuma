@@ -58,6 +58,8 @@ public class SecurityConfig {
                                 "/api/auth/verify-email",
                                 "/api/auth/resend-verification",
                                 "/api/auth/verify-login-otp",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
                                 "/api/roles",
                                 "/api/roles/**",
                                 "/api/companies",

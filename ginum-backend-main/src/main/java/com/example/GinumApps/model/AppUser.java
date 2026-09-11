@@ -43,6 +43,12 @@ public class AppUser {
     @Column(name = "mfa_secret")
     private String mfaSecret;
 
+    @Column(name = "reset_otp")
+    private String resetOtp;
+
+    @Column(name = "reset_otp_expiry")
+    private LocalDateTime resetOtpExpiry;
+
     public int getFailedAttempts() {
         return failedAttempts == null ? 0 : failedAttempts;
     }
