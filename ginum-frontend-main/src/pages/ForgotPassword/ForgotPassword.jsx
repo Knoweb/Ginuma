@@ -210,6 +210,7 @@ const ForgotPassword = () => {
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isResetComplete, setIsResetComplete] = useState(false);
 
   const handleRequestReset = async (e) => {
     e.preventDefault();
@@ -246,6 +247,7 @@ const ForgotPassword = () => {
         newPassword: newPassword
       });
       setSuccessMsg(res.data.message || "Password successfully reset!");
+      setIsResetComplete(true);
       // Redirect handled via the UI success state below
     } catch (err) {
       setError(err.response?.data?.error || "Failed to reset password.");
@@ -263,7 +265,7 @@ const ForgotPassword = () => {
           <span className="gl-platform-label">Financial Intelligence</span>
         </div>
 
-        {successMsg && step === 2 && !error && newPassword ? (
+        {isResetComplete ? (
           <div className="fp-success-state">
              <div className="fp-success-icon">✓</div>
              <h1 className="gl-heading">Password Reset!</h1>
