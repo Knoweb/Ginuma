@@ -4,14 +4,31 @@ import usePageTitle from "../../hooks/usePageTitle";
 import { FaUser, FaLock, FaKey, FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
 import { apiUrl } from "../../utils/api";
-import Alert from "../../components/Alert/Alert";
 import "./ForgotPassword.css";
 // We reuse the showcase styles from Login.css for visual consistency
 import "../Login/Login.css";
 
 /* ────────────────────────────────────────────
-   MOCK APP WINDOW (HERO) - Reused from Login
+   UI HELPERS & CHARTS
 ──────────────────────────────────────────── */
+const InlineAlert = ({ type, message }) => {
+  const isError = type === "error";
+  return (
+    <div style={{
+      padding: "1rem",
+      marginBottom: "1.5rem",
+      borderRadius: "12px",
+      background: isError ? "#fef2f2" : "#ecfdf5",
+      border: `1px solid ${isError ? "#fee2e2" : "#d1fae5"}`,
+      color: isError ? "#991b1b" : "#065f46",
+      fontSize: "0.875rem",
+      fontWeight: 500
+    }}>
+      {message}
+    </div>
+  );
+};
+
 const Sparkline = ({ values, color, height = 40, width = 120 }) => {
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -260,7 +277,7 @@ const ForgotPassword = () => {
             <h1 className="gl-heading">Reset Password</h1>
             <p className="gl-subheading">Enter your username and we'll send you a recovery code.</p>
 
-            {error && <Alert type="error" message={error} />}
+            {error && <InlineAlert type="error" message={error} />}
 
             <form onSubmit={handleRequestReset} noValidate>
               <div className="gl-field">
@@ -292,8 +309,8 @@ const ForgotPassword = () => {
             <h1 className="gl-heading">Verification Code</h1>
             <p className="gl-subheading">Enter the 6-digit code sent to <b>{username}</b> and your new password.</p>
 
-            {error && <Alert type="error" message={error} />}
-            {successMsg && !error && <Alert type="success" message={successMsg} />}
+            {error && <InlineAlert type="error" message={error} />}
+            {successMsg && !error && <InlineAlert type="success" message={successMsg} />}
 
             <form onSubmit={handleResetPassword} noValidate>
               <div className="gl-field">

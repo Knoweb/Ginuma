@@ -4,12 +4,29 @@ import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaShieldAlt, FaArrowRight, FaUser } from "react-icons/fa";
 import axios from "axios";
 import { apiUrl } from "../../utils/api";
-import Alert from "../../components/Alert/Alert";
 import "./Login.css";
 
 /* ────────────────────────────────────────────
    UI HELPERS & CHARTS
 ──────────────────────────────────────────── */
+
+const InlineAlert = ({ type, message }) => {
+  const isError = type === "error";
+  return (
+    <div style={{
+      padding: "1rem",
+      marginBottom: "1.5rem",
+      borderRadius: "12px",
+      background: isError ? "#fef2f2" : "#ecfdf5",
+      border: `1px solid ${isError ? "#fee2e2" : "#d1fae5"}`,
+      color: isError ? "#991b1b" : "#065f46",
+      fontSize: "0.875rem",
+      fontWeight: 500
+    }}>
+      {message}
+    </div>
+  );
+};
 
 const Sparkline = ({ values, color, height = 36, width = 180 }) => {
   const max = Math.max(...values);
@@ -515,7 +532,7 @@ const Login = () => {
           <>
             <h1 className="gl-heading">Two-Factor Auth</h1>
             <p className="gl-subheading">Enter the code from your authenticator app.</p>
-            {error && <Alert type="error" message={error} />}
+            {error && <InlineAlert type="error" message={error} />}
             <form onSubmit={handleSubmit} noValidate>
               <div className="gl-field">
                 <label className="gl-label">Authenticator Code</label>
@@ -547,7 +564,7 @@ const Login = () => {
             
             {error && (
               <div style={{ marginBottom: "1.5rem" }}>
-                <Alert type="error" message={error} />
+                <InlineAlert type="error" message={error} />
                 {emailUnverified && (
                   <div style={{ marginTop:"0.75rem", padding:"1rem", background:"#fef2f2", borderRadius:"12px", border:"1px solid #fee2e2" }}>
                     <p style={{ margin:0, fontSize:"0.8rem", color:"#991b1b", marginBottom:"0.5rem" }}>
