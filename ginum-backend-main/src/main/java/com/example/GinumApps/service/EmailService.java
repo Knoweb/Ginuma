@@ -195,7 +195,22 @@ public class EmailService {
                 <p style="color: #94a3b8; font-size: 12px;">© Ginuma Financial Intelligence</p>
             </div>
             """.formatted(otp);
-            
-        sendHtmlEmail(recipientEmail, subject, htmlContent);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            String from = (emailFrom != null && !emailFrom.trim().isEmpty() && !emailFrom.contains("smtp-brevo.com"))
+                    ? emailFrom.trim()
+                    : "pavaniedirisinghe18@gmail.com";
+            helper.setFrom(from, "Ginuma Security");
+            helper.setTo(recipientEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            logger.info("Password reset email sent successfully to {}", recipientEmail);
+        } catch (Exception e) {
+            logger.error("Failed to send password reset email to {}", recipientEmail, e);
+            throw new RuntimeException("Failed to send password reset email: " + e.getMessage());
+        }
     }
 }
