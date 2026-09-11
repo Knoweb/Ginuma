@@ -1,0 +1,348 @@
+/* d:\Knoweb Projects\Ginuma\ginum-frontend-main\src\pages\Register\Register.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+.reg-layout {
+  min-height: 100vh;
+  display: flex;
+  background-color: #f8fafc;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #0f172a;
+}
+
+/* LEFT PANEL */
+.reg-sidebar {
+  width: 380px;
+  background: linear-gradient(180deg, #f1f5f9 0%, #ffffff 100%);
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  padding: 3rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Subtle background accent in sidebar */
+.reg-sidebar::after {
+  content: '';
+  position: absolute;
+  top: -150px;
+  left: -150px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Logo */
+.reg-logo {
+  height: 28px;
+  margin-bottom: 3rem;
+}
+
+/* Stepper */
+.reg-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 2rem;
+  position: relative;
+}
+
+/* Line connecting steps */
+.reg-steps::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: #e2e8f0;
+  z-index: 0;
+}
+
+.reg-step-item {
+  display: flex;
+  gap: 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.reg-step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #94a3b8;
+}
+
+.reg-step-content {
+  padding-top: 8px;
+}
+
+.reg-step-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+  transition: color 0.3s ease;
+}
+
+.reg-step-desc {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* Active Step */
+.reg-step-item.active .reg-step-icon {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(79,70,229,0.25);
+  transform: scale(1.05);
+}
+.reg-step-item.active .reg-step-title {
+  color: #0f172a;
+}
+
+/* Completed Step */
+.reg-step-item.completed .reg-step-icon {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+}
+.reg-step-item.completed .reg-step-title {
+  color: #0f172a;
+}
+
+/* RIGHT PANEL (FORM) */
+.reg-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Background grid in main area */
+.reg-main::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Content Container */
+.reg-content {
+  position: relative;
+  z-index: 10;
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 4rem 3rem;
+}
+
+/* Form Container */
+.reg-form-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.03), 0 2px 10px rgba(0,0,0,0.02);
+  padding: 2.5rem 3rem;
+  animation: slideUpFade 0.5s ease-out forwards;
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Labels */
+.reg-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+/* Inputs */
+.reg-input {
+  width: 100%;
+  height: 52px;
+  padding: 0 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  transition: all 0.2s ease;
+}
+
+.reg-input::placeholder {
+  color: #94a3b8;
+}
+
+.reg-input:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+}
+
+.reg-input:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+}
+
+/* Upload Dropzone */
+.reg-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  min-height: 160px;
+}
+
+.reg-dropzone:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+/* Buttons */
+.reg-btn-primary {
+  height: 52px;
+  padding: 0 2rem;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(79,70,229,0.25);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.reg-btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79,70,229,0.3);
+}
+
+.reg-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.reg-btn-primary:disabled {
+  background: #cbd5e1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.reg-btn-primary.success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 14px rgba(16,185,129,0.25);
+}
+.reg-btn-primary.success:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(16,185,129,0.3);
+}
+
+.reg-btn-secondary {
+  height: 52px;
+  padding: 0 1.5rem;
+  background: #ffffff;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.reg-btn-secondary:hover {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .reg-layout {
+    flex-direction: column;
+  }
+  .reg-sidebar {
+    width: 100%;
+    padding: 2rem;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .reg-steps {
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+  .reg-steps::before {
+    display: none;
+  }
+  .reg-step-item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .reg-step-content {
+    padding-top: 0;
+  }
+  .reg-step-desc {
+    display: none;
+  }
+  .reg-main {
+    height: auto;
+  }
+  .reg-content {
+    padding: 2rem 1.5rem;
+  }
+  .reg-form-card {
+    padding: 2rem;
+  }
+}
+@media (max-width: 640px) {
+  .reg-form-card {
+    padding: 1.5rem;
+  }
+}
