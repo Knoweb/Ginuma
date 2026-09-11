@@ -460,8 +460,14 @@ const Login = () => {
       if (response.mfaRequired) { setMfaRequired(true); setError(""); return; }
       if (!response.token || !response.role) throw new Error("Missing token or role in response");
 
-      sessionStorage.setItem("jwtToken", response.token);
-      sessionStorage.setItem("userRole", response.role);
+      sessionStorage.setItem("auth_token", response.token);
+      sessionStorage.setItem("token", response.token);
+      sessionStorage.setItem("role", response.role);
+      if (response.companyId) sessionStorage.setItem("companyId", response.companyId);
+      if (response.userId) sessionStorage.setItem("userId", response.userId);
+      if (response.companyName) sessionStorage.setItem("companyName", response.companyName);
+      if (response.email) sessionStorage.setItem("userEmail", response.email);
+      if (response.permissions) sessionStorage.setItem("permissions", JSON.stringify(response.permissions));
 
       if (response.role === "ROLE_SUPER_ADMIN") {
         window.location.href = "/super-admin";
