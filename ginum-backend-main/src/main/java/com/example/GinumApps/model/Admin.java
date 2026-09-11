@@ -22,4 +22,10 @@ public class Admin {
 
     @Column(nullable = false)
     private String role = "SUPER_ADMIN";
+
+    @Column(name = "reset_otp", length = 6)
+    private String resetOtp;
+
+    @Column(name = "reset_otp_expiry")
+    private java.time.LocalDateTime resetOtpExpiry;
 }

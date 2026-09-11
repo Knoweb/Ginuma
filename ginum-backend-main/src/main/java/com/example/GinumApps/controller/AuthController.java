@@ -243,20 +243,42 @@ public class AuthController {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", "Email is required"));
         }
         
-        java.util.Optional<AppUser> userOpt = userRepository.findByEmailIgnoreCase(email.trim());
-        if (userOpt.isEmpty()) {
+        String cleanEmail = email.trim();
+        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(15);
+        boolean userFound = false;
+
+        java.util.Optional<AppUser> userOpt = userRepository.findByEmailIgnoreCase(cleanEmail);
+        java.util.Optional<Company> companyOpt = companyRepository.findByEmailIgnoreCase(cleanEmail);
+        java.util.Optional<Admin> adminOpt = adminRepository.findByEmail(cleanEmail);
+
+        if (userOpt.isPresent()) {
+            AppUser user = userOpt.get();
+            user.setResetOtp(otp);
+            user.setResetOtpExpiry(expiry);
+            userRepository.save(user);
+            userFound = true;
+        } else if (companyOpt.isPresent()) {
+            Company company = companyOpt.get();
+            company.setResetOtp(otp);
+            company.setResetOtpExpiry(expiry);
+            companyRepository.save(company);
+            userFound = true;
+        } else if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            admin.setResetOtp(otp);
+            admin.setResetOtpExpiry(expiry);
+            adminRepository.save(admin);
+            userFound = true;
+        }
+
+        if (!userFound) {
             // For security, always return success so we don't leak which emails exist
             return ResponseEntity.ok(java.util.Map.of("message", "If your email is registered, you will receive a reset code shortly."));
         }
         
-        AppUser user = userOpt.get();
-        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
-        user.setResetOtp(otp);
-        user.setResetOtpExpiry(LocalDateTime.now().plusMinutes(15));
-        userRepository.save(user);
-        
         try {
-            emailService.sendResetPasswordEmail(user.getEmail(), otp);
+            emailService.sendResetPasswordEmail(cleanEmail, otp);
             return ResponseEntity.ok(java.util.Map.of("message", "If your email is registered, you will receive a reset code shortly."));
         } catch (Exception e) {
             logger.error("Failed to send reset email to " + email, e);
@@ -273,31 +295,51 @@ public class AuthController {
         if (email == null || otp == null || newPassword == null) {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", "All fields are required"));
         }
+        
+        String cleanEmail = email.trim();
 
-        java.util.Optional<AppUser> userOpt = userRepository.findByEmailIgnoreCase(email.trim());
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid or expired reset code."));
+        java.util.Optional<AppUser> userOpt = userRepository.findByEmailIgnoreCase(cleanEmail);
+        java.util.Optional<Company> companyOpt = companyRepository.findByEmailIgnoreCase(cleanEmail);
+        java.util.Optional<Admin> adminOpt = adminRepository.findByEmail(cleanEmail);
+
+        if (userOpt.isPresent()) {
+            AppUser user = userOpt.get();
+            if (isValidOtp(user.getResetOtp(), user.getResetOtpExpiry(), otp)) {
+                user.setPassword(passwordEncoder.encode(newPassword));
+                user.setResetOtp(null);
+                user.setResetOtpExpiry(null);
+                user.setFailedAttempts(0);
+                user.setLockTime(null);
+                userRepository.save(user);
+                return ResponseEntity.ok(java.util.Map.of("message", "Password has been successfully reset."));
+            }
+        } else if (companyOpt.isPresent()) {
+            Company company = companyOpt.get();
+            if (isValidOtp(company.getResetOtp(), company.getResetOtpExpiry(), otp)) {
+                company.setPassword(passwordEncoder.encode(newPassword));
+                company.setResetOtp(null);
+                company.setResetOtpExpiry(null);
+                companyRepository.save(company);
+                return ResponseEntity.ok(java.util.Map.of("message", "Password has been successfully reset."));
+            }
+        } else if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            if (isValidOtp(admin.getResetOtp(), admin.getResetOtpExpiry(), otp)) {
+                admin.setPassword(passwordEncoder.encode(newPassword));
+                admin.setResetOtp(null);
+                admin.setResetOtpExpiry(null);
+                adminRepository.save(admin);
+                return ResponseEntity.ok(java.util.Map.of("message", "Password has been successfully reset."));
+            }
         }
 
-        AppUser user = userOpt.get();
-        if (user.getResetOtp() == null || !user.getResetOtp().equals(otp)) {
-            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid or expired reset code."));
-        }
+        return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid or expired reset code."));
+    }
 
-        if (user.getResetOtpExpiry() == null || user.getResetOtpExpiry().isBefore(LocalDateTime.now())) {
-            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid or expired reset code."));
-        }
-
-        // OTP is valid
-        user.setPassword(passwordEncoder.encode(newPassword));
-        user.setResetOtp(null);
-        user.setResetOtpExpiry(null);
-        // Unlock account if it was locked
-        user.setFailedAttempts(0);
-        user.setLockTime(null);
-        userRepository.save(user);
-
-        return ResponseEntity.ok(java.util.Map.of("message", "Password has been successfully reset."));
+    private boolean isValidOtp(String storedOtp, LocalDateTime expiry, String requestOtp) {
+        if (storedOtp == null || !storedOtp.equals(requestOtp)) return false;
+        if (expiry == null || expiry.isBefore(LocalDateTime.now())) return false;
+        return true;
     }
 
     private LoginResponse buildLoginResponse(String email, String role, String token) {
