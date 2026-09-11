@@ -125,6 +125,22 @@
   transition: all 0.2s ease;
 }
 
+.gl-input-with-icon {
+  padding-left: 2.75rem;
+}
+
+.gl-input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
 .gl-input::placeholder {
   color: #94a3b8;
 }
@@ -372,6 +388,157 @@
 .gl-glow-2 { background: radial-gradient(circle, #10b981, transparent 60%); transform: translate(-50%, -50%); }
 .gl-glow-3 { background: radial-gradient(circle, #f43f5e, transparent 60%); transform: translate(-40%, -40%); }
 
+/* ── MOCK APP WINDOW (HERO) ── */
+.gl-mock-app {
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  z-index: 5;
+}
+.gl-mock-sidebar {
+  width: 160px;
+  background: #f8fafc;
+  border-right: 1px solid rgba(0,0,0,0.05);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+.gl-mock-logo {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  color: #111827;
+  margin-bottom: 2rem;
+  padding-left: 0.5rem;
+}
+.gl-mock-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.gl-mock-nav-item {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #64748b;
+  padding: 0.5rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.gl-mock-nav-item.active {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+.gl-skeleton-icon {
+  width: 12px;
+  height: 12px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 3px;
+  display: inline-block;
+}
+.gl-mock-nav-item.active .gl-skeleton-icon {
+  background: #6366f1;
+}
+.gl-mock-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.gl-mock-topnav {
+  height: 54px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+}
+.gl-mock-search {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f1f5f9;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  width: 140px;
+}
+.gl-mock-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.gl-mock-body {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.gl-mock-header h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.2rem;
+}
+.gl-mock-header p {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+.gl-mock-kpis {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.gl-mock-kpi {
+  flex: 1;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+.gl-mock-kpi-lbl {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.2rem;
+}
+.gl-mock-kpi-val {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #111827;
+}
+.gl-mock-badge {
+  margin-top: 0.35rem;
+  font-size: 0.55rem;
+  padding: 0.1rem 0.35rem;
+}
+.gl-mock-chart-area {
+  margin-top: 1.5rem;
+  flex: 1;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 12px;
+  background: #fafafa;
+  position: relative;
+  overflow: hidden;
+  padding: 1rem;
+}
+.gl-mock-gridline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0,0,0,0.04);
+}
+
 .gl-showcase {
   position: relative;
   width: 100%;
@@ -412,18 +579,18 @@
 .gl-main-card {
   position: absolute;
   top: 50%;
-  left: 48%;
+  left: 45%;
   transform: translate(-50%, -50%);
-  width: 380px;
-  z-index: 5;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.1);
+  width: 600px;
+  height: 380px;
+  z-index: 3;
   transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
 }
 
 .gl-float-card {
   position: absolute;
   width: 250px;
-  z-index: 3;
+  z-index: 4;
   transition: transform 0.8s cubic-bezier(0.22,1,0.36,1), opacity 0.8s ease;
   opacity: 0;
 }
@@ -433,7 +600,7 @@
 
 .gl-float-widget {
   position: absolute;
-  z-index: 4;
+  z-index: 5;
   transition: transform 0.8s cubic-bezier(0.22,1,0.36,1), opacity 0.8s ease;
   opacity: 0;
 }

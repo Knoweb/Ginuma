@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import usePageTitle from "../../hooks/usePageTitle";
-import { FaEye, FaEyeSlash, FaShieldAlt, FaArrowRight } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaShieldAlt, FaArrowRight, FaUser } from "react-icons/fa";
 import axios from "axios";
 import { apiUrl } from "../../utils/api";
 import Alert from "../../components/Alert/Alert";
@@ -244,6 +244,77 @@ const MiniDonutCard = () => (
 );
 
 /* ────────────────────────────────────────────
+   MOCK APP WINDOW (HERO)
+──────────────────────────────────────────── */
+const MockAppWindow = () => (
+  <div className="gl-mock-app">
+    {/* Sidebar */}
+    <div className="gl-mock-sidebar">
+      <div className="gl-mock-logo">GINUM</div>
+      <div className="gl-mock-nav">
+        <div className="gl-mock-nav-item active"><span className="gl-skeleton-icon" /> Dashboard</div>
+        <div className="gl-mock-nav-item"><span className="gl-skeleton-icon" /> Transactions</div>
+        <div className="gl-mock-nav-item"><span className="gl-skeleton-icon" /> Invoices</div>
+        <div className="gl-mock-nav-item"><span className="gl-skeleton-icon" /> Expenses</div>
+        <div className="gl-mock-nav-item"><span className="gl-skeleton-icon" /> Reports</div>
+        <div className="gl-mock-nav-item"><span className="gl-skeleton-icon" /> Accounts</div>
+      </div>
+    </div>
+    
+    {/* Main Content */}
+    <div className="gl-mock-main">
+      {/* Topnav */}
+      <div className="gl-mock-topnav">
+        <div className="gl-mock-search"><span className="gl-skeleton-icon" style={{width:"12px", height:"12px"}}/> Search...</div>
+        <div className="gl-mock-profile">
+          <span className="gl-skeleton-icon" style={{width:"14px", height:"14px", borderRadius:"50%"}} />
+          <span className="gl-skeleton-icon" style={{width:"24px", height:"24px", borderRadius:"50%"}} />
+        </div>
+      </div>
+      
+      {/* Body */}
+      <div className="gl-mock-body">
+        <div className="gl-mock-header">
+          <h4>Overview</h4>
+          <p>Here's what's happening with your business today.</p>
+        </div>
+        
+        {/* KPIs */}
+        <div className="gl-mock-kpis">
+          <div className="gl-mock-kpi">
+            <span className="gl-mock-kpi-lbl">Total Revenue</span>
+            <span className="gl-mock-kpi-val">$284,920</span>
+            <span className="gl-badge gl-badge-up gl-mock-badge">↑ 12.8%</span>
+          </div>
+          <div className="gl-mock-kpi">
+            <span className="gl-mock-kpi-lbl">Net Profit</span>
+            <span className="gl-mock-kpi-val">$52,194</span>
+            <span className="gl-badge gl-badge-up gl-mock-badge">↑ 21.4%</span>
+          </div>
+          <div className="gl-mock-kpi">
+            <span className="gl-mock-kpi-lbl">Expenses</span>
+            <span className="gl-mock-kpi-val">$96,430</span>
+            <span className="gl-badge gl-badge-down gl-mock-badge">↓ 3.2%</span>
+          </div>
+        </div>
+        
+        {/* Main Chart Area */}
+        <div className="gl-mock-chart-area">
+           <Sparkline values={[140,165,155,185,170,200,190,215,205,230,220,248]} color="#6366f1" height={100} width={420} />
+           <div style={{ position:"absolute", top:"20px", right:"20px", opacity:0.5 }}>
+             <Sparkline values={[120,130,125,140,150,145,160,170,165,180,175,190]} color="#3b82f6" height={100} width={420} />
+           </div>
+           {/* Chart Grid Lines */}
+           <div className="gl-mock-gridline" style={{bottom:"20%"}}></div>
+           <div className="gl-mock-gridline" style={{bottom:"50%"}}></div>
+           <div className="gl-mock-gridline" style={{bottom:"80%"}}></div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ────────────────────────────────────────────
    ANIMATED FINANCIAL SHOWCASE
 ──────────────────────────────────────────── */
 
@@ -252,7 +323,7 @@ const FinanceShowcase = () => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setSlide((s) => (s + 1) % 4);
+      setSlide((s) => (s + 1) % 3);
     }, 5500);
     return () => clearInterval(timer);
   }, []);
@@ -264,13 +335,21 @@ const FinanceShowcase = () => {
 
       <div className="gl-showcase-stage">
         
+        {/* Persistent Mock App Window inside stage */}
+        <div className="gl-main-card">
+          <MockAppWindow />
+        </div>
+
         {/* Slide 0: Financial Overview */}
         <div className={`gl-scene ${slide === 0 ? "active" : ""}`}>
-          <div className="gl-main-card">
-            <RevenueCard />
-          </div>
           <div className="gl-float-card gl-float-tr delay-1">
-            <NetProfitCard />
+            <div className="gl-fcard">
+               <div className="gl-fcard-accent" style={{ background: "linear-gradient(90deg,#10b981,#34d399)" }} />
+               <div className="gl-card-label">Account Balance</div>
+               <div className="gl-card-value-sm">$320,450</div>
+               <span className="gl-badge gl-badge-up">↑ 12.6%</span>
+               <Sparkline values={[40,42,41,45,43,48,50]} color="#10b981" height={24} width={200} />
+            </div>
           </div>
           <div className="gl-float-card gl-float-bl delay-2" style={{width: "220px"}}>
             <MiniDonutCard />
@@ -280,56 +359,29 @@ const FinanceShowcase = () => {
           </div>
         </div>
 
-        {/* Slide 1: Cash Flow Insights */}
+        {/* Slide 1: Cash Flow & Performance */}
         <div className={`gl-scene ${slide === 1 ? "active" : ""}`}>
-          <div className="gl-main-card">
+          <div className="gl-float-card gl-float-bl delay-1">
             <CashFlowCard />
           </div>
-          <div className="gl-float-card gl-float-br delay-1">
-            <ExpensesCard />
-          </div>
-          <div className="gl-float-widget gl-float-tc delay-2">
+          <div className="gl-float-widget gl-float-tr delay-2">
             <MiniStatusChip label="Cash Runway" value="8.4 Months" color="#3b82f6" />
           </div>
-          <div className="gl-float-widget gl-float-bl delay-3">
+          <div className="gl-float-widget gl-float-br delay-3">
             <MiniToast icon="💳" text="Payment Cleared" amount="+$12,400" color="#10b981" />
           </div>
         </div>
 
-        {/* Slide 2: Invoice Management */}
+        {/* Slide 2: Invoices & Expenses */}
         <div className={`gl-scene ${slide === 2 ? "active" : ""}`}>
-          <div className="gl-main-card">
+          <div className="gl-float-card gl-float-tl delay-1">
             <InvoicesCard />
           </div>
-          <div className="gl-float-card gl-float-tl delay-1" style={{width: "220px"}}>
-            <div className="gl-fcard">
-              <div className="gl-fcard-accent" style={{ background: "linear-gradient(90deg,#6366f1,#8b5cf6)" }} />
-              <div className="gl-card-label">Revenue Target</div>
-              <div className="gl-card-value-sm">$284k</div>
-              <span className="gl-badge gl-badge-up" style={{margin:0}}>↑ 12.8%</span>
-            </div>
+          <div className="gl-float-card gl-float-br delay-2">
+             <TransactionsCard />
           </div>
-          <div className="gl-float-widget gl-float-bl delay-2">
+          <div className="gl-float-widget gl-float-bl delay-3">
             <MiniToast icon="✉️" text="Invoice Sent" amount="INV-204" color="#f59e0b" />
-          </div>
-          <div className="gl-float-widget gl-float-br delay-3">
-            <MiniToast icon="🏦" text="Wire Received" amount="+$4,000" color="#10b981" />
-          </div>
-        </div>
-
-        {/* Slide 3: Recent Activity */}
-        <div className={`gl-scene ${slide === 3 ? "active" : ""}`}>
-          <div className="gl-main-card">
-            <TransactionsCard />
-          </div>
-          <div className="gl-float-card gl-float-bl delay-1">
-            <NetProfitCard />
-          </div>
-          <div className="gl-float-widget gl-float-tr delay-2">
-            <MiniStatusChip label="Reconciliation" value="Up to date" color="#8b5cf6" />
-          </div>
-          <div className="gl-float-widget gl-float-br delay-3">
-            <MiniToast icon="⚠️" text="Tax Filing Due" amount="3 Days" color="#f43f5e" />
           </div>
         </div>
 
@@ -337,7 +389,7 @@ const FinanceShowcase = () => {
 
       <div className="gl-showcase-bottom">
         <div className="gl-showcase-indicators">
-          {[0, 1, 2, 3].map(i => (
+          {[0, 1, 2].map(i => (
             <button 
               key={i} 
               className={`gl-dot-ind ${slide === i ? "active" : ""}`} 
@@ -363,7 +415,7 @@ const Login = () => {
   usePageTitle("Login — Ginum");
 
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
   const [mfaRequired, setMfaRequired] = useState(false);
@@ -378,7 +430,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await axios.post(`${apiUrl}/api/auth/login`, {
-        email,
+        email: username, // Send username as email property to backend
         password,
         mfaCode: mfaRequired ? mfaCode : null,
         loginOtp: otpRequired ? loginOtp : null,
@@ -408,7 +460,7 @@ const Login = () => {
     setIsResending(true);
     setResendStatus("");
     try {
-      const res = await axios.post(`${apiUrl}/api/auth/resend-verification`, { email });
+      const res = await axios.post(`${apiUrl}/api/auth/resend-verification`, { email: username });
       setResendStatus(res.data.message || "Verification email sent.");
     } catch (err) {
       setResendStatus(err.response?.data?.error || "Failed to resend email.");
@@ -432,7 +484,7 @@ const Login = () => {
         {otpRequired ? (
           <>
             <h1 className="gl-heading">Check your email</h1>
-            <p className="gl-subheading">Enter the OTP sent to <b>{email}</b> to complete login.</p>
+            <p className="gl-subheading">Enter the OTP sent to <b>{username}</b> to complete login.</p>
             {error && <Alert type="error" message={error} />}
             <form onSubmit={handleSubmit} noValidate>
               <div className="gl-field">
@@ -518,20 +570,21 @@ const Login = () => {
             )}
 
             <form onSubmit={handleSubmit} noValidate>
-              {/* Email */}
+              {/* Username */}
               <div className="gl-field">
-                <label htmlFor="email" className="gl-label">Email address</label>
+                <label htmlFor="username" className="gl-label">USERNAME</label>
                 <div className="gl-input-wrap">
+                  <span className="gl-input-icon"><FaUser size={13} /></span>
                   <input
-                    id="email"
-                    name="email"
-                    type="email"
+                    id="username"
+                    name="username"
+                    type="text"
                     required
-                    autoComplete="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="gl-input"
-                    placeholder="name@company.com"
+                    autoComplete="username"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    className="gl-input gl-input-with-icon"
+                    placeholder="Enter your username"
                   />
                 </div>
               </div>
