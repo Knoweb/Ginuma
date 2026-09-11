@@ -212,8 +212,8 @@ const RequestsPage = () => {
     <div className="p-6 max-w-7xl mx-auto min-h-screen">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Requests</h1>
-        <p className="text-gray-500 mt-1">Manage and track internal requests</p>
+        <h1 className="gl-heading">Requests</h1>
+        <p className="gl-subheading mt-1">Manage and track internal requests</p>
       </div>
 
       {/* Summary Cards */}
@@ -221,7 +221,7 @@ const RequestsPage = () => {
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500 mb-1">Total Requests</p>
-            <h3 className="text-2xl font-bold text-gray-800">{total}</h3>
+            <h3 className="gl-heading">{total}</h3>
           </div>
           <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
             <FiFileText size={24} />
@@ -230,7 +230,7 @@ const RequestsPage = () => {
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500 mb-1">Pending</p>
-            <h3 className="text-2xl font-bold text-gray-800">{pending}</h3>
+            <h3 className="gl-heading">{pending}</h3>
           </div>
           <div className="h-12 w-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
             <FiClock size={24} />
@@ -239,7 +239,7 @@ const RequestsPage = () => {
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500 mb-1">Approved</p>
-            <h3 className="text-2xl font-bold text-gray-800">{approved}</h3>
+            <h3 className="gl-heading">{approved}</h3>
           </div>
           <div className="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center text-green-600">
             <FiCheckCircle size={24} />
@@ -248,7 +248,7 @@ const RequestsPage = () => {
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-500 mb-1">Rejected</p>
-            <h3 className="text-2xl font-bold text-gray-800">{rejected}</h3>
+            <h3 className="gl-heading">{rejected}</h3>
           </div>
           <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center text-red-600">
             <FiXCircle size={24} />
@@ -316,7 +316,7 @@ const RequestsPage = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="gl-table">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   <th className="px-6 py-4">Request ID</th>
@@ -329,7 +329,7 @@ const RequestsPage = () => {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredRequests.map((req) => (
-                  <tr key={req.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={req.id} >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-sky-600">
                       REQ-{req.id}
                     </td>
@@ -449,7 +449,7 @@ const RequestsPage = () => {
               ) : (
                 <form id="requestForm" onSubmit={handleSave} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Request Type *</label>
+                    <label className="gl-label">Request Type *</label>
                     <select
                       required
                       value={formData.requestType}
@@ -465,7 +465,7 @@ const RequestsPage = () => {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                    <label className="gl-label">Title *</label>
                     <input
                       type="text"
                       required
@@ -477,7 +477,7 @@ const RequestsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Priority *</label>
+                    <label className="gl-label">Priority *</label>
                     <select
                       required
                       value={formData.priority}
@@ -492,7 +492,7 @@ const RequestsPage = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                    <label className="gl-label">Description *</label>
                     <textarea
                       required
                       rows={4}

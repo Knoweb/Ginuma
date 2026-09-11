@@ -68,7 +68,7 @@ export const ItemModal = ({
         <form onSubmit={onSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Item Code
               </label>
               <input
@@ -81,7 +81,7 @@ export const ItemModal = ({
             </div>
 
             <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Item Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -95,7 +95,7 @@ export const ItemModal = ({
             </div>
 
             <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Category
               </label>
               <input
@@ -108,7 +108,7 @@ export const ItemModal = ({
             </div>
 
             <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Item Type
               </label>
               <select
@@ -123,7 +123,7 @@ export const ItemModal = ({
             </div>
 
             <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Purchase Price
               </label>
               <input
@@ -138,7 +138,7 @@ export const ItemModal = ({
             </div>
 
             <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Selling Price <span className="text-red-500">*</span>
               </label>
               <input
@@ -154,7 +154,7 @@ export const ItemModal = ({
             </div>
 
             <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Current Stock
               </label>
               <input
@@ -170,7 +170,7 @@ export const ItemModal = ({
             </div>
 
             <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Reorder Level
               </label>
               <input
@@ -185,7 +185,7 @@ export const ItemModal = ({
             </div>
 
             <div className="mb-3">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Unit
               </label>
               <input
@@ -212,7 +212,7 @@ export const ItemModal = ({
           </div>
 
           <div className="mb-3">
-            <label className="block text-gray-700 font-medium mb-1">
+            <label className="gl-label">
               Description
             </label>
             <textarea
@@ -282,7 +282,7 @@ export const StockModal = ({
         </h3>
 
         <div className="mb-3">
-          <label className="block text-gray-700 font-medium mb-1">Item</label>
+          <label className="gl-label">Item</label>
           <input
             type="text"
             value={item.name || ""}
@@ -292,7 +292,7 @@ export const StockModal = ({
         </div>
 
         <div className="mb-3">
-          <label className="block text-gray-700 font-medium mb-1">
+          <label className="gl-label">
             Current Stock
           </label>
           <input
@@ -304,7 +304,7 @@ export const StockModal = ({
         </div>
 
         <div className="mb-3">
-          <label className="block text-gray-700 font-medium mb-1">
+          <label className="gl-label">
             Quantity to {type === "add" ? "Add" : "Reduce"}
           </label>
           <input
@@ -319,7 +319,7 @@ export const StockModal = ({
         </div>
 
         <div className="mb-3">
-          <label className="block text-gray-700 font-medium mb-1">Notes</label>
+          <label className="gl-label">Notes</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

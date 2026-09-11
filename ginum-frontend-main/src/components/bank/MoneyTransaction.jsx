@@ -188,7 +188,7 @@
 //                     <div className="flex justify-between">
 //                       <span>{item.name}</span>
 //                       {item.contact && (
-//                         <span className="text-sm text-gray-500">{item.contact}</span>
+//                         <span className="gl-label">{item.contact}</span>
 //                       )}
 //                     </div>
 //                   </div>

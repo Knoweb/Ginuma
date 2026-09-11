@@ -19,7 +19,7 @@ const ResetPasswordForm = () => {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
+              className="gl-label"
             >
               Email
             </label>
@@ -36,7 +36,7 @@ const ResetPasswordForm = () => {
           <div>
             <label
               htmlFor="oldPassword"
-              className="block text-sm font-medium text-gray-700"
+              className="gl-label"
             >
               Old Password
             </label>
@@ -53,7 +53,7 @@ const ResetPasswordForm = () => {
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              className="gl-label"
             >
               New Password
             </label>
@@ -69,7 +69,7 @@ const ResetPasswordForm = () => {
           <div>
             <label
               htmlFor="confirmPassword"
-              className="block text-sm font-medium text-gray-700"
+              className="gl-label"
             >
               Confirm Password
             </label>

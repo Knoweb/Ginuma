@@ -91,7 +91,7 @@ function AllTransactions() {
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">All Transactions</h1>
+          <h1 className="gl-heading">All Transactions</h1>
           <button
             onClick={() => navigate("/transactions/new")}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
@@ -126,7 +126,7 @@ function AllTransactions() {
 
         {/* Table Section */}
         <div className="bg-white shadow rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="gl-table">
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
@@ -136,7 +136,7 @@ function AllTransactions() {
                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {loading ? (
                 <tr>
                   <td colSpan="5" className="text-center py-8">
@@ -183,7 +183,7 @@ function AllTransactions() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-2xl font-bold text-gray-800">Journal Entry Details</h2>
+              <h2 className="gl-heading">Journal Entry Details</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700">
                 <FiX size={24} />
               </button>
@@ -221,8 +221,8 @@ function AllTransactions() {
 
                   {jeDetails.lines && jeDetails.lines.length > 0 ? (
                     <div className="bg-white border rounded-lg overflow-hidden">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                      <table className="gl-table">
+                        <thead>
                           <tr>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Account Code</th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Account Name</th>
@@ -230,7 +230,7 @@ function AllTransactions() {
                             <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Credit</th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody>
                           {jeDetails.lines.map((line, idx) => (
                             <tr key={idx}>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{line.accountCode || "-"}</td>

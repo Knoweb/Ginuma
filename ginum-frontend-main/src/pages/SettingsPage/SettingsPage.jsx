@@ -416,7 +416,7 @@ const SettingsPage = () => {
     <div className="p-6 sm:p-8 bg-gray-50 min-h-screen space-y-6 max-w-7xl mx-auto">
       {/* Title */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+        <h1 className="gl-heading flex items-center gap-2">
           <FaCog className="text-blue-600 text-2xl" />
           Account Settings
         </h1>
@@ -571,7 +571,7 @@ const SettingsPage = () => {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+                  <table className="gl-table">
                     <thead>
                       <tr className="border-b border-gray-200 bg-gray-50/50 text-xs uppercase font-bold text-gray-500">
                         <th className="py-3 px-4">Role Name</th>

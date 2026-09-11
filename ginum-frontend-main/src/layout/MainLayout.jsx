@@ -31,7 +31,7 @@ const MainLayout = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex h-screen w-full bg-[#f8fafc] text-slate-800 font-sans">
       {/* Sidebar */}
       <Sidebar isVisible={isSidebarVisible} />
 
@@ -51,7 +51,7 @@ const MainLayout = () => {
         <TabHeader pathname={location.pathname} />
 
         {/* Main Content Area */}
-        <main className="flex-1 bg-gray-100 w-full overflow-auto mt-[4rem]">
+        <main className="flex-1 bg-[#f8fafc] w-full overflow-auto mt-[4rem]">
           <Outlet />
         </main>
       </div>

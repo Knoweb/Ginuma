@@ -148,7 +148,7 @@ const AllEmployeePage = () => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="p-6 lg:p-8 flex flex-col gap-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Employees</h1>
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
@@ -174,7 +174,7 @@ const AllEmployeePage = () => {
       </div>
 
       {filteredEmployees.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
+        <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
           <p className="text-gray-600 text-lg">
             {employees.length === 0 ? "No employees found." : "No matching employees found."}
           </p>
@@ -186,10 +186,10 @@ const AllEmployeePage = () => {
 </button>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="gl-table-container">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="gl-table">
+              <thead>
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Employee
@@ -208,9 +208,9 @@ const AllEmployeePage = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {filteredEmployees.map((emp) => (
-                  <tr key={emp.employeeId} className="hover:bg-gray-50 transition-colors">
+                  <tr key={emp.employeeId} >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -245,10 +245,10 @@ const AllEmployeePage = () => {
                       <div className="text-sm text-gray-900 font-medium">
                         {emp.designation?.name || "-"}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="gl-label">
                         {emp.department?.name || "-"} ({emp.department?.code || "-"})
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="gl-label">
                         Joined: {formatDate(emp.dateAdded)}
                       </div>
                     </td>
@@ -275,10 +275,10 @@ const AllEmployeePage = () => {
                         <FiCreditCard className="mr-2" size={14} />
                         NIC: {emp.nic || "-"}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="gl-label">
                         EPF No: {emp.epfNo || "-"}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="gl-label">
                         Employee ID: {emp.employeeId}
                       </div>
                     </td>

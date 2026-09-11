@@ -125,7 +125,7 @@ const EditProjectModal = ({ project, onClose, onSuccess }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Project Code */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="gl-label">
                 Project Code <span className="text-red-500">*</span>
               </label>
               <input
@@ -139,7 +139,7 @@ const EditProjectModal = ({ project, onClose, onSuccess }) => {
 
             {/* Project Name */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="gl-label">
                 Project Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -153,7 +153,7 @@ const EditProjectModal = ({ project, onClose, onSuccess }) => {
 
             {/* Customer Dropdown */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="gl-label">
                 Customer <span className="text-red-500">*</span>
               </label>
               {isLoadingCustomers ? (
@@ -179,7 +179,7 @@ const EditProjectModal = ({ project, onClose, onSuccess }) => {
 
             {/* Start Date */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="gl-label">
                 Start Date <span className="text-red-500">*</span>
               </label>
               <input
@@ -193,7 +193,7 @@ const EditProjectModal = ({ project, onClose, onSuccess }) => {
 
             {/* Working Status */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="gl-label">
                 Working Status <span className="text-red-500">*</span>
               </label>
               <select
@@ -212,7 +212,7 @@ const EditProjectModal = ({ project, onClose, onSuccess }) => {
 
             {/* Priority */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="gl-label">
                 Priority <span className="text-red-500">*</span>
               </label>
               <select
@@ -232,7 +232,7 @@ const EditProjectModal = ({ project, onClose, onSuccess }) => {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
+            <label className="gl-label">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}

@@ -376,11 +376,11 @@ export default function AgedPayables() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen space-y-6 max-w-full overflow-x-hidden">
+    <div className="p-6 lg:p-8 flex flex-col gap-8 max-w-full overflow-x-hidden">
       {/* Header section */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-gray-200">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Aged Payables</h1>
+          <h1 className="gl-heading">Aged Payables</h1>
           <p className="text-sm text-gray-500 mt-1">
             Track and manage outstanding supplier liabilities across aging periods
           </p>
@@ -599,8 +599,8 @@ const SummaryTable = ({ rows, formatAmount }) => {
   return (
     <div className="bg-white shadow-sm rounded-2xl border border-gray-200 overflow-hidden w-full max-w-full">
       <div className="overflow-x-auto w-full max-w-full">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="gl-table">
+          <thead>
             <tr>
               <Th>Supplier</Th>
               <Th>Not Due Yet</Th>
@@ -646,8 +646,8 @@ const DetailTable = ({ rows, formatAmount, formatDate }) => {
   return (
     <div className="bg-white shadow-sm rounded-2xl border border-gray-200 overflow-hidden w-full max-w-full">
       <div className="overflow-x-auto w-full max-w-full">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="gl-table">
+          <thead>
             <tr>
               <Th>Supplier</Th>
               <Th>Invoice</Th>

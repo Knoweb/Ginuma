@@ -193,7 +193,7 @@ export default function AddSupplierForm({ onClose }) {
       {!onClose && (
         <div className="flex justify-between items-center pb-4 border-b border-gray-200">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+            <h1 className="gl-heading flex items-center gap-2">
               <FiUser className="text-blue-600" />
               Create Supplier
             </h1>
@@ -203,7 +203,7 @@ export default function AddSupplierForm({ onClose }) {
           </div>
           <button
             onClick={handleCancel}
-            className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="gl-btn gl-btn-secondary"
           >
             <FiArrowLeft /> Back to Suppliers
           </button>
@@ -376,7 +376,7 @@ export default function AddSupplierForm({ onClose }) {
                   name="currency"
                   value={formData.currency}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all cursor-pointer"
+                  className="gl-input cursor-pointer"
                 >
                   <option value="USD">USD ($)</option>
                   <option value="EUR">EUR (€)</option>

@@ -160,7 +160,7 @@ const NewProjectForm = () => {
           <FiFolder className="text-blue-600 text-xl" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Create Project</h1>
+          <h1 className="gl-heading">Create Project</h1>
           <p className="text-sm text-gray-500 mt-0.5">Set up a new project and assign it to a customer</p>
         </div>
       </div>

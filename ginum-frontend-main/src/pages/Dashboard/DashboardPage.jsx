@@ -74,19 +74,19 @@ const LazyChart = ({ children }) => {
 // Finance Stats Component
 const FinanceStats = ({ revenue, expenses, profit, prevRevenue, prevExpenses, prevProfit }) => {
   return (
-    <div className="rounded-lg ">
-      <h2 className="text-xl font-bold text-gray-800 mb-1">Last 30 Days</h2>
+    <div className="mb-6">
+      <h2 className="gl-section-title mb-4">Financial Overview (Last 30 Days)</h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total Revenue" value={revenue} previous={prevRevenue} color="text-green-600" delay={0} />
-        <StatCard title="Total Expenses" value={expenses} previous={prevExpenses} color="text-red-500" delay={150} />
-        <StatCard title="Net Profit" value={profit} previous={prevProfit} color="text-blue-500" delay={300} />
+        <StatCard title="Total Revenue" value={revenue} previous={prevRevenue} color="text-indigo-600" delay={0} icon="📈" />
+        <StatCard title="Total Expenses" value={expenses} previous={prevExpenses} color="text-rose-500" delay={150} icon="📉" />
+        <StatCard title="Net Profit" value={profit} previous={prevProfit} color="text-emerald-500" delay={300} icon="💎" />
       </div>
     </div>
   );
 };
 
 // Reusable Stat Card Component
-const StatCard = ({ title, value, previous, color, delay }) => {
+const StatCard = ({ title, value, previous, color, delay, icon }) => {
   const previousValue = previous || 0;
   const change = previousValue === 0
     ? (value > 0 ? 100 : 0)
@@ -94,16 +94,22 @@ const StatCard = ({ title, value, previous, color, delay }) => {
   const isPositive = change >= 0;
 
   return (
-    <RevealOnScroll className="bg-white p-5 rounded-lg shadow flex flex-col items-center" delay={delay}>
-      <p className="text-gray-500 text-sm">{title}</p>
-      <p className={`text-3xl font-semibold ${color}`}>Rs. {value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-      <p className="text-gray-400 text-xs">from Rs. {previousValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-      <span
-        className={`mt-2 text-sm font-medium px-2 py-1 rounded-full ${isPositive ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-          }`}
-      >
-        {isPositive ? "▲" : "▼"} {Math.abs(change)}%
-      </span>
+    <RevealOnScroll className="gl-card gl-card-hover p-6 flex flex-col relative" delay={delay}>
+      <div className="flex justify-between items-start mb-4">
+        <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">{title}</p>
+        <span className="text-2xl opacity-80">{icon}</span>
+      </div>
+      <p className={`text-3xl font-extrabold tracking-tight mb-1 ${color}`}>
+        Rs. {value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      </p>
+      <div className="flex items-center gap-2 mt-auto pt-2">
+        <span
+          className={`text-xs font-bold px-2 py-0.5 rounded-full ${isPositive ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}
+        >
+          {isPositive ? "▲" : "▼"} {Math.abs(change)}%
+        </span>
+        <span className="text-slate-400 text-xs font-medium">vs last month</span>
+      </div>
     </RevealOnScroll>
   );
 };
@@ -262,18 +268,20 @@ const DashboardPage = () => {
       {
         label: "Revenue (Rs.)",
         data: revData,
-        borderColor: "rgba(75, 192, 192, 1)",
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "#4f46e5", // indigo-600
+        backgroundColor: "rgba(79, 70, 229, 0.1)",
         borderWidth: 2,
-        tension: 0.3
+        tension: 0.4,
+        fill: true
       },
       {
         label: "Expenses (Rs.)",
         data: expData,
-        borderColor: "rgba(255, 99, 132, 1)",
-        backgroundColor: "rgba(255, 99, 132, 0.2)",
+        borderColor: "#f43f5e", // rose-500
+        backgroundColor: "rgba(244, 63, 94, 0.1)",
         borderWidth: 2,
-        tension: 0.3
+        tension: 0.4,
+        fill: true
       },
     ],
   };
@@ -284,9 +292,10 @@ const DashboardPage = () => {
       {
         label: "Sales Count",
         data: salesCountData,
-        backgroundColor: "rgba(54, 162, 235, 0.6)",
-        borderColor: "rgba(54, 162, 235, 1)",
+        backgroundColor: "#6366f1", // indigo-500
+        borderColor: "#4f46e5", // indigo-600
         borderWidth: 1,
+        borderRadius: 4
       },
     ],
   };
@@ -305,8 +314,9 @@ const DashboardPage = () => {
     labels: top5Customers.length ? top5Customers.map(c => c[0]) : ["No Data"],
     datasets: [{
       data: top5Customers.length ? top5Customers.map(c => c[1]) : [1],
-      backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
-      borderWidth: 1,
+      backgroundColor: ["#4f46e5", "#0ea5e9", "#10b981", "#8b5cf6", "#f43f5e"],
+      borderWidth: 0,
+      hoverOffset: 4
     }],
   };
 
@@ -323,8 +333,9 @@ const DashboardPage = () => {
     labels: top4Suppliers.length ? top4Suppliers.map(s => s[0]) : ["No Data"],
     datasets: [{
       data: top4Suppliers.length ? top4Suppliers.map(s => s[1]) : [1],
-      backgroundColor: ["#FF9F40", "#FF6384", "#36A2EB", "#FFCE56"],
-      borderWidth: 1,
+      backgroundColor: ["#f43f5e", "#f97316", "#eab308", "#84cc16"],
+      borderWidth: 0,
+      hoverOffset: 4
     }],
   };
 
@@ -336,7 +347,7 @@ const DashboardPage = () => {
       desc: `Sale to ${getCustomerName(s)}`,
       amount: getAmount(s),
       type: "Revenue",
-      color: "text-green-600"
+      color: "text-emerald-600"
     })),
     ...purchases.map(p => ({
       id: p.id || Math.random(),
@@ -344,7 +355,7 @@ const DashboardPage = () => {
       desc: `Purchase from ${getSupplierName(p)}`,
       amount: getAmount(p),
       type: "Expense",
-      color: "text-red-600"
+      color: "text-rose-600"
     }))
   ].sort((a, b) => b.date - a.date).slice(0, 5);
 
@@ -366,9 +377,13 @@ const DashboardPage = () => {
           currentExpenses < currentRevenue ? 85 : 50,
           currentProfit > 0 ? 95 : 30
         ],
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
+        backgroundColor: "rgba(99, 102, 241, 0.2)",
+        borderColor: "rgba(79, 70, 229, 1)",
+        pointBackgroundColor: "rgba(79, 70, 229, 1)",
+        pointBorderColor: "#fff",
+        pointHoverBackgroundColor: "#fff",
+        pointHoverBorderColor: "rgba(79, 70, 229, 1)",
+        borderWidth: 2,
       },
     ],
   };
@@ -385,12 +400,12 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="p-4 bg-gray-100 min-h-screen flex flex-col gap-6">
+    <div className="p-6 lg:p-8 flex flex-col gap-8">
 
       <div className="flex justify-between items-center mb-2">
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-        <button onClick={fetchData} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-          <FiRefreshCw /> Refresh
+        <h1 className="gl-heading">Dashboard</h1>
+        <button onClick={fetchData} className="gl-btn gl-btn-primary">
+          <FiRefreshCw className="mr-1" /> Refresh
         </button>
       </div>
 
@@ -401,51 +416,51 @@ const DashboardPage = () => {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <RevealOnScroll className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center" delay={0}>
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Revenue and Expenses Overview</h3>
+        <RevealOnScroll className="gl-card p-6 flex flex-col items-center" delay={0}>
+          <h3 className="gl-section-title mb-4">Revenue and Expenses Overview</h3>
           <div className="h-80 w-full max-w-md">
             {sales.length > 0 || purchases.length > 0 ? (
               <LazyChart>
                 <Line data={chartData} options={chartOptions} />
               </LazyChart>
-            ) : <p className="text-center text-gray-500 mt-32">No data available</p>}
+            ) : <p className="text-center text-slate-400 mt-32 text-sm">No data available</p>}
           </div>
         </RevealOnScroll>
-        <RevealOnScroll className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center" delay={150}>
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Monthly Sales Comparison</h3>
+        <RevealOnScroll className="gl-card p-6 flex flex-col items-center" delay={150}>
+          <h3 className="gl-section-title mb-4">Monthly Sales Comparison</h3>
           <div className="h-80 w-full max-w-md">
             {sales.length > 0 ? (
               <LazyChart>
                 <Bar data={barData} options={chartOptions} />
               </LazyChart>
-            ) : <p className="text-center text-gray-500 mt-32">No data available</p>}
+            ) : <p className="text-center text-slate-400 mt-32 text-sm">No data available</p>}
           </div>
         </RevealOnScroll>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <RevealOnScroll className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center" delay={0}>
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Top Revenue Sources</h3>
+        <RevealOnScroll className="gl-card p-6 flex flex-col items-center" delay={0}>
+          <h3 className="gl-section-title mb-4">Top Revenue Sources</h3>
           <div className="h-80 w-full max-w-md">
             {top5Customers.length > 0 ? (
               <LazyChart>
                 <Pie data={pieData} options={chartOptions} />
               </LazyChart>
-            ) : <p className="text-center text-gray-500 mt-32">No data available</p>}
+            ) : <p className="text-center text-slate-400 mt-32 text-sm">No data available</p>}
           </div>
         </RevealOnScroll>
-        <RevealOnScroll className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center" delay={150}>
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Top Expenses</h3>
+        <RevealOnScroll className="gl-card p-6 flex flex-col items-center" delay={150}>
+          <h3 className="gl-section-title mb-4">Top Expenses</h3>
           <div className="h-80 w-full max-w-md">
             {top4Suppliers.length > 0 ? (
               <LazyChart>
                 <Doughnut data={doughnutData} options={chartOptions} />
               </LazyChart>
-            ) : <p className="text-center text-gray-500 mt-32">No data available</p>}
+            ) : <p className="text-center text-slate-400 mt-32 text-sm">No data available</p>}
           </div>
         </RevealOnScroll>
-        <RevealOnScroll className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center" delay={300}>
-          <h3 className="text-lg font-semibold mb-4 text-gray-800">Financial KPIs</h3>
+        <RevealOnScroll className="gl-card p-6 flex flex-col items-center" delay={300}>
+          <h3 className="gl-section-title mb-4">Financial KPIs</h3>
           <div className="h-80 w-full max-w-md">
             <LazyChart>
               <Radar data={radarData} options={chartOptions} />
@@ -455,30 +470,29 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <RevealOnScroll className="bg-white p-6 rounded-lg shadow-lg" delay={0}>
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Transactions</h3>
-          <div className="bg-gradient-to-r from-cyan-300 to-cyan-500 h-px mb-6"></div>
-          <div className="overflow-x-auto">
+        <RevealOnScroll className="gl-card p-6" delay={0}>
+          <h3 className="gl-section-title mb-6">Recent Transactions</h3>
+          <div className="gl-table-container">
             {combinedTransactions.length > 0 ? (
-              <table className="min-w-full text-sm text-left">
+              <table className="gl-table">
                 <thead>
-                  <tr className="bg-gray-50">
-                    <th className="py-2 px-4">Date</th>
-                    <th className="py-2 px-4">Description</th>
-                    <th className="py-2 px-4 text-right">Amount</th>
-                    <th className="py-2 px-4">Category</th>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th className="text-right">Amount</th>
+                    <th>Category</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody>
                   {combinedTransactions.map((t, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                      <td className="py-2 px-4">{t.date.toLocaleDateString()}</td>
-                      <td className="py-2 px-4 font-medium text-gray-700">{t.desc}</td>
-                      <td className={`py-2 px-4 text-right font-semibold ${t.color}`}>
+                    <tr key={idx}>
+                      <td className="text-slate-500 font-medium">{t.date.toLocaleDateString()}</td>
+                      <td className="font-bold text-slate-800">{t.desc}</td>
+                      <td className={`text-right font-bold tracking-tight ${t.color}`}>
                         {t.type === "Expense" ? "- " : ""}Rs. {t.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
-                      <td className="py-2 px-4">
-                        <span className={`px-2 py-1 text-xs rounded-full ${t.type === 'Revenue' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      <td>
+                        <span className={t.type === 'Revenue' ? 'gl-badge gl-badge-success' : 'gl-badge gl-badge-error'}>
                           {t.type}
                         </span>
                       </td>
@@ -487,28 +501,27 @@ const DashboardPage = () => {
                 </tbody>
               </table>
             ) : (
-              <p className="text-center text-gray-500 py-4">No recent transactions found.</p>
+              <p className="text-center text-slate-400 py-8 text-sm">No recent transactions found.</p>
             )}
           </div>
         </RevealOnScroll>
 
-        <RevealOnScroll className="bg-white p-6 rounded-lg shadow-lg" delay={150}>
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Top Clients</h3>
-          <div className="bg-gradient-to-r from-cyan-300 to-cyan-500 h-px mb-6"></div>
+        <RevealOnScroll className="gl-card p-6" delay={150}>
+          <h3 className="gl-section-title mb-6">Top Clients</h3>
           {top5Customers.length > 0 ? (
-            <ul className="divide-y divide-gray-100">
+            <ul className="flex flex-col gap-2">
               {top5Customers.map((client, idx) => (
-                <li key={idx} className="py-3 px-4 flex justify-between items-center hover:bg-gray-50 rounded transition-colors">
-                  <span className="font-medium text-gray-700 flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">{idx + 1}</span>
+                <li key={idx} className="py-3 px-4 flex justify-between items-center bg-slate-50 border border-slate-100 rounded-xl hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors">
+                  <span className="font-bold text-slate-700 flex items-center gap-3 text-sm">
+                    <span className="w-6 h-6 rounded-md bg-indigo-100 text-indigo-700 flex items-center justify-center text-[10px] font-black">{idx + 1}</span>
                     {client[0]}
                   </span>
-                  <span className="font-semibold text-gray-900">Rs. {client[1].toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="font-extrabold text-slate-900 tracking-tight">Rs. {client[1].toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-center text-gray-500 py-4">No client data available.</p>
+            <p className="text-center text-slate-400 py-8 text-sm">No client data available.</p>
           )}
         </RevealOnScroll>
       </div>

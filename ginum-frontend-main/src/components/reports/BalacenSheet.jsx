@@ -158,7 +158,7 @@ const BalanceSheet = () => {
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200 print:hidden">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Balance Sheet</h1>
+            <h1 className="gl-heading">Balance Sheet</h1>
             <p className="text-sm text-gray-500 mt-1">As of {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</p>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">

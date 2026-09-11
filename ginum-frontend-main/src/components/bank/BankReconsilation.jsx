@@ -219,7 +219,7 @@ function BankReconsilation() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen space-y-6 max-w-full overflow-x-hidden">
+    <div className="p-6 lg:p-8 flex flex-col gap-8 max-w-full overflow-x-hidden">
       {/* Header Row */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-gray-200">
         <div>
@@ -386,8 +386,8 @@ function BankReconsilation() {
       {/* Main Ledger Table */}
       <div className="bg-white shadow-sm rounded-2xl border border-gray-200 overflow-hidden w-full max-w-full">
         <div className="overflow-x-auto w-full max-w-full">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="gl-table">
+            <thead>
               <tr>
                 <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Date</th>
                 <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Reference</th>

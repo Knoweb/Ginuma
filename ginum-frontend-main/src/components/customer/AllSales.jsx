@@ -187,13 +187,13 @@ function AllSales() {
 
   return (
     <>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+      <div className="p-6 lg:p-8 flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="gl-heading">
               All Sales Orders
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="gl-subheading mt-1">
               View and manage company sales orders
             </p>
           </div>
@@ -201,13 +201,13 @@ function AllSales() {
           <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto mt-4 md:mt-0">
             <div className="relative flex-grow">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaSearch className="text-gray-400" />
+                <FaSearch className="text-slate-400" />
               </div>
 
               <input
                 type="text"
                 placeholder="Search sales orders..."
-                className="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="gl-input pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -216,129 +216,106 @@ function AllSales() {
             <button
               type="button"
               onClick={fetchSalesOrders}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2"
+              className="gl-btn gl-btn-secondary"
             >
-              <FaSyncAlt /> Refresh
+              <FaSyncAlt className="mr-2 text-indigo-500" /> Refresh
             </button>
           </div>
         </div>
 
         {filteredSalesOrders.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center">
-            <div className="mx-auto h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mb-4">
+          <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+            <div className="h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-4 shadow-sm border border-indigo-100/50">
               <FaFileInvoiceDollar size={30} />
             </div>
 
-            <p className="text-gray-600 text-lg">
+            <p className="text-slate-500 font-medium text-lg">
               {salesOrders.length === 0
                 ? "No sales orders found."
                 : "No matching sales orders found."}
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      SO Number
-                    </th>
-
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Customer
-                    </th>
-
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total
-                    </th>
-
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Paid
-                    </th>
-
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Balance
-                    </th>
-
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody className="bg-white divide-y divide-gray-200">
+          <div className="gl-table-container">
+            <table className="gl-table">
+              <thead>
+                <tr>
+                  <th>SO Number</th>
+                  <th>Customer</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th className="text-right">Total</th>
+                  <th className="text-right">Paid</th>
+                  <th className="text-right">Balance</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
                   {filteredSalesOrders.map((order) => {
                     const status = getPaymentStatus(order);
 
                     return (
-                      <tr
-                        key={order.id}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-semibold text-gray-900">
+                      <tr key={order.id}>
+                        <td>
+                          <div className="font-bold text-slate-800">
                             {order.soNumber || "-"}
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
                             ID: {order.id}
                           </div>
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="font-bold text-indigo-700">
                           {order.customerName || "-"}
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          <div>Issue: {formatDate(order.issueDate)}</div>
-                          <div className="text-xs text-gray-500">
-                            Due: {formatDate(order.dueDate)}
-                          </div>
+
+                        <td className="text-slate-500 font-medium">
+                          {formatDate(order.issueDate)}
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatText(order.salesType)}
+                        <td>
+                          <span className="gl-badge gl-badge-info">
+                            {formatText(order.salesType)}
+                          </span>
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">
-                          Rs. {formatAmount(order.total)}
+                        <td className="text-right font-extrabold text-slate-800">
+                          Rs. {formatAmount(order.totalAmount)}
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                          Rs. {formatAmount(order.amountPaid)}
+                        <td className="text-right font-bold text-emerald-600">
+                          Rs. {formatAmount(order.paidAmount)}
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900">
+                        <td className="text-right font-bold text-rose-500">
                           Rs. {formatAmount(order.balanceDue)}
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <td className="text-center">
                           <span
-                            className={`inline-block px-2 py-1 text-xs rounded-full font-semibold ${status.className}`}
+                            className={`gl-badge ${
+                              status.status === "Paid"
+                                ? "gl-badge-success"
+                                : status.status === "Partial"
+                                ? "gl-badge-warning"
+                                : status.status === "Unpaid"
+                                ? "gl-badge-error"
+                                : "gl-badge-info"
+                            }`}
                           >
                             {status.label}
                           </span>
                         </td>
 
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <td className="text-right">
                           <button
                             type="button"
                             onClick={() => openViewModal(order)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg inline-flex items-center gap-2"
+                            className="gl-btn gl-btn-secondary h-8 px-3 text-xs"
                           >
-                            <FaEye /> View
+                            <FaEye className="mr-1.5" /> View
                           </button>
                         </td>
                       </tr>
@@ -348,7 +325,7 @@ function AllSales() {
               </table>
             </div>
 
-            <div className="bg-gray-50 px-6 py-3 text-sm text-gray-600">
+            <div className="bg-slate-50 px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-wider border-t border-slate-100">
               Showing {filteredSalesOrders.length} of {salesOrders.length} sales
               orders
             </div>
@@ -373,40 +350,40 @@ function AllSales() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div>
-                <p className="text-sm text-gray-500">SO Number</p>
+                <p className="gl-label">SO Number</p>
                 <p className="font-semibold">{selectedOrder.soNumber || "-"}</p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-500">Customer</p>
+                <p className="gl-label">Customer</p>
                 <p className="font-semibold">
                   {selectedOrder.customerName || "-"}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-500">Issue Date</p>
+                <p className="gl-label">Issue Date</p>
                 <p className="font-semibold">
                   {formatDate(selectedOrder.issueDate)}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-500">Due Date</p>
+                <p className="gl-label">Due Date</p>
                 <p className="font-semibold">
                   {formatDate(selectedOrder.dueDate)}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-500">Sales Type</p>
+                <p className="gl-label">Sales Type</p>
                 <p className="font-semibold">
                   {formatText(selectedOrder.salesType)}
                 </p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-500">Balance Due</p>
+                <p className="gl-label">Balance Due</p>
                 <p className="font-semibold">
                   Rs. {formatAmount(selectedOrder.balanceDue)}
                 </p>
@@ -419,8 +396,8 @@ function AllSales() {
 
             {selectedOrder.items && selectedOrder.items.length > 0 ? (
               <div className="overflow-x-auto border rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                <table className="gl-table">
+                  <thead>
                     <tr>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                         Item
@@ -456,7 +433,7 @@ function AllSales() {
                     </tr>
                   </thead>
 
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody>
                     {selectedOrder.items.map((item, index) => (
                       <tr key={index}>
                         <td className="px-4 py-2 text-sm text-gray-900">

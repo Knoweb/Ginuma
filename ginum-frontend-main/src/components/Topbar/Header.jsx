@@ -114,7 +114,7 @@ const Header = ({ toggleSidebar, isSidebarVisible }) => {
 
   return (
     <div
-      className={`bg-white border-b border-gray-150 px-6 py-3.5 flex justify-between items-center fixed top-0 ${
+      className={`bg-white/80 backdrop-blur-lg border-b border-slate-200/60 shadow-sm px-6 py-3.5 flex justify-between items-center fixed top-0 ${
         isSidebarVisible ? "left-72" : "left-0"
       } right-0 transition-all duration-300 z-50 h-16`}
     >
@@ -122,7 +122,7 @@ const Header = ({ toggleSidebar, isSidebarVisible }) => {
       <div className="flex items-center">
         <button
           onClick={toggleSidebar}
-          className="text-gray-500 hover:text-gray-800 p-2 hover:bg-gray-100 rounded-xl transition cursor-pointer focus:outline-none"
+          className="text-slate-500 hover:text-slate-800 p-2 hover:bg-slate-100/80 rounded-xl transition cursor-pointer focus:outline-none"
         >
           <FaBars className="text-lg" />
         </button>
@@ -135,7 +135,7 @@ const Header = ({ toggleSidebar, isSidebarVisible }) => {
         <div className="relative" ref={notificationRef}>
           <button
             onClick={() => setIsNotificationDropdownOpen(!isNotificationDropdownOpen)}
-            className="relative text-gray-500 hover:text-gray-800 p-2.5 hover:bg-gray-50 rounded-xl transition cursor-pointer focus:outline-none"
+            className="relative text-slate-500 hover:text-slate-800 p-2.5 hover:bg-slate-100/80 rounded-xl transition cursor-pointer focus:outline-none"
           >
             <FaBell className="text-lg" />
             {unreadNotificationsCount > 0 && (

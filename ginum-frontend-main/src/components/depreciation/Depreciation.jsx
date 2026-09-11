@@ -223,11 +223,11 @@ const Depreciation = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen space-y-6 max-w-full overflow-x-hidden">
+    <div className="p-6 lg:p-8 flex flex-col gap-8 max-w-full overflow-x-hidden">
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+          <h1 className="gl-heading flex items-center gap-2">
             <FaCalculator className="text-blue-600" />
             Asset Depreciation
           </h1>
@@ -302,8 +302,8 @@ const Depreciation = () => {
       {/* Main Assets Table */}
       <div className="bg-white shadow-sm rounded-2xl border border-gray-200 overflow-hidden w-full max-w-full">
         <div className="overflow-x-auto w-full max-w-full">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="gl-table">
+            <thead>
               <tr>
                 <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Asset Name</th>
                 <th className="px-6 py-3.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Purchase Date</th>

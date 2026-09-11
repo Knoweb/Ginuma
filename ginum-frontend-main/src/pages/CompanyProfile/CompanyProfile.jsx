@@ -198,7 +198,7 @@ const CompanyProfile = () => {
       
       {/* Title */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+        <h1 className="gl-heading flex items-center gap-2">
           <FaUser className="text-blue-600 text-2xl" />
           My Profile
         </h1>

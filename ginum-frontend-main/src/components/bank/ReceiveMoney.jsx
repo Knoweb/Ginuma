@@ -239,7 +239,7 @@ const ReceiveMoney = () => {
             <FaHandHoldingUsd className="text-green-600 text-xl" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="gl-heading">
               Receive Money
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">

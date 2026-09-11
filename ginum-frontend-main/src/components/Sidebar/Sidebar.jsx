@@ -97,12 +97,12 @@ const Sidebar = ({ isVisible }) => {
 
   return (
     <div
-      className={`bg-gray-50 min-h-screen px-1.5 w-72 fixed left-0 top-0 
+      className={`bg-white border-r border-slate-200/60 min-h-screen px-3 w-72 fixed left-0 top-0 
             transition-transform duration-700 ${
               isVisible ? "translate-x-0" : "-translate-x-full"
             } max-h-screen overflow-y-auto z-50`}
     >
-      <div className="sticky top-0 shadow px-10 bg-gray-50 z-10 py-3">
+      <div className="sticky top-0 bg-white/80 backdrop-blur-md z-10 py-5 border-b border-slate-100 mb-2">
         <a href="/">
           <div className="flex items-center justify-center">
             <img src="/ginum_logo.png" alt="Ginum" className="w-101 h-12" />
@@ -119,7 +119,7 @@ const Sidebar = ({ isVisible }) => {
               return (
                 <h4
                   key={item.sectionTitle}
-                  className="px-6 text-gray-400 font-semibold mt-4"
+                  className="px-4 text-slate-400 font-bold text-[10px] uppercase tracking-wider mt-6 mb-2"
                 >
                   {item.sectionTitle}
                 </h4>
@@ -127,7 +127,7 @@ const Sidebar = ({ isVisible }) => {
             }
             return (
               <div key={item.id}>
-                <h4 className="px-6 text-gray-600 font-semibold mt-4">
+                <h4 className="px-4 text-slate-400 font-bold text-[10px] uppercase tracking-wider mt-6 mb-2">
                   {item.sectionTitle}
                 </h4>
 
@@ -142,16 +142,16 @@ const Sidebar = ({ isVisible }) => {
                       handleNavigation(item.path);
                       toggleExpanded(item.id, hasSubItems);
                     }}
-                    className={`w-full flex items-center justify-between px-6 py-2 
-                                      rounded-2xl text-gray-700 hover:bg-sky-200 cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-4 py-2.5 
+                                      rounded-xl text-slate-600 hover:bg-indigo-50/50 hover:text-indigo-600 transition-colors cursor-pointer ${
                                         location.pathname.startsWith(item.path)
-                                          ? "bg-sky-500 text-white hover:bg-sky-500"
-                                          : ""
+                                          ? "bg-indigo-50 text-indigo-700 font-bold shadow-sm shadow-indigo-100"
+                                          : "font-medium"
                                       }`}
                   >
                     <div className="flex items-center">
                       <item.icon className="text-lg mr-4" />
-                      <span className="font-semibold">{item.label}</span>
+                      <span className="text-sm">{item.label}</span>
                     </div>
                     {hasSubItems && (
                       <div
@@ -189,15 +189,15 @@ const Sidebar = ({ isVisible }) => {
                                   : null
                               }
                               onClick={() => handleNavigation(subItem.path)}
-                              className={`w-full text-left px-4 py-2 rounded-lg 
-                                                        text-gray-600 hover:bg-sky-100 ${
+                              className={`w-full text-left px-4 py-2 rounded-lg text-sm transition-colors
+                                                        text-slate-500 hover:bg-slate-50 hover:text-indigo-600 ${
                                                           location.pathname ===
                                                           subItem.path
-                                                            ? "bg-sky-100 text-sky-600 font-medium"
+                                                            ? "bg-slate-50 text-indigo-600 font-semibold"
                                                             : ""
                                                         }`}
                             >
-                              <span className="font-semibold">
+                              <span>
                                 {subItem.label}
                               </span>
                             </button>

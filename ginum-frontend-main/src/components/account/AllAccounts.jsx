@@ -237,7 +237,7 @@ const AllAccounts = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="p-6 lg:p-8 flex flex-col gap-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
           Accounts
@@ -269,8 +269,8 @@ const AllAccounts = () => {
       </div>
 
       {filteredAccounts.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-8 text-center">
-          <div className="mx-auto h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mb-4">
+        <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+          <div className="h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-4 shadow-sm border border-indigo-100/50 mx-auto">
             <FiCreditCard size={30} />
           </div>
 
@@ -289,39 +289,39 @@ const AllAccounts = () => {
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="gl-table-container">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="gl-table">
+              <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th>
                     Account
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th>
                     Account Code
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th>
                     Type
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                     Sub Account
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="text-right">
                     Balance
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="text-center">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="text-right">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody>
                 {filteredAccounts.map((account) => (
                   <tr
                     key={account.id}
-                    className="hover:bg-gray-50 transition-colors"
+                    
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -424,7 +424,7 @@ const AllAccounts = () => {
               <form onSubmit={handleSaveEdit}>
                 <div className="relative p-6 flex-auto space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Account Name *</label>
+                    <label className="gl-label">Account Name *</label>
                     <input
                       type="text"
                       name="accountName"
@@ -435,7 +435,7 @@ const AllAccounts = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Sub Account Name</label>
+                    <label className="gl-label">Sub Account Name</label>
                     <input
                       type="text"
                       name="subAccountName"
@@ -445,7 +445,7 @@ const AllAccounts = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Account Type *</label>
+                    <label className="gl-label">Account Type *</label>
                     <select
                       name="accountType"
                       required

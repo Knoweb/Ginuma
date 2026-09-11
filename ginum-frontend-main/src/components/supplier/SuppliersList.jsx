@@ -375,7 +375,7 @@ const SuppliersList = () => {
     <>
       <div className="p-6 bg-gray-50 min-h-screen">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Suppliers</h1>
+          <h1 className="gl-heading">Suppliers</h1>
 
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
             <div className="relative">
@@ -495,7 +495,7 @@ const SuppliersList = () => {
                           {formatText(supplier.supplierType)}
                         </p>
 
-                        <p className="text-sm text-gray-500">
+                        <p className="gl-label">
                           Tax: {formatText(supplier.tax)}
                         </p>
                       </td>
@@ -689,7 +689,7 @@ const SuppliersList = () => {
                     onChange={handleEditChange}
                     className="w-4 h-4"
                   />
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="gl-label">
                     Active Supplier
                   </label>
                 </div>
@@ -785,7 +785,7 @@ const Input = ({
 }) => {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="gl-label">
         {label}
       </label>
 
@@ -804,7 +804,7 @@ const Input = ({
 const Select = ({ label, name, value, onChange, options }) => {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="gl-label">
         {label}
       </label>
 

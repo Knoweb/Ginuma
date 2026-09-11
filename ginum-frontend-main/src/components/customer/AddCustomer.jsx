@@ -210,7 +210,7 @@ export default function AddCustomerForm({ onClose, initialData }) {
       {!onClose && (
         <div className="flex justify-between items-center pb-4 border-b border-gray-200">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+            <h1 className="gl-heading flex items-center gap-2">
               <FiUser className="text-blue-600" />
               {initialData ? "Edit Customer" : "Create Customer"}
             </h1>
@@ -220,7 +220,7 @@ export default function AddCustomerForm({ onClose, initialData }) {
           </div>
           <button
             onClick={handleCancel}
-            className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="gl-btn gl-btn-secondary"
           >
             <FiArrowLeft /> Back to Customers
           </button>
@@ -324,7 +324,7 @@ export default function AddCustomerForm({ onClose, initialData }) {
                   value={formData.nic_no}
                   onChange={handleChange}
                   placeholder="e.g. 199512345678"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+                  className="gl-input"
                 />
               </div>
             </div>
@@ -348,7 +348,7 @@ export default function AddCustomerForm({ onClose, initialData }) {
                   value={formData.tin_no}
                   onChange={handleChange}
                   placeholder="Tax Identification No"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+                  className="gl-input"
                 />
               </div>
 
@@ -362,7 +362,7 @@ export default function AddCustomerForm({ onClose, initialData }) {
                   value={formData.vat}
                   onChange={handleChange}
                   placeholder="VAT Reg No"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+                  className="gl-input"
                 />
               </div>
 
@@ -374,7 +374,7 @@ export default function AddCustomerForm({ onClose, initialData }) {
                   name="currencyId"
                   value={formData.currencyId}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all cursor-pointer"
+                  className="gl-input cursor-pointer"
                 >
                   <option value="1">USD ($)</option>
                   <option value="2">EUR (€)</option>
@@ -392,7 +392,7 @@ export default function AddCustomerForm({ onClose, initialData }) {
                   value={formData.swift_no}
                   onChange={handleChange}
                   placeholder="e.g. ABBYLKXX"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+                  className="gl-input"
                 />
               </div>
 
@@ -440,7 +440,7 @@ export default function AddCustomerForm({ onClose, initialData }) {
                     step="0.01"
                     min="0"
                     max="100"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+                    className="gl-input"
                   />
                   <FiPercent className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 </div>

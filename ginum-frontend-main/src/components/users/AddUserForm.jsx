@@ -172,7 +172,7 @@ const AddUserForm = () => {
           <FiUserPlus className="text-blue-600 text-xl" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Add & Assign User Role</h1>
+          <h1 className="gl-heading">Add & Assign User Role</h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Create user login credentials and assign company roles with optional OTP security
           </p>

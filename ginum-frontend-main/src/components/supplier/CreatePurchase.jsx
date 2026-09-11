@@ -570,11 +570,11 @@ const CreatePurchase = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen space-y-6 max-w-full overflow-x-hidden">
+    <div className="p-6 lg:p-8 flex flex-col gap-8 max-w-full overflow-x-hidden">
       {/* Header section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+          <h1 className="gl-heading flex items-center gap-2">
             <FiFileText className="text-blue-600" />
             Create Purchase Order
           </h1>
@@ -584,7 +584,7 @@ const CreatePurchase = () => {
         </div>
         <button
           onClick={() => navigate("/supplier/purchase/all")}
-          className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+          className="gl-btn gl-btn-secondary"
         >
           <FiArrowLeft /> Cancel & Exit
         </button>
@@ -621,7 +621,7 @@ const CreatePurchase = () => {
       </div>
 
       {/* Meta Card */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
+      <div className="gl-card p-6 space-y-4">
         <h3 className="text-md font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-3">
           <FiUser className="text-blue-500" />
           Supplier & Bill Information
@@ -630,13 +630,13 @@ const CreatePurchase = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Supplier */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="gl-label">
               Supplier Name <span className="text-red-500">*</span>
             </label>
             <select
               value={selectedSupplier}
               onChange={(e) => setSelectedSupplier(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all cursor-pointer"
+              className="gl-input cursor-pointer"
               disabled={isLoadingSuppliers}
             >
               <option value="">Select Supplier</option>
@@ -653,28 +653,28 @@ const CreatePurchase = () => {
 
           {/* PO Number */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="gl-label">
               PO Number <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={poNumber}
               onChange={(e) => setPoNumber(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+              className="gl-input"
               placeholder="e.g. PO-000001"
             />
           </div>
 
           {/* Supplier Invoice Number */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="gl-label">
               Supplier Invoice No <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={supplierInvoiceNumber}
               onChange={(e) => setSupplierInvoiceNumber(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+              className="gl-input"
               placeholder="e.g. INV-123"
             />
           </div>
@@ -683,40 +683,40 @@ const CreatePurchase = () => {
 
           {/* Order Date */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="gl-label">
               Order Date <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               value={issueDate}
               onChange={(e) => setIssueDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+              className="gl-input"
             />
           </div>
 
           {/* Due Date */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="gl-label">
               Due Date <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+              className="gl-input"
             />
           </div>
 
           {/* Promise Date */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="gl-label">
               Promise Date <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               value={promiseDate}
               onChange={(e) => setPromiseDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all"
+              className="gl-input"
             />
           </div>
         </div>
@@ -725,8 +725,8 @@ const CreatePurchase = () => {
       {/* Ledger Items Table */}
       <div className="bg-white shadow-sm rounded-2xl border border-gray-200 overflow-hidden w-full max-w-full">
         <div className="overflow-x-auto w-full max-w-full">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="gl-table">
+            <thead>
               <tr>
                 {!isServiceMode && (
                   <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap min-w-[200px]">
@@ -939,7 +939,7 @@ const CreatePurchase = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* Notes Card */}
         <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
-          <label className="block text-sm font-semibold text-gray-700">Order Notes / Terms</label>
+          <label className="gl-label">Order Notes / Terms</label>
           <textarea
             className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 outline-none"
             rows={4}

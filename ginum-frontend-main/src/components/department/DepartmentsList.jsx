@@ -359,7 +359,7 @@ const DepartmentsList = () => {
     <>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="gl-heading">
             Organization Setup
           </h1>
 
@@ -451,8 +451,8 @@ const DepartmentsList = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {activeTab === "departments" && (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="gl-table">
+                <thead>
                   <tr>
                     <Th>Department Name</Th>
                     <Th>Code</Th>
@@ -461,7 +461,7 @@ const DepartmentsList = () => {
                   </tr>
                 </thead>
 
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody>
                   {filteredDepartments.length > 0 ? (
                     filteredDepartments.map((dept) => {
                       const deptId = getDepartmentId(dept);
@@ -471,7 +471,7 @@ const DepartmentsList = () => {
                       return (
                         <tr
                           key={deptId}
-                          className="hover:bg-gray-50 transition-colors"
+                          
                         >
                           <Td strong>{dept.name}</Td>
 
@@ -548,8 +548,8 @@ const DepartmentsList = () => {
 
           {activeTab === "designations" && (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="gl-table">
+                <thead>
                   <tr>
                     <Th>Designation Title</Th>
                     <Th>Department</Th>
@@ -558,7 +558,7 @@ const DepartmentsList = () => {
                   </tr>
                 </thead>
 
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody>
                   {filteredDesignations.length > 0 ? (
                     filteredDesignations.map((desig) => {
                       const desigId = getDesignationId(desig);
@@ -568,7 +568,7 @@ const DepartmentsList = () => {
                       return (
                         <tr
                           key={desigId}
-                          className="hover:bg-gray-50 transition-colors"
+                          
                         >
                           <Td strong>{desig.name}</Td>
 

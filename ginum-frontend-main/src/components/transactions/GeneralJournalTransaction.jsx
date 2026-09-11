@@ -191,7 +191,7 @@ const CreateGeneralJournalTransaction = () => {
             <MdSwapHoriz className="text-blue-600 text-2xl" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="gl-heading">
               General Journal Entry
             </h1>
             <p className="text-sm text-gray-500 mt-0.5">
@@ -216,7 +216,7 @@ const CreateGeneralJournalTransaction = () => {
           </div>
           <div className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="gl-label">
                 Reference Number <span className="text-red-500">*</span>
               </label>
               <input
@@ -229,7 +229,7 @@ const CreateGeneralJournalTransaction = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="gl-label">
                 Date <span className="text-red-500">*</span>
               </label>
               <input
@@ -240,7 +240,7 @@ const CreateGeneralJournalTransaction = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="gl-label">
                 Description
               </label>
               <input

@@ -317,7 +317,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
           <div className="flex flex-wrap -mx-2">
             {/* First Name */}
             <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 First Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -334,7 +334,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* Last Name */}
             <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Last Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -351,7 +351,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* Gender */}
             <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Gender <span className="text-red-500">*</span>
               </label>
               <select
@@ -372,7 +372,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* Date of Birth */}
             <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Date of Birth <span className="text-red-500">*</span>
               </label>
               <input
@@ -394,7 +394,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* EPF No. */}
             <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">EPF No.</label>
+              <label className="gl-label">EPF No.</label>
               <input
                 type="text"
                 name="epfNo"
@@ -406,7 +406,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* NIC No. */}
             <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                  NIC No. <span className="text-red-500">*</span> 
               </label>
               <input
@@ -423,7 +423,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* Mobile No. */}
             <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Mobile No. <span className="text-red-500">*</span>
               </label>
               <input
@@ -440,7 +440,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* Email Address */}
             <div className="w-full md:w-1/2 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Email Address <span className="text-red-500">*</span>
               </label>
               <input
@@ -457,7 +457,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* Address */}
             <div className="w-full px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Address <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -471,7 +471,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* Date Added */}
             <div className="w-full md:w-1/3 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Date Added <span className="text-red-500">*</span>
               </label>
               <input
@@ -492,7 +492,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* Department */}
             <div className="w-full md:w-1/3 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Department <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -532,7 +532,7 @@ const EditEmployeeForm = ({ employee, onClose, onSuccess }) => {
 
             {/* Designation */}
             <div className="w-full md:w-1/3 px-2 mb-4">
-              <label className="block text-gray-700 font-medium mb-1">
+              <label className="gl-label">
                 Designation <span className="text-red-500">*</span>
               </label>
               <div className="relative">

@@ -70,8 +70,8 @@ const InventoryTable = ({
 }) => {
   if (filteredItems.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-8 text-center">
-        <div className="mx-auto h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mb-4">
+      <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+        <div className="h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-4 shadow-sm border border-indigo-100/50 mx-auto">
           <Package size={30} />
         </div>
 
@@ -91,53 +91,53 @@ const InventoryTable = ({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="gl-table-container">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="gl-table">
+          <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th>
                 Item
               </th>
 
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th>
                 Category / Type
               </th>
 
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th>
                 Stock
               </th>
 
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="text-right">
                 Purchase Price
               </th>
 
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="text-right">
                 Selling Price
               </th>
 
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="text-right">
                 Stock Value
               </th>
 
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="text-center">
                 Status
               </th>
 
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="text-right">
                 Actions
               </th>
             </tr>
           </thead>
 
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody>
             {filteredItems.map((item, index) => {
               const stockStatus = getStockStatus(item);
 
               return (
                 <tr
                   key={item.itemId || index}
-                  className="hover:bg-gray-50 transition-colors"
+                  
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
