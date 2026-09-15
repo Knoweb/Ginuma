@@ -169,28 +169,28 @@ const TrialBalance = () => {
             subtitle="General Ledger Balances Verification"
             icon={FiPieChart}
             actions={
-              <>
+              <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-auto flex-none">
                 {/* Action Buttons */}
                 <button
                   onClick={fetchTrialBalance}
-                  className="gl-btn gl-btn-secondary w-auto flex-none"
+                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
                   title="Refresh Report"
                 >
                   <FiRefreshCw className="mr-1.5" /> Refresh
                 </button>
                 <button
                   onClick={handleExportCSV}
-                  className="gl-btn gl-btn-secondary w-auto flex-none"
+                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
                 >
                   <FiDownload className="mr-1.5" /> Export CSV
                 </button>
                 <button
                   onClick={handlePrint}
-                  className="gl-btn gl-btn-primary w-auto flex-none"
+                  className="gl-btn gl-btn-primary w-auto min-w-fit flex-none"
                 >
                   <FiPrinter className="mr-1.5" /> Print
                 </button>
-              </>
+              </div>
             }
           />
         </div>

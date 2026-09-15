@@ -439,44 +439,44 @@ export default function AgedReceivables() {
         subtitle="Track and manage outstanding customer balances across aging periods"
         icon={FiClock}
         actions={
-          <>
-            {/* Action Buttons */}
-            <button
-              type="button"
-              onClick={fetchSalesOrders}
-              className="gl-btn gl-btn-secondary w-auto flex-none"
-            >
-              <FaSyncAlt className="mr-1.5" />
-              Refresh
-            </button>
+              <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-auto flex-none">
+                {/* Action Buttons */}
+                <button
+                  type="button"
+                  onClick={fetchSalesOrders}
+                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
+                >
+                  <FaSyncAlt className="mr-1.5" />
+                  Refresh
+                </button>
 
-            <button
-              type="button"
-              onClick={handleExport}
-              className="gl-btn gl-btn-secondary w-auto flex-none"
-            >
-              <FaFileExport className="mr-1.5" />
-              Export CSV
-            </button>
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
+                >
+                  <FaFileExport className="mr-1.5" />
+                  Export CSV
+                </button>
 
-            <button
-              type="button"
-              onClick={handleCreateInvoice}
-              className="gl-btn gl-btn-primary w-auto flex-none"
-            >
-              <FaPlus className="mr-1.5" />
-              Create Invoice
-            </button>
+                <button
+                  type="button"
+                  onClick={handleCreateInvoice}
+                  className="gl-btn gl-btn-primary w-auto min-w-fit flex-none"
+                >
+                  <FaPlus className="mr-1.5" />
+                  Create Invoice
+                </button>
 
-            <button
-              type="button"
-              onClick={handleAddPayment}
-              className="gl-btn gl-btn-secondary w-auto flex-none"
-            >
-              <FaMoneyBillWave className="mr-1.5" />
-              Receive Money
-            </button>
-          </>
+                <button
+                  type="button"
+                  onClick={handleAddPayment}
+                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
+                >
+                  <FaMoneyBillWave className="mr-1.5" />
+                  Receive Money
+                </button>
+              </div>
         }
       />
 
