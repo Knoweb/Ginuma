@@ -440,6 +440,7 @@ export default function AgedReceivables() {
         icon={FiClock}
         actions={
           <>
+            {/* Action Buttons */}
             <button
               type="button"
               onClick={fetchSalesOrders}

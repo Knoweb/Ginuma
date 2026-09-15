@@ -255,6 +255,7 @@ const GeneralLedger = () => {
             icon={FiBookOpen}
             actions={
               <>
+                {/* Action Buttons */}
                 <button
                   onClick={fetchGeneralLedger}
                   className="gl-btn gl-btn-secondary w-auto flex-none"

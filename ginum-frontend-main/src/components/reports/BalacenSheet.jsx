@@ -166,6 +166,7 @@ const BalanceSheet = () => {
             icon={FiPieChart}
             actions={
               <>
+                {/* Action Buttons */}
                 <button
                   onClick={fetchBalanceSheet}
                   className="gl-btn gl-btn-secondary w-auto flex-none"

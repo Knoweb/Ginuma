@@ -201,6 +201,7 @@ const IncomeStatement = () => {
             icon={FiPieChart}
             actions={
               <>
+                {/* Action Buttons */}
                 <button
                   onClick={fetchIncomeStatement}
                   className="gl-btn gl-btn-secondary w-auto flex-none"

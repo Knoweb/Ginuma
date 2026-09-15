@@ -170,6 +170,7 @@ const TrialBalance = () => {
             icon={FiPieChart}
             actions={
               <>
+                {/* Action Buttons */}
                 <button
                   onClick={fetchTrialBalance}
                   className="gl-btn gl-btn-secondary w-auto flex-none"

@@ -385,6 +385,7 @@ export default function AgedPayables() {
         icon={FiClock}
         actions={
           <>
+            {/* Action Buttons */}
             <button
               type="button"
               onClick={fetchPurchaseOrders}
