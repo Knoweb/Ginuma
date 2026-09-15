@@ -6,10 +6,10 @@ import Sidebar from "../components/Sidebar/Sidebar";
 import TabHeader from "../components/TabHeader/TabHeader";
 
 const MainLayout = () => {
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
-  const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -24,6 +24,10 @@ const MainLayout = () => {
           }
         }
       }
+      
+      if (e.key === "Escape") {
+        setSidebarOpen(false);
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -32,19 +36,25 @@ const MainLayout = () => {
 
   return (
     <div className="flex h-screen w-full bg-[#f8fafc] text-slate-800 font-sans">
+      {/* Backdrop for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <Sidebar isVisible={isSidebarVisible} />
+      <Sidebar isVisible={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main Content */}
       <div
-        className={`flex flex-col flex-1 h-full min-w-0 transition-all duration-300 ${
-          isSidebarVisible ? "lg:ml-[260px] ml-0" : "md:ml-0 ml-0"
-        }`}
+        className="flex flex-col flex-1 h-full min-w-0 transition-all duration-300 ml-0 lg:ml-[260px]"
       >
         {/* Header with Fixed Height */}
         <Header
           toggleSidebar={toggleSidebar}
-          isSidebarVisible={isSidebarVisible}
+          isSidebarVisible={sidebarOpen}
         />
 
         {/* Tab Header */}

@@ -3,7 +3,7 @@ import { navItems } from "../../config/navigation";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useState, useEffect, useRef } from "react";
 
-const Sidebar = ({ isVisible }) => {
+const Sidebar = ({ isVisible, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [expandedTabs, setExpandedTabs] = useState(() => {
@@ -29,6 +29,7 @@ const Sidebar = ({ isVisible }) => {
 
   const handleNavigation = (path) => {
     navigate(path);
+    if (onClose) onClose();
   };
 
   // Scroll to the active item when the location changes
@@ -97,10 +98,10 @@ const Sidebar = ({ isVisible }) => {
 
   return (
     <div
-      className={`bg-white border-r border-slate-200/60 min-h-screen w-[260px] fixed left-0 top-0 
-            transition-transform duration-500 ${
+      className={`bg-white border-r border-slate-200 min-h-screen w-[260px] fixed left-0 top-0 
+            transition-transform duration-300 ${
               isVisible ? "translate-x-0" : "-translate-x-full"
-            } max-h-screen overflow-y-auto z-50`}
+            } lg:translate-x-0 max-h-screen overflow-y-auto z-50`}
     >
       <div className="sticky top-0 bg-white/80 backdrop-blur-md z-10 py-5 border-b border-slate-100 mb-2">
         <a href="/">
