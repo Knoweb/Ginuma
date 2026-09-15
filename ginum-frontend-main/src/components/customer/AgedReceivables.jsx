@@ -525,7 +525,7 @@ export default function AgedReceivables() {
       {/* Filters and Tabs */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 space-y-4">
         <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-          <div className="relative flex-grow max-w-md">
+          <div className="relative flex-1 min-w-0">
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"

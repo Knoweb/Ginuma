@@ -261,7 +261,7 @@ const RequestsPage = () => {
       {/* Controls & Actions */}
       <div className="bg-white rounded-t-xl shadow-sm border-b border-gray-100 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row gap-4 flex-1">
-          <div className="relative flex-1 max-w-md">
+          <div className="relative flex-1 min-w-0">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FiSearch className="text-gray-400" />
             </div>
@@ -293,7 +293,7 @@ const RequestsPage = () => {
 
         <button 
           onClick={openCreateModal}
-          className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors shadow-sm"
+          className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm w-full md:w-auto md:flex-none"
         >
           <FiPlus size={16} />
           New Request

@@ -234,7 +234,7 @@ function AllPurchases() {
 
         {/* Toolbar */}
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="relative flex-1 min-w-0 max-w-md">
+          <div className="relative flex-1 min-w-0">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FaSearch className="text-gray-400" />
             </div>
