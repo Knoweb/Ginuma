@@ -5,7 +5,7 @@ const PageHeader = ({ title, subtitle, icon: Icon, actions, onBack, backText = "
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start gap-6 mb-6">
+    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-6">
       <div className="flex items-start gap-4 flex-1 min-w-0">
         {onBack && (
           <button
@@ -30,7 +30,7 @@ const PageHeader = ({ title, subtitle, icon: Icon, actions, onBack, backText = "
       </div>
       
       {actions && (
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 md:flex-row md:justify-end md:w-auto md:flex-none">
           {actions}
         </div>
       )}
