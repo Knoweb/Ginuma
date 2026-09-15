@@ -383,8 +383,8 @@ const SuppliersList = () => {
         />
 
         {/* Toolbar */}
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
-          <div className="relative w-full md:max-w-md">
+        <div className="list-toolbar mb-6">
+          <div className="list-toolbar-search relative">
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-base" />
             <input
               type="text"
@@ -395,14 +395,16 @@ const SuppliersList = () => {
             />
           </div>
 
-          <button
-            type="button"
-            onClick={handleAddSupplier}
-            className="gl-btn gl-btn-primary w-full md:w-auto md:flex-none"
-          >
-            <FaPlus className="mr-1.5" />
-            Add Supplier
-          </button>
+          <div className="list-toolbar-actions">
+            <button
+              type="button"
+              onClick={handleAddSupplier}
+              className="gl-btn gl-btn-primary"
+            >
+              <FaPlus className="mr-1.5" />
+              Add Supplier
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">

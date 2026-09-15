@@ -158,8 +158,8 @@ const AllEmployeePage = () => {
       />
 
       {/* Toolbar */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:max-w-md">
+      <div className="list-toolbar mb-6">
+        <div className="list-toolbar-search relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <FiSearch className="text-slate-400" />
           </div>
@@ -171,12 +171,14 @@ const AllEmployeePage = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <button 
-          onClick={() => navigate("/employee/new")} 
-          className="gl-btn gl-btn-primary w-full md:w-auto md:flex-none"
-        >
-          <FiPlus className="mr-1.5" /> Add Employee
-        </button>
+        <div className="list-toolbar-actions">
+          <button 
+            onClick={() => navigate("/employee/new")} 
+            className="gl-btn gl-btn-primary"
+          >
+            <FiPlus className="mr-1.5" /> Add Employee
+          </button>
+        </div>
       </div>
 
       {filteredEmployees.length === 0 ? (

@@ -456,8 +456,8 @@ const InventoryDashboard = () => {
         />
 
         {/* Toolbar */}
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
-          <div className="relative w-full md:max-w-md">
+        <div className="list-toolbar mb-6">
+          <div className="list-toolbar-search relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="text-gray-400" size={18} />
             </div>
@@ -471,13 +471,15 @@ const InventoryDashboard = () => {
             />
           </div>
 
-          <button
-            type="button"
-            onClick={() => handleOpenItemModal()}
-            className="gl-btn gl-btn-primary w-full md:w-auto md:flex-none"
-          >
-            <FiPlus className="mr-1.5" /> Add Item
-          </button>
+          <div className="list-toolbar-actions">
+            <button
+              type="button"
+              onClick={() => handleOpenItemModal()}
+              className="gl-btn gl-btn-primary"
+            >
+              <FiPlus className="mr-1.5" /> Add Item
+            </button>
+          </div>
         </div>
 
         <InventoryTable

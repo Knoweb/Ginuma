@@ -367,8 +367,8 @@ const DepartmentsList = () => {
           subtitle="Manage company departments and structural hierarchy"
           icon={FiGrid}
           actions={
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto md:flex-none">
-              <div className="relative flex-grow">
+            <div className="list-toolbar w-full md:w-auto md:flex-none">
+              <div className="list-toolbar-search relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <FiSearch className="text-gray-400" />
                 </div>
@@ -381,24 +381,26 @@ const DepartmentsList = () => {
                 />
               </div>
 
-              <button
-                type="button"
-                className="gl-btn gl-btn-primary w-full md:w-auto md:flex-none"
-                onClick={handleAddClick}
-              >
-                <FiPlus className="mr-1.5" />
-                {activeTab === "departments"
-                  ? "Add Department"
-                  : "Add Designation"}
-              </button>
-              
-              <button
-                type="button"
-                className="gl-btn gl-btn-secondary w-full md:w-auto md:flex-none"
-                onClick={fetchData}
-              >
-                <FiRefreshCw className="mr-1.5" /> Refresh
-              </button>
+              <div className="list-toolbar-actions">
+                <button
+                  type="button"
+                  className="gl-btn gl-btn-primary"
+                  onClick={handleAddClick}
+                >
+                  <FiPlus className="mr-1.5" />
+                  {activeTab === "departments"
+                    ? "Add Department"
+                    : "Add Designation"}
+                </button>
+                
+                <button
+                  type="button"
+                  className="gl-btn gl-btn-secondary"
+                  onClick={fetchData}
+                >
+                  <FiRefreshCw className="mr-1.5" /> Refresh
+                </button>
+              </div>
             </div>
           }
         />

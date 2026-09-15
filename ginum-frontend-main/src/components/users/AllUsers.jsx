@@ -261,8 +261,8 @@ function AllUsers() {
       </div>
 
       {/* Filters row */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
-        <div className="relative w-full md:max-w-md">
+      <div className="list-toolbar bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6">
+        <div className="list-toolbar-search relative">
           <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
           <input
             type="text"

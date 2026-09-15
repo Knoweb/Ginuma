@@ -259,9 +259,8 @@ const RequestsPage = () => {
       </div>
 
       {/* Controls & Actions */}
-      <div className="bg-white rounded-t-xl shadow-sm border-b border-gray-100 p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:w-auto md:flex-none flex-1">
-          <div className="relative w-full md:max-w-md">
+      <div className="list-toolbar bg-white rounded-t-xl shadow-sm border-b border-gray-100 p-4">
+        <div className="list-toolbar-search relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FiSearch className="text-gray-400" />
             </div>
