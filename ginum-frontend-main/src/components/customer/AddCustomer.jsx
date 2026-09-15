@@ -18,6 +18,7 @@ import {
 import { FaSpinner } from "react-icons/fa";
 import Alert from "../Alert/Alert";
 import { apiUrl } from "../../utils/api";
+import PageHeader from "../../components/common/PageHeader";
 
 export default function AddCustomerForm({ onClose, initialData }) {
   const navigate = useNavigate();
@@ -208,23 +209,19 @@ export default function AddCustomerForm({ onClose, initialData }) {
     <div className={`w-full ${onClose ? "p-2" : "p-6 bg-gray-50 min-h-screen"} max-w-5xl mx-auto space-y-6`}>
       {/* Header section (Only when rendered as page) */}
       {!onClose && (
-        <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="gl-heading flex items-center gap-2">
-              <FiUser className="text-blue-600" />
-              {initialData ? "Edit Customer" : "Create Customer"}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {initialData ? "Update customer details" : "Add a new customer to system contacts and ledger"}
-            </p>
-          </div>
-          <button
-            onClick={handleCancel}
-            className="gl-btn gl-btn-secondary"
-          >
-            <FiArrowLeft /> Back to Customers
-          </button>
-        </div>
+        <PageHeader
+          title={initialData ? "Edit Customer" : "Create Customer"}
+          subtitle={initialData ? "Update customer details" : "Add a new customer to system contacts and ledger"}
+          icon={FiUser}
+          actions={
+            <button
+              onClick={handleCancel}
+              className="gl-btn gl-btn-secondary"
+            >
+              <FiArrowLeft className="mr-2" /> Back to Customers
+            </button>
+          }
+        />
       )}
 
       {/* Main form */}

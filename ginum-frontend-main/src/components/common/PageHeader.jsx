@@ -5,12 +5,12 @@ const PageHeader = ({ title, subtitle, icon: Icon, actions, onBack, backText = "
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col sm:flex-row justify-between items-start gap-6 mb-6">
+      <div className="flex items-start gap-4 flex-1 min-w-0">
         {onBack && (
           <button
             onClick={typeof onBack === 'function' ? onBack : () => navigate(onBack)}
-            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-200/50 text-slate-500 transition-colors"
+            className="flex items-center justify-center w-10 h-10 mt-1 rounded-full hover:bg-slate-200/50 text-slate-500 transition-colors shrink-0"
             title={backText}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -19,18 +19,18 @@ const PageHeader = ({ title, subtitle, icon: Icon, actions, onBack, backText = "
           </button>
         )}
         {Icon && (
-          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/50 shadow-sm shrink-0">
+          <div className="flex items-center justify-center w-12 h-12 mt-0.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100/50 shadow-sm shrink-0">
             <Icon size={24} />
           </div>
         )}
-        <div>
-          <h1 className="gl-heading">{title}</h1>
-          {subtitle && <p className="gl-subheading mt-1">{subtitle}</p>}
+        <div className="min-w-0">
+          <h1 className="gl-heading truncate whitespace-normal">{title}</h1>
+          {subtitle && <p className="gl-subheading mt-1 max-w-2xl">{subtitle}</p>}
         </div>
       </div>
       
       {actions && (
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {actions}
         </div>
       )}

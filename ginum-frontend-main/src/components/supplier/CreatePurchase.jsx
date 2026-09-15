@@ -16,7 +16,8 @@ import { FaSpinner, FaTimes } from "react-icons/fa";
 import AddAccountForm from "../account/AddAccountForm";
 import NewProjectForm from "../projects/NewProjectForm";
 import { apiUrl } from "../../utils/api";
-import Alert from "../Alert/Alert";
+import Alert from "../../components/Alert/Alert";
+import PageHeader from "../../components/common/PageHeader";
 
 const API_BASE_URL = apiUrl;
 
@@ -572,23 +573,19 @@ const CreatePurchase = () => {
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-8 max-w-full overflow-x-hidden">
       {/* Header section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200">
-        <div>
-          <h1 className="gl-heading flex items-center gap-2">
-            <FiFileText className="text-blue-600" />
-            Create Purchase Order
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Create and save a new purchase order bill or expense invoice
-          </p>
-        </div>
-        <button
-          onClick={() => navigate("/supplier/purchase/all")}
-          className="gl-btn gl-btn-secondary"
-        >
-          <FiArrowLeft /> Cancel & Exit
-        </button>
-      </div>
+      <PageHeader
+        title="Create Purchase Order"
+        subtitle="Create and save a new purchase order bill or expense invoice"
+        icon={FiFileText}
+        actions={
+          <button
+            onClick={() => navigate("/supplier/purchase/all")}
+            className="gl-btn gl-btn-secondary"
+          >
+            <FiArrowLeft className="mr-2" /> Cancel & Exit
+          </button>
+        }
+      />
 
 
 

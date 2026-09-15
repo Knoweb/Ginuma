@@ -14,6 +14,7 @@ import {
 import { FaSpinner, FaTimes } from "react-icons/fa";
 import AddAccountForm from "../account/AddAccountForm";
 import NewProjectForm from "../projects/NewProjectForm";
+import PageHeader from "../../components/common/PageHeader";
 import { apiUrl } from "../../utils/api";
 import Alert from "../Alert/Alert";
 
@@ -498,23 +499,19 @@ const CreateSaleOrder = () => {
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-8 max-w-full overflow-x-hidden">
       {/* Header section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200">
-        <div>
-          <h1 className="gl-heading flex items-center gap-2">
-            <FiFileText className="text-blue-600" />
-            Create Sale Order
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Create and issue a new customer billing invoice order
-          </p>
-        </div>
-        <button
-          onClick={() => navigate("/customer/sales/all")}
-          className="gl-btn gl-btn-secondary"
-        >
-          <FiArrowLeft /> Cancel & Exit
-        </button>
-      </div>
+      <PageHeader
+        title="Create Sale Order"
+        subtitle="Create and issue a new customer billing invoice order"
+        icon={FiFileText}
+        actions={
+          <button
+            onClick={() => navigate("/customer/sales/all")}
+            className="gl-btn gl-btn-secondary"
+          >
+            <FiArrowLeft className="mr-2" /> Cancel & Exit
+          </button>
+        }
+      />
 
       {/* Segment Mode Switch */}
       <div className="flex bg-gray-200/60 p-1.5 rounded-xl w-fit border border-gray-300/40">

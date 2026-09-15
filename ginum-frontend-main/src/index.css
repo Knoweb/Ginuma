@@ -81,7 +81,7 @@
     @apply inline-flex items-center justify-center w-auto h-10 px-4 md:px-5 rounded-[10px] text-[14px] font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
   }
   .gl-btn-primary {
-    @apply bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 hover:to-indigo-500 border border-indigo-600/20;
+    @apply bg-indigo-600 text-white shadow-sm hover:bg-indigo-700 hover:shadow-md border border-transparent;
   }
   .gl-btn-secondary {
     @apply bg-white text-slate-700 border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-slate-300;

@@ -18,6 +18,7 @@ import {
 import { FaSpinner } from "react-icons/fa";
 import { apiUrl } from "../../utils/api";
 import Alert from "../../components/Alert/Alert";
+import PageHeader from "../../components/common/PageHeader";
 
 export default function AddSupplierForm({ onClose }) {
   const navigate = useNavigate();
@@ -191,23 +192,19 @@ export default function AddSupplierForm({ onClose }) {
     <div className={`w-full ${onClose ? "p-2" : "p-6 bg-gray-50 min-h-screen"} max-w-5xl mx-auto space-y-6`}>
       {/* Header section (Only when rendered as page) */}
       {!onClose && (
-        <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-          <div>
-            <h1 className="gl-heading flex items-center gap-2">
-              <FiUser className="text-blue-600" />
-              Create Supplier
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Add a new supplier to system contacts and purchases ledger
-            </p>
-          </div>
-          <button
-            onClick={handleCancel}
-            className="gl-btn gl-btn-secondary"
-          >
-            <FiArrowLeft /> Back to Suppliers
-          </button>
-        </div>
+        <PageHeader
+          title="Create Supplier"
+          subtitle="Add a new supplier to system contacts and purchases ledger"
+          icon={FiUser}
+          actions={
+            <button
+              onClick={handleCancel}
+              className="gl-btn gl-btn-secondary"
+            >
+              <FiArrowLeft className="mr-2" /> Back to Suppliers
+            </button>
+          }
+        />
       )}
 
       {/* Main form */}
