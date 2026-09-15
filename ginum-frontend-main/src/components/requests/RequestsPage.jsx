@@ -259,9 +259,9 @@ const RequestsPage = () => {
       </div>
 
       {/* Controls & Actions */}
-      <div className="bg-white rounded-t-xl shadow-sm border-b border-gray-100 p-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:w-auto lg:flex-none flex-1">
-          <div className="relative flex-1 min-w-0">
+      <div className="bg-white rounded-t-xl shadow-sm border-b border-gray-100 p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:w-auto md:flex-none flex-1">
+          <div className="relative w-full md:max-w-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FiSearch className="text-gray-400" />
             </div>
@@ -293,7 +293,7 @@ const RequestsPage = () => {
 
         <button 
           onClick={openCreateModal}
-          className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm w-full lg:w-auto lg:flex-none"
+          className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm w-full md:w-auto md:flex-none"
         >
           <FiPlus size={16} />
           New Request

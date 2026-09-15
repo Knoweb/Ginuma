@@ -224,7 +224,7 @@ function AllPurchases() {
               <button
                 type="button"
                 onClick={fetchPurchaseOrders}
-                className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
+                className="gl-btn gl-btn-secondary w-full md:w-auto md:flex-none"
               >
                 <FaSyncAlt className="mr-1.5" /> Refresh
               </button>
@@ -233,8 +233,8 @@ function AllPurchases() {
         />
 
         {/* Toolbar */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative flex-1 min-w-0">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="relative w-full md:max-w-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FaSearch className="text-gray-400" />
             </div>
