@@ -165,18 +165,18 @@ const BalanceSheet = () => {
             subtitle={`As of ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`}
             icon={FiPieChart}
             actions={
-              <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-auto flex-none">
+              <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-end">
                 {/* Action Buttons */}
                 <button
                   onClick={fetchBalanceSheet}
-                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
+                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
                   title="Refresh Data"
                 >
                   <FiRefreshCw className="mr-1.5" /> Refresh
                 </button>
                 <button 
                   onClick={handlePrint}
-                  className="gl-btn gl-btn-primary w-auto min-w-fit flex-none"
+                  className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none"
                 >
                   <FiPrinter className="mr-1.5" /> Print Sheet
                 </button>

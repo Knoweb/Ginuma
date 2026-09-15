@@ -384,12 +384,12 @@ export default function AgedPayables() {
         subtitle="Track and manage outstanding supplier liabilities across aging periods"
         icon={FiClock}
         actions={
-              <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-auto flex-none">
+              <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-end">
                 {/* Action Buttons */}
                 <button
                   type="button"
                   onClick={fetchPurchaseOrders}
-                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
+                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
                 >
                   <FaSyncAlt className="mr-1.5" />
                   Refresh
@@ -398,7 +398,7 @@ export default function AgedPayables() {
                 <button
                   type="button"
                   onClick={handleExport}
-                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
+                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
                 >
                   <FaFileExport className="mr-1.5" />
                   Export CSV
@@ -407,7 +407,7 @@ export default function AgedPayables() {
                 <button
                   type="button"
                   onClick={handleCreateBill}
-                  className="gl-btn gl-btn-primary w-auto min-w-fit flex-none"
+                  className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none"
                 >
                   <FaPlus className="mr-1.5" />
                   Create Bill
@@ -416,7 +416,7 @@ export default function AgedPayables() {
                 <button
                   type="button"
                   onClick={handleAddPayment}
-                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
+                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
                 >
                   <FaMoneyBillWave className="mr-1.5" />
                   Spend Money

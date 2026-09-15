@@ -254,24 +254,24 @@ const GeneralLedger = () => {
             subtitle="Detailed Account Posting Logs"
             icon={FiBookOpen}
             actions={
-              <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-auto flex-none">
+              <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-end">
                 {/* Action Buttons */}
                 <button
                   onClick={fetchGeneralLedger}
-                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
+                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
                   title="Refresh Report"
                 >
                   <FiRefreshCw className="mr-1.5" /> Refresh
                 </button>
                 <button
                   onClick={handleExportCSV}
-                  className="gl-btn gl-btn-secondary w-auto min-w-fit flex-none"
+                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
                 >
                   <FiDownload className="mr-1.5" /> Export CSV
                 </button>
                 <button 
                   onClick={handlePrint}
-                  className="gl-btn gl-btn-primary w-auto min-w-fit flex-none"
+                  className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none"
                 >
                   <FiPrinter className="mr-1.5" /> Print / PDF
                 </button>
