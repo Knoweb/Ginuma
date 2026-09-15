@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiUrl as API_BASE_URL } from "../../utils/api";
+import { apiUrl } from "../../utils/api";
 import PageHeader from "../common/PageHeader";
 import { FiClock } from "react-icons/fi";
 import {
@@ -384,7 +384,7 @@ export default function AgedPayables() {
         subtitle="Track and manage outstanding supplier liabilities across aging periods"
         icon={FiClock}
         actions={
-          <div className="flex flex-wrap gap-3 w-full lg:w-auto">
+          <>
             <button
               type="button"
               onClick={fetchPurchaseOrders}
@@ -420,7 +420,7 @@ export default function AgedPayables() {
               <FaMoneyBillWave className="mr-1.5" />
               Spend Money
             </button>
-          </div>
+          </>
         }
       />
 
@@ -430,29 +430,25 @@ export default function AgedPayables() {
           title="Total Outstanding"
           value={formatAmount(totals.totalOutstanding)}
           description="Total unpaid balance due"
-          icon={<FaMoneyBillWave className="text-blue-500" />}
-          borderColor="border-blue-500"
+          icon={<div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl"><FaMoneyBillWave size={20} /></div>}
         />
         <SummaryCard 
           title="Overdue Amount" 
           value={formatAmount(totals.totalOverdue)} 
           description="Past expected due date"
-          icon={<FaClock className="text-red-500" />}
-          borderColor="border-red-500"
+          icon={<div className="p-2.5 bg-red-50 text-red-600 rounded-xl"><FaClock size={20} /></div>}
         />
         <SummaryCard 
           title="Total Settled" 
           value={formatAmount(totals.totalPaid)} 
           description="Amounts paid on invoices"
-          icon={<FaCheckCircle className="text-green-500" />}
-          borderColor="border-green-500"
+          icon={<div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl"><FaCheckCircle size={20} /></div>}
         />
         <SummaryCard 
           title="Total Purchases" 
           value={formatAmount(totals.totalInvoiceAmount)} 
           description="All generated invoices"
-          icon={<FaReceipt className="text-indigo-500" />}
-          borderColor="border-indigo-500"
+          icon={<div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl"><FaReceipt size={20} /></div>}
         />
         <SummaryCard 
           title="Bills Breakdown" 
@@ -579,16 +575,16 @@ export default function AgedPayables() {
   );
 }
 
-const SummaryCard = ({ title, value, description, icon, borderColor }) => {
+const SummaryCard = ({ title, value, description, icon }) => {
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border-t-4 ${borderColor} border-l border-r border-b border-gray-200 p-5 flex flex-col justify-between h-32`}>
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between h-32 hover:border-slate-300 transition-colors">
       <div className="flex justify-between items-start">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">{title}</p>
+        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
         <div className="text-lg">{icon}</div>
       </div>
       <div>
-        <p className="text-xl font-extrabold text-gray-900 mt-1">{value}</p>
-        <p className="text-xs text-gray-400 mt-1 font-medium">{description}</p>
+        <p className="text-xl font-extrabold text-slate-900 mt-1">{value}</p>
+        <p className="text-xs text-slate-400 mt-1 font-medium">{description}</p>
       </div>
     </div>
   );

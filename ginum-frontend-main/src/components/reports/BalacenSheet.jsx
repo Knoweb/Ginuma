@@ -165,7 +165,7 @@ const BalanceSheet = () => {
             subtitle={`As of ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`}
             icon={FiPieChart}
             actions={
-              <div className="flex items-center gap-3 w-full sm:w-auto">
+              <>
                 <button
                   onClick={fetchBalanceSheet}
                   className="gl-btn gl-btn-secondary"
@@ -179,7 +179,7 @@ const BalanceSheet = () => {
                 >
                   <FiPrinter className="mr-1.5" /> Print Sheet
                 </button>
-              </div>
+              </>
             }
           />
         </div>

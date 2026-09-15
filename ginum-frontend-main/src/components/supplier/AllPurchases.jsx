@@ -5,6 +5,7 @@ import {
   FaSearch,
   FaSyncAlt,
   FaSpinner,
+  FaEye,
 } from "react-icons/fa";
 
 import { apiUrl as API_BASE_URL } from "../../utils/api";
@@ -219,7 +220,7 @@ function AllPurchases() {
           subtitle="View and manage all purchase orders and bills"
           icon={FiFileText}
           actions={
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto mt-4 md:mt-0">
+            <>
               <div className="relative flex-grow">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <FaSearch className="text-gray-400" />
@@ -240,7 +241,7 @@ function AllPurchases() {
               >
                 <FaSyncAlt className="mr-1.5" /> Refresh
               </button>
-            </div>
+            </>
           }
         />
 

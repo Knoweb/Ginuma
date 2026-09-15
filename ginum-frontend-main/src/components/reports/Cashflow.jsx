@@ -181,7 +181,7 @@ const Cashflow = () => {
             subtitle="Direct Method Report"
             icon={FiPieChart}
             actions={
-              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <>
                 <button
                   onClick={fetchCashFlow}
                   className="gl-btn gl-btn-secondary"
@@ -201,7 +201,7 @@ const Cashflow = () => {
                 >
                   <FiPrinter className="mr-1.5" /> Print / PDF
                 </button>
-              </div>
+              </>
             }
           />
         </div>

@@ -200,7 +200,7 @@ const IncomeStatement = () => {
             subtitle="Profit & Loss Statement"
             icon={FiPieChart}
             actions={
-              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <>
                 <button
                   onClick={fetchIncomeStatement}
                   className="gl-btn gl-btn-secondary"
@@ -220,7 +220,7 @@ const IncomeStatement = () => {
                 >
                   <FiPrinter className="mr-1.5" /> Print / PDF
                 </button>
-              </div>
+              </>
             }
           />
         </div>

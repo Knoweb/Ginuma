@@ -195,7 +195,7 @@ function AllSales() {
           subtitle="View and manage company sales orders"
           icon={FiFileText}
           actions={
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto mt-4 md:mt-0">
+            <>
               <div className="relative flex-grow">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <FaSearch className="text-slate-400" />
@@ -216,7 +216,7 @@ function AllSales() {
               >
                 <FaSyncAlt className="mr-1.5 text-indigo-500" /> Refresh
               </button>
-            </div>
+            </>
           }
         />
 

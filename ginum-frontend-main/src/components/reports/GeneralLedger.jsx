@@ -254,7 +254,7 @@ const GeneralLedger = () => {
             subtitle="Detailed Account Posting Logs"
             icon={FiBookOpen}
             actions={
-              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <>
                 <button
                   onClick={fetchGeneralLedger}
                   className="gl-btn gl-btn-secondary"
@@ -274,7 +274,7 @@ const GeneralLedger = () => {
                 >
                   <FiPrinter className="mr-1.5" /> Print / PDF
                 </button>
-              </div>
+              </>
             }
           />
         </div>

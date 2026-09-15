@@ -169,7 +169,7 @@ const TrialBalance = () => {
             subtitle="General Ledger Balances Verification"
             icon={FiPieChart}
             actions={
-              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+              <>
                 <button
                   onClick={fetchTrialBalance}
                   className="gl-btn gl-btn-secondary"
@@ -189,7 +189,7 @@ const TrialBalance = () => {
                 >
                   <FiPrinter className="mr-1.5" /> Print
                 </button>
-              </div>
+              </>
             }
           />
         </div>
