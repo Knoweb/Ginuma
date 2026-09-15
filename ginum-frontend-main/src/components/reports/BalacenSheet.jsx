@@ -168,14 +168,14 @@ const BalanceSheet = () => {
               <>
                 <button
                   onClick={fetchBalanceSheet}
-                  className="gl-btn gl-btn-secondary"
+                  className="gl-btn gl-btn-secondary w-auto flex-none"
                   title="Refresh Data"
                 >
                   <FiRefreshCw className="mr-1.5" /> Refresh
                 </button>
                 <button 
                   onClick={handlePrint}
-                  className="gl-btn gl-btn-secondary"
+                  className="gl-btn gl-btn-primary w-auto flex-none"
                 >
                   <FiPrinter className="mr-1.5" /> Print Sheet
                 </button>

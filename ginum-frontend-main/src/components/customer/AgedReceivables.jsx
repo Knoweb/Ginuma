@@ -443,7 +443,7 @@ export default function AgedReceivables() {
             <button
               type="button"
               onClick={fetchSalesOrders}
-              className="gl-btn gl-btn-secondary"
+              className="gl-btn gl-btn-secondary w-auto flex-none"
             >
               <FaSyncAlt className="mr-1.5" />
               Refresh
@@ -452,7 +452,7 @@ export default function AgedReceivables() {
             <button
               type="button"
               onClick={handleExport}
-              className="gl-btn gl-btn-secondary"
+              className="gl-btn gl-btn-secondary w-auto flex-none"
             >
               <FaFileExport className="mr-1.5" />
               Export CSV
@@ -461,7 +461,7 @@ export default function AgedReceivables() {
             <button
               type="button"
               onClick={handleCreateInvoice}
-              className="gl-btn gl-btn-primary"
+              className="gl-btn gl-btn-primary w-auto flex-none"
             >
               <FaPlus className="mr-1.5" />
               Create Invoice
@@ -470,7 +470,7 @@ export default function AgedReceivables() {
             <button
               type="button"
               onClick={handleAddPayment}
-              className="gl-btn gl-btn-primary"
+              className="gl-btn gl-btn-secondary w-auto flex-none"
             >
               <FaMoneyBillWave className="mr-1.5" />
               Receive Money

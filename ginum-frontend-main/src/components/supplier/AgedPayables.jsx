@@ -388,7 +388,7 @@ export default function AgedPayables() {
             <button
               type="button"
               onClick={fetchPurchaseOrders}
-              className="gl-btn gl-btn-secondary"
+              className="gl-btn gl-btn-secondary w-auto flex-none"
             >
               <FaSyncAlt className="mr-1.5" />
               Refresh
@@ -397,7 +397,7 @@ export default function AgedPayables() {
             <button
               type="button"
               onClick={handleExport}
-              className="gl-btn gl-btn-secondary"
+              className="gl-btn gl-btn-secondary w-auto flex-none"
             >
               <FaFileExport className="mr-1.5" />
               Export CSV
@@ -406,7 +406,7 @@ export default function AgedPayables() {
             <button
               type="button"
               onClick={handleCreateBill}
-              className="gl-btn gl-btn-primary"
+              className="gl-btn gl-btn-primary w-auto flex-none"
             >
               <FaPlus className="mr-1.5" />
               Create Bill
@@ -415,7 +415,7 @@ export default function AgedPayables() {
             <button
               type="button"
               onClick={handleAddPayment}
-              className="gl-btn gl-btn-primary"
+              className="gl-btn gl-btn-secondary w-auto flex-none"
             >
               <FaMoneyBillWave className="mr-1.5" />
               Spend Money

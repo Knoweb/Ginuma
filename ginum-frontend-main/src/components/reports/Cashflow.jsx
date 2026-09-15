@@ -184,20 +184,20 @@ const Cashflow = () => {
               <>
                 <button
                   onClick={fetchCashFlow}
-                  className="gl-btn gl-btn-secondary"
+                  className="gl-btn gl-btn-secondary w-auto flex-none"
                   title="Refresh Report"
                 >
                   <FiRefreshCw className="mr-1.5" /> Refresh
                 </button>
                 <button
                   onClick={handleExportCSV}
-                  className="gl-btn gl-btn-secondary"
+                  className="gl-btn gl-btn-secondary w-auto flex-none"
                 >
                   <FiDownload className="mr-1.5" /> Export CSV
                 </button>
                 <button 
                   onClick={handlePrint}
-                  className="gl-btn gl-btn-primary"
+                  className="gl-btn gl-btn-primary w-auto flex-none"
                 >
                   <FiPrinter className="mr-1.5" /> Print / PDF
                 </button>
