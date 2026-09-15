@@ -439,44 +439,44 @@ export default function AgedReceivables() {
         subtitle="Track and manage outstanding customer balances across aging periods"
         icon={FiClock}
         actions={
-              <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-end">
-                {/* Action Buttons */}
-                <button
-                  type="button"
-                  onClick={fetchSalesOrders}
-                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
-                >
-                  <FaSyncAlt className="mr-1.5" />
-                  Refresh
-                </button>
+          <>
+            {/* Action Buttons */}
+            <button
+              type="button"
+              onClick={fetchSalesOrders}
+              className="gl-btn gl-btn-secondary w-auto flex-none"
+            >
+              <FaSyncAlt className="mr-1.5" />
+              Refresh
+            </button>
 
-                <button
-                  type="button"
-                  onClick={handleExport}
-                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
-                >
-                  <FaFileExport className="mr-1.5" />
-                  Export CSV
-                </button>
+            <button
+              type="button"
+              onClick={handleExport}
+              className="gl-btn gl-btn-secondary w-auto flex-none"
+            >
+              <FaFileExport className="mr-1.5" />
+              Export CSV
+            </button>
 
-                <button
-                  type="button"
-                  onClick={handleCreateInvoice}
-                  className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none"
-                >
-                  <FaPlus className="mr-1.5" />
-                  Create Invoice
-                </button>
+            <button
+              type="button"
+              onClick={handleCreateInvoice}
+              className="gl-btn gl-btn-primary w-auto flex-none"
+            >
+              <FaPlus className="mr-1.5" />
+              Create Invoice
+            </button>
 
-                <button
-                  type="button"
-                  onClick={handleAddPayment}
-                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
-                >
-                  <FaMoneyBillWave className="mr-1.5" />
-                  Receive Money
-                </button>
-              </div>
+            <button
+              type="button"
+              onClick={handleAddPayment}
+              className="gl-btn gl-btn-secondary w-auto flex-none"
+            >
+              <FaMoneyBillWave className="mr-1.5" />
+              Receive Money
+            </button>
+          </>
         }
       />
 
@@ -525,7 +525,7 @@ export default function AgedReceivables() {
       {/* Filters and Tabs */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 space-y-4">
         <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-          <div className="relative flex-1 min-w-0">
+          <div className="relative flex-grow max-w-md">
             <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"

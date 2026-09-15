@@ -506,7 +506,7 @@ const CreateSaleOrder = () => {
         actions={
           <button
             onClick={() => navigate("/customer/sales/all")}
-            className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
+            className="gl-btn gl-btn-secondary"
           >
             <FiArrowLeft className="mr-2" /> Cancel & Exit
           </button>

@@ -216,7 +216,7 @@ export default function AddCustomerForm({ onClose, initialData }) {
           actions={
             <button
               onClick={handleCancel}
-              className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
+              className="gl-btn gl-btn-secondary"
             >
               <FiArrowLeft className="mr-2" /> Back to Customers
             </button>

@@ -222,6 +222,14 @@ function AllUsers() {
         title="System Users"
         subtitle="Manage company user profiles, update access permissions, and roles"
         icon={FiUsers}
+        actions={
+          <button
+            onClick={() => navigate("/users/new")}
+            className="gl-btn gl-btn-primary"
+          >
+            <FiUserPlus className="mr-1.5" /> Assign User Access
+          </button>
+        }
       />
 
       {/* Stats Cards */}
@@ -261,8 +269,8 @@ function AllUsers() {
       </div>
 
       {/* Filters row */}
-      <div className="list-toolbar bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6">
-        <div className="list-toolbar-search relative">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+        <div className="relative flex-grow max-w-md">
           <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
           <input
             type="text"
@@ -273,7 +281,7 @@ function AllUsers() {
           />
         </div>
 
-        <div className="list-toolbar-actions">
+        <div className="flex items-center gap-3">
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
@@ -292,12 +300,6 @@ function AllUsers() {
                   </option>
                 ))}
           </select>
-          <button
-            onClick={() => navigate("/users/new")}
-            className="gl-btn gl-btn-primary"
-          >
-            <FiUserPlus className="mr-1.5" /> Assign User Access
-          </button>
         </div>
       </div>
 

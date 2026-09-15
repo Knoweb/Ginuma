@@ -5,8 +5,8 @@ const PageHeader = ({ title, subtitle, icon: Icon, actions, onBack, backText = "
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between mb-6">
-      <div className="flex items-start gap-3 min-w-0 flex-1">
+    <div className="flex items-start justify-between gap-6 mb-6">
+      <div className="flex-1 min-w-0 flex items-start gap-4">
         {onBack && (
           <button
             onClick={typeof onBack === 'function' ? onBack : () => navigate(onBack)}
@@ -30,7 +30,7 @@ const PageHeader = ({ title, subtitle, icon: Icon, actions, onBack, backText = "
       </div>
       
       {actions && (
-        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto xl:justify-end flex-none">
+        <div className="gl-page-actions">
           {actions}
         </div>
       )}

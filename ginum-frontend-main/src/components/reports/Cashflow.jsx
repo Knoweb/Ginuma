@@ -181,28 +181,28 @@ const Cashflow = () => {
             subtitle="Direct Method Report"
             icon={FiPieChart}
             actions={
-              <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-end">
+              <>
                 {/* Action Buttons */}
                 <button
                   onClick={fetchCashFlow}
-                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
+                  className="gl-btn gl-btn-secondary w-auto flex-none"
                   title="Refresh Report"
                 >
                   <FiRefreshCw className="mr-1.5" /> Refresh
                 </button>
                 <button
                   onClick={handleExportCSV}
-                  className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
+                  className="gl-btn gl-btn-secondary w-auto flex-none"
                 >
                   <FiDownload className="mr-1.5" /> Export CSV
                 </button>
                 <button 
                   onClick={handlePrint}
-                  className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none"
+                  className="gl-btn gl-btn-primary w-auto flex-none"
                 >
                   <FiPrinter className="mr-1.5" /> Print / PDF
                 </button>
-              </div>
+              </>
             }
           />
         </div>
@@ -236,7 +236,7 @@ const Cashflow = () => {
 
             {/* Standard Period Inputs */}
             {filterType === "period" && (
-              <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto lg:flex-none">
+              <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-gray-500 mb-1.5">Financial Year</span>
                   <select
@@ -287,7 +287,7 @@ const Cashflow = () => {
 
             {/* Custom Date Inputs */}
             {filterType === "custom" && (
-              <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto lg:flex-none">
+              <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-gray-500 mb-1.5">Start Date</span>
                   <div className="relative">

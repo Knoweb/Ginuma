@@ -232,7 +232,7 @@ const Depreciation = () => {
         actions={
           <button
             onClick={() => setShowAddModal(true)}
-            className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none"
+            className="gl-btn gl-btn-primary"
           >
             <FaPlus className="mr-1.5" /> Add Fixed Asset
           </button>

@@ -196,32 +196,29 @@ function AllSales() {
           icon={FiFileText}
           actions={
             <>
+              <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaSearch className="text-slate-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search sales orders..."
+                  className="gl-input pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
               <button
                 type="button"
                 onClick={fetchSalesOrders}
-                className="gl-btn gl-btn-secondary w-full md:w-auto md:flex-none"
+                className="gl-btn gl-btn-secondary"
               >
                 <FaSyncAlt className="mr-1.5 text-indigo-500" /> Refresh
               </button>
             </>
           }
         />
-
-        {/* Toolbar */}
-        <div className="list-toolbar">
-          <div className="list-toolbar-search relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaSearch className="text-slate-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search sales orders..."
-              className="gl-input pl-10 w-full"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
 
         {filteredSalesOrders.length === 0 ? (
           <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
@@ -314,7 +311,7 @@ function AllSales() {
                           <button
                             type="button"
                             onClick={() => openViewModal(order)}
-                            className="gl-btn gl-btn-secondary h-8 px-3 text-xs w-full md:w-auto md:flex-none"
+                            className="gl-btn gl-btn-secondary h-8 px-3 text-xs"
                           >
                             <FaEye className="mr-1.5" /> View
                           </button>

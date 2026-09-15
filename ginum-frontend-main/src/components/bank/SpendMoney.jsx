@@ -383,7 +383,7 @@ const SpendMoney = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate("/bank/receive-money")}
-              className="gl-btn gl-btn-secondary animate-pulse w-full lg:w-auto lg:flex-none"
+              className="gl-btn gl-btn-secondary animate-pulse"
             >
               Switch to Receive Money <FiArrowRight className="ml-1.5" />
             </button>

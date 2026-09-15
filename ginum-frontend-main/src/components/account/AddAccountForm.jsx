@@ -280,7 +280,7 @@ const AddAccountForm = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="gl-btn gl-btn-primary flex items-center gap-2 w-full lg:w-auto lg:flex-none"
+            className="gl-btn gl-btn-primary flex items-center gap-2"
           >
             {isSubmitting ? (
               <>

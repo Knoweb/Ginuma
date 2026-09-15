@@ -199,7 +199,7 @@ export default function AddSupplierForm({ onClose }) {
           actions={
             <button
               onClick={handleCancel}
-              className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
+              className="gl-btn gl-btn-secondary"
             >
               <FiArrowLeft className="mr-2" /> Back to Suppliers
             </button>

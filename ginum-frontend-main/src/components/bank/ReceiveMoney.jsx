@@ -241,13 +241,13 @@ const ReceiveMoney = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate("/bank/spend-money")}
-              className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
+              className="gl-btn gl-btn-secondary"
             >
               <FiArrowLeft className="mr-1.5" /> Switch to Spend Money
             </button>
             <button
               onClick={() => navigate("/customer/sales/all")}
-              className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
+              className="gl-btn gl-btn-secondary"
             >
               <FaArrowLeft className="mr-1.5" /> Back to Sales
             </button>

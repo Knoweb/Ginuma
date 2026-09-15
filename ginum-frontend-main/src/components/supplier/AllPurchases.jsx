@@ -221,32 +221,29 @@ function AllPurchases() {
           icon={FiFileText}
           actions={
             <>
+              <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaSearch className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search purchase orders..."
+                  className="gl-input pl-10 w-full"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
               <button
                 type="button"
                 onClick={fetchPurchaseOrders}
-                className="gl-btn gl-btn-secondary w-full md:w-auto md:flex-none"
+                className="gl-btn gl-btn-secondary"
               >
                 <FaSyncAlt className="mr-1.5" /> Refresh
               </button>
             </>
           }
         />
-
-        {/* Toolbar */}
-        <div className="list-toolbar">
-          <div className="list-toolbar-search relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaSearch className="text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search purchase orders..."
-              className="gl-input pl-10 w-full"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
 
         {filteredPurchaseOrders.length === 0 ? (
           <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">

@@ -228,32 +228,34 @@ const CustomersList = () => {
         title="Customers"
         subtitle="View and manage company customers"
         icon={FiUsers}
-      />
+        actions={
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+            <div className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search customers..."
+                className="gl-input pl-10 w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
 
-      {/* Toolbar */}
-      <div className="list-toolbar mb-6">
-        <div className="list-toolbar-search relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FiSearch className="text-gray-400" />
+            <button
+              type="button"
+              onClick={() => {
+                console.log("Add Customer clicked");
+                navigate("/customer/new");
+              }}
+              className="gl-btn gl-btn-primary"
+            >
+              <FiPlus className="mr-1.5" /> Add Customer
+            </button>
           </div>
-          <input
-            type="text"
-            placeholder="Search customers by name, code, or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="gl-input pl-11 w-full"
-          />
-        </div>
-
-        <div className="list-toolbar-actions">
-          <button
-            onClick={() => navigate("/customer/new")}
-            className="gl-btn gl-btn-primary"
-          >
-            <FiUserPlus className="mr-1.5" /> Add Customer
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {filteredCustomers.length === 0 ? (
         <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">

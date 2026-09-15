@@ -380,32 +380,30 @@ const SuppliersList = () => {
           title="Suppliers"
           subtitle="View and manage company suppliers"
           icon={FiTruck}
+          actions={
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+              <div className="relative">
+                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-base" />
+                <input
+                  type="text"
+                  placeholder="Search suppliers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="gl-input pl-11 w-full sm:w-70"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleAddSupplier}
+                className="gl-btn gl-btn-primary"
+              >
+                <FaPlus className="mr-1.5" />
+                Add Supplier
+              </button>
+            </div>
+          }
         />
-
-        {/* Toolbar */}
-        <div className="list-toolbar mb-6">
-          <div className="list-toolbar-search relative">
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-base" />
-            <input
-              type="text"
-              placeholder="Search suppliers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="gl-input pl-11 w-full"
-            />
-          </div>
-
-          <div className="list-toolbar-actions">
-            <button
-              type="button"
-              onClick={handleAddSupplier}
-              className="gl-btn gl-btn-primary"
-            >
-              <FaPlus className="mr-1.5" />
-              Add Supplier
-            </button>
-          </div>
-        </div>
 
         <div className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">

@@ -259,8 +259,9 @@ const RequestsPage = () => {
       </div>
 
       {/* Controls & Actions */}
-      <div className="list-toolbar bg-white rounded-t-xl shadow-sm border-b border-gray-100 p-4">
-        <div className="list-toolbar-search relative">
+      <div className="bg-white rounded-t-xl shadow-sm border-b border-gray-100 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 flex-1">
+          <div className="relative flex-1 max-w-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FiSearch className="text-gray-400" />
             </div>
@@ -272,33 +273,32 @@ const RequestsPage = () => {
               className="pl-10 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-colors"
             />
           </div>
-          <div className="list-toolbar-actions">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiFilter className="text-gray-400" />
-              </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="pl-10 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent appearance-none cursor-pointer pr-8"
-              >
-                <option value="All">All Status</option>
-                <option value="PENDING">Pending</option>
-                <option value="IN_REVIEW">In Review</option>
-                <option value="APPROVED">Approved</option>
-                <option value="REJECTED">Rejected</option>
-              </select>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiFilter className="text-gray-400" />
             </div>
-
-            <button 
-              onClick={openCreateModal}
-              className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm"
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="pl-10 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent appearance-none cursor-pointer pr-8"
             >
-              <FiPlus size={16} />
-              New Request
-            </button>
+              <option value="All">All Status</option>
+              <option value="PENDING">Pending</option>
+              <option value="IN_REVIEW">In Review</option>
+              <option value="APPROVED">Approved</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
           </div>
         </div>
+
+        <button 
+          onClick={openCreateModal}
+          className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors shadow-sm"
+        >
+          <FiPlus size={16} />
+          New Request
+        </button>
+      </div>
 
       {/* Table / List */}
       <div className="bg-white rounded-b-xl shadow-sm overflow-hidden min-h-[400px]">

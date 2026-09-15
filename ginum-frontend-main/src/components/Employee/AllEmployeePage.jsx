@@ -155,31 +155,29 @@ const AllEmployeePage = () => {
         title="Employees"
         subtitle="Manage your company's workforce"
         icon={FiUsers}
-      />
-
-      {/* Toolbar */}
-      <div className="list-toolbar mb-6">
-        <div className="list-toolbar-search relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FiSearch className="text-slate-400" />
+        actions={
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-slate-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search employees..."
+                className="gl-input pl-10 h-10 w-full sm:w-64"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button 
+              onClick={() => navigate("/employee/new")} 
+              className="gl-btn gl-btn-primary"
+            >
+              <FiPlus className="mr-1.5" /> Add Employee
+            </button>
           </div>
-          <input
-            type="text"
-            placeholder="Search employees..."
-            className="gl-input pl-10 h-10 w-full"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="list-toolbar-actions">
-          <button 
-            onClick={() => navigate("/employee/new")} 
-            className="gl-btn gl-btn-primary"
-          >
-            <FiPlus className="mr-1.5" /> Add Employee
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {filteredEmployees.length === 0 ? (
         <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
