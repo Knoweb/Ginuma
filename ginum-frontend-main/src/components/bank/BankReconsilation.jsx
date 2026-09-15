@@ -230,14 +230,14 @@ function BankReconsilation() {
           <div className="flex flex-wrap gap-3 w-full lg:w-auto">
             <button
               onClick={fetchTransactions}
-              className="gl-btn gl-btn-secondary"
+              className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
             >
               <MdRefresh className={`mr-1.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </button>
             <button
               onClick={handleExportCSV}
-              className="gl-btn gl-btn-secondary"
+              className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
             >
               <FaFileCsv className="mr-1.5" />
               Export CSV

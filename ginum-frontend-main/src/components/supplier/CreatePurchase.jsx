@@ -580,7 +580,7 @@ const CreatePurchase = () => {
         actions={
           <button
             onClick={() => navigate("/supplier/purchase/all")}
-            className="gl-btn gl-btn-secondary"
+            className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
           >
             <FiArrowLeft className="mr-2" /> Cancel & Exit
           </button>

@@ -367,7 +367,7 @@ const DepartmentsList = () => {
           subtitle="Manage company departments and structural hierarchy"
           icon={FiGrid}
           actions={
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto lg:flex-none">
               <div className="relative flex-grow">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <FiSearch className="text-gray-400" />
@@ -383,7 +383,7 @@ const DepartmentsList = () => {
 
               <button
                 type="button"
-                className="gl-btn gl-btn-primary"
+                className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none"
                 onClick={handleAddClick}
               >
                 <FiPlus className="mr-1.5" />
@@ -394,7 +394,7 @@ const DepartmentsList = () => {
               
               <button
                 type="button"
-                className="gl-btn gl-btn-secondary"
+                className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
                 onClick={fetchData}
               >
                 <FiRefreshCw className="mr-1.5" /> Refresh

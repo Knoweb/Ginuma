@@ -320,14 +320,14 @@ const NewProjectForm = () => {
             type="button"
             onClick={resetForm}
             disabled={saving}
-            className="gl-btn gl-btn-secondary"
+            className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
           >
             Reset
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="gl-btn gl-btn-primary flex items-center gap-2"
+            className="gl-btn gl-btn-primary flex items-center gap-2 w-full lg:w-auto lg:flex-none"
           >
             {saving ? (
               <><FaSpinner className="animate-spin" /> Saving Project...</>

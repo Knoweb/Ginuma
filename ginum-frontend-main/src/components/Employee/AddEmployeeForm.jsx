@@ -380,12 +380,12 @@ const AddEmployeeForm = ({ onClose }) => {
         <div className="flex justify-end gap-3">
           {onClose && (
             <button type="button" onClick={onClose} disabled={isSubmitting}
-              className="gl-btn gl-btn-secondary">
+              className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none">
               Cancel
             </button>
           )}
           <button type="submit" disabled={isSubmitting}
-            className="gl-btn gl-btn-primary flex items-center gap-2">
+            className="gl-btn gl-btn-primary flex items-center gap-2 w-full lg:w-auto lg:flex-none">
             {isSubmitting ? (
               <><FaSpinner className="animate-spin" /> Saving Employee...</>
             ) : (

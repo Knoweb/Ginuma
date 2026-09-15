@@ -407,14 +407,14 @@ const AddUserForm = () => {
             type="button"
             onClick={() => navigate("/users/all")}
             disabled={isLoading}
-            className="gl-btn gl-btn-secondary"
+            className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isLoading}
-            className="gl-btn gl-btn-primary flex items-center gap-2"
+            className="gl-btn gl-btn-primary flex items-center gap-2 w-full lg:w-auto lg:flex-none"
           >
             {isLoading ? (
               <><FaSpinner className="animate-spin" /> Assigning User Role...</>
@@ -449,4 +449,4 @@ const AddUserForm = () => {
   );
 };
 
-export default AddUserForm;
+export default AddUserForm;

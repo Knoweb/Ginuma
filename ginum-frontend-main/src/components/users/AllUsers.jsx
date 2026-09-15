@@ -261,7 +261,7 @@ function AllUsers() {
       </div>
 
       {/* Filters row */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between mb-6">
         <div className="relative flex-1 min-w-0">
           <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
           <input
@@ -273,7 +273,7 @@ function AllUsers() {
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:w-auto lg:flex-none">
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
@@ -294,7 +294,7 @@ function AllUsers() {
           </select>
           <button
             onClick={() => navigate("/users/new")}
-            className="gl-btn gl-btn-primary w-full md:w-auto md:flex-none"
+            className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none"
           >
             <FiUserPlus className="mr-1.5" /> Assign User Access
           </button>

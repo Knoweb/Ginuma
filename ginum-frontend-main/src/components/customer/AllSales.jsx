@@ -199,7 +199,7 @@ function AllSales() {
               <button
                 type="button"
                 onClick={fetchSalesOrders}
-                className="gl-btn gl-btn-secondary flex-none w-auto"
+                className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
               >
                 <FaSyncAlt className="mr-1.5 text-indigo-500" /> Refresh
               </button>
@@ -208,7 +208,7 @@ function AllSales() {
         />
 
         {/* Toolbar */}
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative flex-1 min-w-0">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <FaSearch className="text-slate-400" />
@@ -314,7 +314,7 @@ function AllSales() {
                           <button
                             type="button"
                             onClick={() => openViewModal(order)}
-                            className="gl-btn gl-btn-secondary h-8 px-3 text-xs"
+                            className="gl-btn gl-btn-secondary h-8 px-3 text-xs w-full lg:w-auto lg:flex-none"
                           >
                             <FaEye className="mr-1.5" /> View
                           </button>

@@ -408,7 +408,7 @@ const DashboardPage = () => {
         subtitle="A clear snapshot of your business performance"
         icon={FiPieChart}
         actions={
-          <button onClick={fetchData} className="gl-btn gl-btn-secondary">
+          <button onClick={fetchData} className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none">
             <FiRefreshCw className="mr-1.5" /> Refresh
           </button>
         }

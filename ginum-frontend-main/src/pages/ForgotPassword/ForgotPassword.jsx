@@ -270,7 +270,7 @@ const ForgotPassword = () => {
              <div className="fp-success-icon">✓</div>
              <h1 className="gl-heading">Password Reset!</h1>
              <p className="gl-subheading">{successMsg}</p>
-             <Link to="/login" className="gl-btn gl-btn-primary" style={{marginTop: '2rem'}}>
+             <Link to="/login" className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none" style={{marginTop: '2rem'}}>
                Return to Login
              </Link>
           </div>
@@ -300,7 +300,7 @@ const ForgotPassword = () => {
               </div>
 
               <div className="gl-actions" style={{ marginTop: '2rem' }}>
-                <button type="submit" className="gl-btn gl-btn-primary" disabled={isLoading}>
+                <button type="submit" className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none" disabled={isLoading}>
                   {isLoading ? "Sending..." : "Send Reset Code"}
                 </button>
               </div>
@@ -358,7 +358,7 @@ const ForgotPassword = () => {
               </div>
 
               <div className="gl-actions" style={{ marginTop: '2rem' }}>
-                <button type="submit" className="gl-btn gl-btn-primary" disabled={isLoading}>
+                <button type="submit" className="gl-btn gl-btn-primary w-full lg:w-auto lg:flex-none" disabled={isLoading}>
                   {isLoading ? "Resetting..." : "Set New Password"}
                 </button>
               </div>

@@ -98,7 +98,7 @@ function AllTransactions() {
           actions={
             <button
               onClick={() => navigate("/transactions/new")}
-              className="gl-btn gl-btn-secondary"
+              className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
             >
               <FiDownload className="mr-1.5" /> Export
             </button>

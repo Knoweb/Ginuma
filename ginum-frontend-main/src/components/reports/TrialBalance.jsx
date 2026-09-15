@@ -224,7 +224,7 @@ const TrialBalance = () => {
 
             {/* Standard Period Inputs */}
             {filterType === "period" && (
-              <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+              <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto lg:flex-none">
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-gray-500 mb-1.5">Financial Year</span>
                   <select
@@ -275,7 +275,7 @@ const TrialBalance = () => {
 
             {/* Custom Date Inputs */}
             {filterType === "custom" && (
-              <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+              <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto lg:flex-none">
                 <div className="flex flex-col">
                   <span className="text-xs font-bold text-gray-500 mb-1.5">Start Date</span>
                   <div className="relative">

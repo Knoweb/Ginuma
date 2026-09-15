@@ -194,7 +194,7 @@ const CreateGeneralJournalTransaction = () => {
           actions={
             <button
               onClick={() => navigate("/transactions/all")}
-              className="gl-btn gl-btn-secondary"
+              className="gl-btn gl-btn-secondary w-full lg:w-auto lg:flex-none"
             >
               <FiArrowLeft className="mr-1.5" /> Back to Transactions
             </button>
@@ -458,7 +458,7 @@ const CreateGeneralJournalTransaction = () => {
             type="button"
             onClick={handleSaveTransaction}
             disabled={!isBalanced || isSaving}
-            className="gl-btn gl-btn-primary flex items-center gap-2"
+            className="gl-btn gl-btn-primary flex items-center gap-2 w-full lg:w-auto lg:flex-none"
           >
             {isSaving ? (
               <><FaSpinner className="animate-spin" /> Saving...</>
