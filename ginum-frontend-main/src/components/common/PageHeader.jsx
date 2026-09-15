@@ -30,7 +30,7 @@ const PageHeader = ({ title, subtitle, icon: Icon, actions, onBack, backText = "
       </div>
       
       {actions && (
-        <div className="flex items-center justify-end gap-2 flex-wrap flex-none w-auto">
+        <div className="gl-page-actions">
           {actions}
         </div>
       )}
