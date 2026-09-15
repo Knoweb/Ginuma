@@ -1,4 +1,6 @@
 import React from "react";
+import { FiUsers } from "react-icons/fi";
+import PageHeader from "../common/PageHeader";
 
 const CompanyRequests = () => {
   const companies = [
@@ -21,7 +23,9 @@ const CompanyRequests = () => {
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Company Requests</h1>
+      <div className="mb-8">
+        <PageHeader title="Company Requests" subtitle="Manage new company registrations" icon={FiUsers} />
+      </div>
       <table className="w-full bg-white shadow-md rounded-lg overflow-hidden">
         <thead>
           <tr className="bg-gray-200 text-left">

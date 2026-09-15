@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { FiPrinter, FiDownload, FiRefreshCw, FiCheckCircle, FiAlertTriangle, FiDollarSign, FiActivity, FiPieChart } from "react-icons/fi";
+import { FiPrinter, FiDownload, FiRefreshCw, FiCheckCircle, FiAlertTriangle, FiDollarSign, FiActivity,
+  FiPieChart,
+} from "react-icons/fi";
 import { apiUrl } from "../../utils/api";
+import PageHeader from "../common/PageHeader";
 
 const BalanceSheet = () => {
   const [reportData, setReportData] = useState({
@@ -156,26 +159,29 @@ const BalanceSheet = () => {
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200 print:hidden">
-          <div>
-            <h1 className="gl-heading">Balance Sheet</h1>
-            <p className="text-sm text-gray-500 mt-1">As of {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</p>
-          </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button
-              onClick={fetchBalanceSheet}
-              className="p-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition border border-gray-200 cursor-pointer bg-white"
-              title="Refresh Data"
-            >
-              <FiRefreshCw />
-            </button>
-            <button 
-              onClick={handlePrint}
-              className="px-4 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-semibold text-sm transition flex items-center gap-2 cursor-pointer bg-white"
-            >
-              <FiPrinter /> Print Sheet
-            </button>
-          </div>
+        <div className="print:hidden">
+          <PageHeader
+            title="Balance Sheet"
+            subtitle={`As of ${new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`}
+            icon={FiPieChart}
+            actions={
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <button
+                  onClick={fetchBalanceSheet}
+                  className="gl-btn gl-btn-secondary"
+                  title="Refresh Data"
+                >
+                  <FiRefreshCw className="mr-1.5" /> Refresh
+                </button>
+                <button 
+                  onClick={handlePrint}
+                  className="gl-btn gl-btn-secondary"
+                >
+                  <FiPrinter className="mr-1.5" /> Print Sheet
+                </button>
+              </div>
+            }
+          />
         </div>
 
         {/* Print-Only Header */}

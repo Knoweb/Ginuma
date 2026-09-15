@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { FiBriefcase } from "react-icons/fi";
+import PageHeader from "../common/PageHeader";
 
 const AllCompanies = () => {
   const [showPopup, setShowPopup] = useState(null);
@@ -53,7 +55,9 @@ const AllCompanies = () => {
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen flex flex-col">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">All Companies</h1>
+      <div className="mb-8">
+        <PageHeader title="All Companies" subtitle="Manage registered companies and statuses" icon={FiBriefcase} />
+      </div>
       <div className="overflow-x-auto flex-grow">
         <table className="w-full bg-white shadow-lg rounded-lg overflow-hidden">
           <thead>

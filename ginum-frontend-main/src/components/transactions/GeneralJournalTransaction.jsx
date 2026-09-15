@@ -7,6 +7,7 @@ import AddAccountForm from "../account/AddAccountForm";
 import NewProjectForm from "../projects/NewProjectForm";
 import api from "../../utils/api";
 import Alert from "../Alert/Alert";
+import PageHeader from "../common/PageHeader";
 
 const tinyInput =
   "w-full px-2 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 focus:border-blue-400 bg-white transition-all";
@@ -185,26 +186,20 @@ const CreateGeneralJournalTransaction = () => {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 max-w-5xl mx-auto">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center flex-shrink-0">
-            <MdSwapHoriz className="text-blue-600 text-2xl" />
-          </div>
-          <div>
-            <h1 className="gl-heading">
-              General Journal Entry
-            </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
-              Record a manual double-entry accounting transaction
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => navigate("/transactions/all")}
-          className="px-4 py-2 text-sm border border-gray-300 rounded-xl text-gray-600 hover:bg-gray-100 font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
-        >
-          <FiArrowLeft /> Back to Transactions
-        </button>
+      <div className="max-w-5xl mx-auto mb-8">
+        <PageHeader
+          title="General Journal Entry"
+          subtitle="Record a manual double-entry accounting transaction"
+          icon={MdSwapHoriz}
+          actions={
+            <button
+              onClick={() => navigate("/transactions/all")}
+              className="gl-btn gl-btn-secondary"
+            >
+              <FiArrowLeft className="mr-1.5" /> Back to Transactions
+            </button>
+          }
+        />
       </div>
 
       <div className="space-y-6 max-w-5xl mx-auto">

@@ -15,6 +15,7 @@ import {
 } from "react-icons/fi";
 import { apiUrl } from "../../utils/api";
 import Alert from "../Alert/Alert";
+import PageHeader from "../common/PageHeader";
 import EditProjectModal from "./EditProjectModal";
 import ViewProjectModal from "./ViewProjectModal";
 
@@ -229,35 +230,36 @@ const AllProjects = () => {
 
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
-          Projects
-        </h1>
+      <PageHeader
+        title="Projects"
+        subtitle="Manage and track all company projects"
+        icon={FiFolder}
+        actions={
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+            <div className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400" />
+              </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiSearch className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search projects..."
+                className="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
 
-            <input
-              type="text"
-              placeholder="Search projects..."
-              className="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <button
+              type="button"
+              onClick={() => navigate("/projects/new")}
+              className="gl-btn gl-btn-primary"
+            >
+              <FiPlus className="mr-1.5" /> Add Project
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={() => navigate("/projects/new")}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-          >
-            <FiPlus /> Add Project
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {filteredProjects.length === 0 ? (
         <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">

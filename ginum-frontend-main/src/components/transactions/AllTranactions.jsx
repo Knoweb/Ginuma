@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FiSearch, FiDownload, FiFilter, FiX } from "react-icons/fi";
+import { FiSearch, FiDownload, FiFilter, FiX, FiList } from "react-icons/fi";
 import api from "../../utils/api";
 import { useNavigate } from "react-router-dom";
+import PageHeader from "../common/PageHeader";
 
 function AllTransactions() {
   const [transactions, setTransactions] = useState([]);
@@ -90,15 +91,19 @@ function AllTransactions() {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="gl-heading">All Transactions</h1>
-          <button
-            onClick={() => navigate("/transactions/new")}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            <FiDownload /> Export
-          </button>
-        </div>
+        <PageHeader
+          title="All Transactions"
+          subtitle="View and manage general journal transactions"
+          icon={FiList}
+          actions={
+            <button
+              onClick={() => navigate("/transactions/new")}
+              className="gl-btn gl-btn-secondary"
+            >
+              <FiDownload className="mr-1.5" /> Export
+            </button>
+          }
+        />
 
         {/* Error Message */}
         {error && (

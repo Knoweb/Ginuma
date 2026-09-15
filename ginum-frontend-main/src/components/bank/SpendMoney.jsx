@@ -21,7 +21,8 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../utils/api";
-import Alert from "../Alert/Alert";
+import Alert from "../../components/Alert/Alert";
+import PageHeader from "../common/PageHeader";
 
 const SpendMoney = () => {
   const navigate = useNavigate();
@@ -374,30 +375,21 @@ const SpendMoney = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen space-y-8">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center flex-shrink-0">
-            <FaMoneyBillWave className="text-red-600 text-xl" />
+      <PageHeader
+        title="Spend Money"
+        subtitle="Record outgoing payments for suppliers or employee expenses"
+        icon={FiDollarSign}
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate("/bank/receive-money")}
+              className="gl-btn gl-btn-secondary animate-pulse"
+            >
+              Switch to Receive Money <FiArrowRight className="ml-1.5" />
+            </button>
           </div>
-          <div>
-            <h1 className="gl-heading">
-              Spend Money
-            </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
-              Record outgoing payments for suppliers or employee expenses
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate("/bank/receive-money")}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-xl text-gray-600 hover:bg-gray-100 font-semibold transition-colors flex items-center gap-1.5 cursor-pointer animate-pulse"
-          >
-            Switch to Receive Money <FiArrowRight />
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Error Banner */}
       {errorMsg && (

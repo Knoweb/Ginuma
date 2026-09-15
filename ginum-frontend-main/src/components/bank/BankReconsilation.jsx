@@ -11,7 +11,9 @@ import {
 } from "react-icons/md";
 import { FaFileCsv } from "react-icons/fa";
 import { apiUrl } from "../../utils/api";
-import Alert from "../Alert/Alert";
+import Alert from "../../components/Alert/Alert";
+import PageHeader from "../common/PageHeader";
+import { FiMonitor } from "react-icons/fi";
 
 function BankReconsilation() {
   const [transactions, setTransactions] = useState([]);
@@ -220,35 +222,29 @@ function BankReconsilation() {
 
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-8 max-w-full overflow-x-hidden">
-      {/* Header Row */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-gray-200">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2.5">
-            <MdAccountBalanceWallet className="text-blue-600" />
-            Bank Reconciliation
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Reconcile recent payments and receipts from Sales, Purchases, and general journals
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-3 w-full lg:w-auto">
-          <button
-            onClick={fetchTransactions}
-            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 font-medium transition-all shadow-sm"
-          >
-            <MdRefresh className={`${loading ? "animate-spin" : ""}`} />
-            Refresh
-          </button>
-          <button
-            onClick={handleExportCSV}
-            className="px-4 py-2 bg-blue-600 text-white rounded-xl flex items-center justify-center gap-2 hover:bg-blue-700 font-medium transition-all shadow-md shadow-blue-500/10"
-          >
-            <FaFileCsv />
-            Export CSV
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Bank Reconciliation"
+        subtitle="Reconcile recent payments and receipts from Sales, Purchases, and general journals"
+        icon={FiMonitor}
+        actions={
+          <div className="flex flex-wrap gap-3 w-full lg:w-auto">
+            <button
+              onClick={fetchTransactions}
+              className="gl-btn gl-btn-secondary"
+            >
+              <MdRefresh className={`mr-1.5 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </button>
+            <button
+              onClick={handleExportCSV}
+              className="gl-btn gl-btn-secondary"
+            >
+              <FaFileCsv className="mr-1.5" />
+              Export CSV
+            </button>
+          </div>
+        }
+      />
 
       {/* Aggregated Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

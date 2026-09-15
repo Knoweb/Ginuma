@@ -20,6 +20,7 @@ import {
   FaTrash
 } from "react-icons/fa";
 import { apiUrl } from "../../utils/api";
+import PageHeader from "../../components/common/PageHeader";
 
 const SettingsPage = () => {
   const navigate = useNavigate();
@@ -414,16 +415,11 @@ const SettingsPage = () => {
 
   return (
     <div className="p-6 sm:p-8 bg-gray-50 min-h-screen space-y-6 max-w-7xl mx-auto">
-      {/* Title */}
-      <div>
-        <h1 className="gl-heading flex items-center gap-2">
-          <FaCog className="text-blue-600 text-2xl" />
-          Account Settings
-        </h1>
-        <p className="text-sm text-gray-500 mt-1.5">
-          Configure system formats, update credentials, and manage your account preference
-        </p>
-      </div>
+      <PageHeader
+        title="Account Settings"
+        subtitle="Configure system formats, update credentials, and manage your account preference"
+        icon={FaCog}
+      />
 
       {/* Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

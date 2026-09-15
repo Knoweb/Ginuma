@@ -6,6 +6,7 @@ import AddEmployeeForm from "../Employee/AddEmployeeForm";
 import { apiUrl } from "../../utils/api";
 import api from "../../utils/api";
 import Alert from "../Alert/Alert";
+import PageHeader from "../common/PageHeader";
 
 const inputClass =
   "w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 bg-gray-50 transition-all";
@@ -167,16 +168,12 @@ const AddUserForm = () => {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8 max-w-3xl mx-auto">
-        <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-          <FiUserPlus className="text-blue-600 text-xl" />
-        </div>
-        <div>
-          <h1 className="gl-heading">Add & Assign User Role</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Create user login credentials and assign company roles with optional OTP security
-          </p>
-        </div>
+      <div className="max-w-3xl mx-auto mb-8">
+        <PageHeader
+          title="Add & Assign User Role"
+          subtitle="Create user login credentials and assign company roles with optional OTP security"
+          icon={FiUserPlus}
+        />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">

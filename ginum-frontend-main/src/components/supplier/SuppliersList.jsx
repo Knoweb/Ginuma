@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import PageHeader from "../common/PageHeader";
+import { FiTruck } from "react-icons/fi";
 import { apiUrl } from "../../utils/api";
 import Alert from "../../components/Alert/Alert";
 import {
@@ -374,41 +376,34 @@ const SuppliersList = () => {
   return (
     <>
       <div className="p-6 bg-gray-50 min-h-screen">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8">
-          <h1 className="gl-heading">Suppliers</h1>
+        <PageHeader
+          title="Suppliers"
+          subtitle="View and manage company suppliers"
+          icon={FiTruck}
+          actions={
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+              <div className="relative">
+                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-base" />
+                <input
+                  type="text"
+                  placeholder="Search suppliers..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="gl-input pl-11 w-full sm:w-70"
+                />
+              </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-            <div className="relative">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-base" />
-
-              <input
-                type="text"
-                placeholder="Search suppliers..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full sm:w-70 pl-11 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <button
+                type="button"
+                onClick={handleAddSupplier}
+                className="gl-btn gl-btn-primary"
+              >
+                <FaPlus className="mr-1.5" />
+                Add Supplier
+              </button>
             </div>
-
-            <button
-              type="button"
-              onClick={handleAddSupplier}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-base flex items-center justify-center gap-2"
-            >
-              <FaPlus />
-              Add Supplier
-            </button>
-
-            {/* <button
-              type="button"
-              onClick={fetchSuppliers}
-              className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 px-4 py-3 rounded-lg text-base flex items-center justify-center gap-2"
-              title="Refresh"
-            >
-              <FaSyncAlt />
-            </button> */}
-          </div>
-        </div>
+          }
+        />
 
         <div className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">

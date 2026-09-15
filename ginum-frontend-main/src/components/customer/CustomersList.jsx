@@ -11,9 +11,11 @@ import {
   FiHome,
   FiTag,
   FiRefreshCw,
+  FiUsers,
   FiX,
 } from "react-icons/fi";
 import { apiUrl } from "../../utils/api";
+import PageHeader from "../common/PageHeader";
 import Alert from "../Alert/Alert";
 import AddCustomerForm from "./AddCustomer";
 
@@ -222,38 +224,38 @@ const CustomersList = () => {
 
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mb-0">
-          Customers
-        </h1>
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiSearch className="text-gray-400" />
+      <PageHeader
+        title="Customers"
+        subtitle="View and manage company customers"
+        icon={FiUsers}
+        actions={
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+            <div className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search customers..."
+                className="gl-input pl-10 w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
 
-            <input
-              type="text"
-              placeholder="Search customers..."
-              className="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            <button
+              type="button"
+              onClick={() => {
+                console.log("Add Customer clicked");
+                navigate("/customer/new");
+              }}
+              className="gl-btn gl-btn-primary"
+            >
+              <FiPlus className="mr-1.5" /> Add Customer
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              console.log("Add Customer clicked");
-              navigate("/customer/new");
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-          >
-            <FiPlus /> Add Customer
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {filteredCustomers.length === 0 ? (
         <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">

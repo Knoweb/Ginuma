@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { FiPrinter, FiDownload, FiRefreshCw, FiCalendar, FiDollarSign, FiTrendingUp, FiPercent, FiFileText } from "react-icons/fi";
+import { FiPrinter, FiDownload, FiRefreshCw, FiCalendar, FiDollarSign,  FiTrendingUp,
+  FiPercent,
+  FiFileText,
+  FiPieChart,
+} from "react-icons/fi";
 import { apiUrl } from "../../utils/api";
+import PageHeader from "../common/PageHeader";
 
 const IncomeStatement = () => {
   const [filterType, setFilterType] = useState("period"); // 'period' or 'custom'
@@ -189,32 +194,35 @@ const IncomeStatement = () => {
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200 print:hidden">
-          <div>
-            <h1 className="gl-heading">Income Statement</h1>
-            <p className="text-sm text-gray-500 mt-1">Profit &amp; Loss Statement</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <button
-              onClick={fetchIncomeStatement}
-              className="p-2.5 text-gray-500 hover:bg-gray-100 rounded-xl transition border border-gray-200 cursor-pointer bg-white"
-              title="Refresh Report"
-            >
-              <FiRefreshCw />
-            </button>
-            <button
-              onClick={handleExportCSV}
-              className="px-4 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-semibold text-sm transition flex items-center gap-2 cursor-pointer bg-white"
-            >
-              <FiDownload /> Export CSV
-            </button>
-            <button 
-              onClick={handlePrint}
-              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition flex items-center gap-2 cursor-pointer shadow-sm shadow-blue-500/10"
-            >
-              <FiPrinter /> Print / PDF
-            </button>
-          </div>
+        <div className="print:hidden">
+          <PageHeader
+            title="Income Statement"
+            subtitle="Profit & Loss Statement"
+            icon={FiPieChart}
+            actions={
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <button
+                  onClick={fetchIncomeStatement}
+                  className="gl-btn gl-btn-secondary"
+                  title="Refresh Report"
+                >
+                  <FiRefreshCw className="mr-1.5" /> Refresh
+                </button>
+                <button
+                  onClick={handleExportCSV}
+                  className="gl-btn gl-btn-secondary"
+                >
+                  <FiDownload className="mr-1.5" /> Export CSV
+                </button>
+                <button 
+                  onClick={handlePrint}
+                  className="gl-btn gl-btn-primary"
+                >
+                  <FiPrinter className="mr-1.5" /> Print / PDF
+                </button>
+              </div>
+            }
+          />
         </div>
 
         {/* Print-Only Header */}

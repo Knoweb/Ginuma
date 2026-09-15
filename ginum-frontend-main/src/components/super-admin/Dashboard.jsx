@@ -1,4 +1,6 @@
 import React from "react";
+import { FiGrid } from "react-icons/fi";
+import PageHeader from "../common/PageHeader";
 
 const Dashboard = () => {
   const stats = [
@@ -10,7 +12,9 @@ const Dashboard = () => {
 
   return (
     <div className="p-6 bg-gray-100 flex-1">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
+      <div className="mb-8">
+        <PageHeader title="Dashboard" subtitle="Super Admin Overview" icon={FiGrid} />
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (

@@ -17,7 +17,8 @@ import {
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../../utils/api";
-import Alert from "../Alert/Alert";
+import Alert from "../../components/Alert/Alert";
+import PageHeader from "../common/PageHeader";
 
 const ReceiveMoney = () => {
   const navigate = useNavigate();
@@ -232,36 +233,27 @@ const ReceiveMoney = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center flex-shrink-0">
-            <FaHandHoldingUsd className="text-green-600 text-xl" />
+      <PageHeader
+        title="Receive Money"
+        subtitle="Record an incoming payment received from a customer sale order"
+        icon={FiDollarSign}
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate("/bank/spend-money")}
+              className="gl-btn gl-btn-secondary"
+            >
+              <FiArrowLeft className="mr-1.5" /> Switch to Spend Money
+            </button>
+            <button
+              onClick={() => navigate("/customer/sales/all")}
+              className="gl-btn gl-btn-secondary"
+            >
+              <FaArrowLeft className="mr-1.5" /> Back to Sales
+            </button>
           </div>
-          <div>
-            <h1 className="gl-heading">
-              Receive Money
-            </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
-              Record an incoming payment received from a customer sale order
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate("/bank/spend-money")}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-xl text-gray-600 hover:bg-gray-100 font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <FiArrowLeft /> Switch to Spend Money
-          </button>
-          <button
-            onClick={() => navigate("/customer/sales/all")}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <FaArrowLeft /> Back to Sales
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Error Banner */}
       {errorMsg && (

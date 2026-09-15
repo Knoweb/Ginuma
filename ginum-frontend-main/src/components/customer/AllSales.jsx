@@ -4,10 +4,12 @@ import {
   FaSyncAlt,
   FaEye,
   FaTimes,
-  FaFileInvoiceDollar,
+  FaSpinner,
 } from "react-icons/fa";
 
 import { apiUrl as API_BASE_URL } from "../../utils/api";
+import PageHeader from "../common/PageHeader";
+import { FiFileText } from "react-icons/fi";
 
 function AllSales() {
   const [salesOrders, setSalesOrders] = useState([]);
@@ -188,40 +190,35 @@ function AllSales() {
   return (
     <>
       <div className="p-6 lg:p-8 flex flex-col gap-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div>
-            <h1 className="gl-heading">
-              All Sales Orders
-            </h1>
-            <p className="gl-subheading mt-1">
-              View and manage company sales orders
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto mt-4 md:mt-0">
-            <div className="relative flex-grow">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaSearch className="text-slate-400" />
+        <PageHeader
+          title="All Sales Orders"
+          subtitle="View and manage company sales orders"
+          icon={FiFileText}
+          actions={
+            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto mt-4 md:mt-0">
+              <div className="relative flex-grow">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaSearch className="text-slate-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search sales orders..."
+                  className="gl-input pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
 
-              <input
-                type="text"
-                placeholder="Search sales orders..."
-                className="gl-input pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <button
+                type="button"
+                onClick={fetchSalesOrders}
+                className="gl-btn gl-btn-secondary"
+              >
+                <FaSyncAlt className="mr-1.5 text-indigo-500" /> Refresh
+              </button>
             </div>
-
-            <button
-              type="button"
-              onClick={fetchSalesOrders}
-              className="gl-btn gl-btn-secondary"
-            >
-              <FaSyncAlt className="mr-2 text-indigo-500" /> Refresh
-            </button>
-          </div>
-        </div>
+          }
+        />
 
         {filteredSalesOrders.length === 0 ? (
           <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">

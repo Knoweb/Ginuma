@@ -11,11 +11,13 @@ import {
   FiLock,
   FiX,
   FiInfo,
+  FiMoreVertical,
 } from "react-icons/fi";
 import { FaSpinner } from "react-icons/fa";
 import { apiUrl } from "../../utils/api";
 import api from "../../utils/api";
 import Alert from "../Alert/Alert";
+import PageHeader from "../common/PageHeader";
 
 function AllUsers() {
   const navigate = useNavigate();
@@ -216,25 +218,19 @@ function AllUsers() {
 
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-8 max-w-full overflow-x-hidden">
-      {/* Header section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200">
-        <div>
-          <h1 className="gl-heading flex items-center gap-2">
-            <FiUsers className="text-blue-600" />
-            System Users
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Manage company user profiles, update access permissions, and roles
-          </p>
-        </div>
-
-        <button
-          onClick={() => navigate("/users/new")}
-          className="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-500/10 cursor-pointer"
-        >
-          <FiUserPlus /> Assign User Access
-        </button>
-      </div>
+      <PageHeader
+        title="System Users"
+        subtitle="Manage company user profiles, update access permissions, and roles"
+        icon={FiUsers}
+        actions={
+          <button
+            onClick={() => navigate("/users/new")}
+            className="gl-btn gl-btn-primary"
+          >
+            <FiUserPlus className="mr-1.5" /> Assign User Access
+          </button>
+        }
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

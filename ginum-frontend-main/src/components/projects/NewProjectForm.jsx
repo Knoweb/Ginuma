@@ -4,6 +4,7 @@ import { FiFolder, FiUser, FiCalendar, FiHash, FiFlag } from "react-icons/fi";
 import AddCustomerForm from "../customer/AddCustomer";
 import { apiUrl } from "../../utils/api";
 import Alert from "../Alert/Alert";
+import PageHeader from "../common/PageHeader";
 
 const inputClass =
   "w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500 bg-gray-50 transition-all";
@@ -155,14 +156,12 @@ const NewProjectForm = () => {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8 max-w-3xl mx-auto">
-        <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center">
-          <FiFolder className="text-blue-600 text-xl" />
-        </div>
-        <div>
-          <h1 className="gl-heading">Create Project</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Set up a new project and assign it to a customer</p>
-        </div>
+      <div className="max-w-3xl mx-auto mb-8">
+        <PageHeader
+          title="Create Project"
+          subtitle="Set up a new project and assign it to a customer"
+          icon={FiFolder}
+        />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl mx-auto">

@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import { apiUrl } from "../../utils/api";
 import Alert from "../Alert/Alert";
+import PageHeader from "../common/PageHeader";
 
 const Depreciation = () => {
   const [assets, setAssets] = useState([]);
@@ -224,25 +225,19 @@ const Depreciation = () => {
 
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-8 max-w-full overflow-x-hidden">
-      {/* Header section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200">
-        <div>
-          <h1 className="gl-heading flex items-center gap-2">
-            <FaCalculator className="text-blue-600" />
-            Asset Depreciation
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Track fixed assets, calculate useful life, and review depreciation schedules
-          </p>
-        </div>
-
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-500/10 cursor-pointer"
-        >
-          <FaPlus /> Add Fixed Asset
-        </button>
-      </div>
+      <PageHeader
+        title="Asset Depreciation"
+        subtitle="Track fixed assets, calculate useful life, and review depreciation schedules"
+        icon={FaCalculator}
+        actions={
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="gl-btn gl-btn-primary"
+          >
+            <FaPlus className="mr-1.5" /> Add Fixed Asset
+          </button>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

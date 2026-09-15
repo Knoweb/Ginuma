@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiUrl } from "../../utils/api";
+import { apiUrl as API_BASE_URL } from "../../utils/api";
+import PageHeader from "../common/PageHeader";
+import { FiClock } from "react-icons/fi";
 import {
   FaSpinner,
   FaSearch,
@@ -377,53 +379,50 @@ export default function AgedPayables() {
 
   return (
     <div className="p-6 lg:p-8 flex flex-col gap-8 max-w-full overflow-x-hidden">
-      {/* Header section */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-4 border-b border-gray-200">
-        <div>
-          <h1 className="gl-heading">Aged Payables</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Track and manage outstanding supplier liabilities across aging periods
-          </p>
-        </div>
+      <PageHeader
+        title="Aged Payables"
+        subtitle="Track and manage outstanding supplier liabilities across aging periods"
+        icon={FiClock}
+        actions={
+          <div className="flex flex-wrap gap-3 w-full lg:w-auto">
+            <button
+              type="button"
+              onClick={fetchPurchaseOrders}
+              className="gl-btn gl-btn-secondary"
+            >
+              <FaSyncAlt className="mr-1.5" />
+              Refresh
+            </button>
 
-        <div className="flex flex-wrap gap-3 w-full lg:w-auto">
-          <button
-            type="button"
-            onClick={fetchPurchaseOrders}
-            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-100 font-medium transition-all shadow-sm"
-          >
-            <FaSyncAlt />
-            Refresh
-          </button>
+            <button
+              type="button"
+              onClick={handleExport}
+              className="gl-btn gl-btn-secondary"
+            >
+              <FaFileExport className="mr-1.5" />
+              Export CSV
+            </button>
 
-          <button
-            type="button"
-            onClick={handleExport}
-            className="px-4 py-2 bg-blue-600 text-white rounded-xl flex items-center justify-center gap-2 hover:bg-blue-700 font-medium transition-all shadow-md shadow-blue-500/10"
-          >
-            <FaFileExport />
-            Export CSV
-          </button>
+            <button
+              type="button"
+              onClick={handleCreateBill}
+              className="gl-btn gl-btn-primary"
+            >
+              <FaPlus className="mr-1.5" />
+              Create Bill
+            </button>
 
-          <button
-            type="button"
-            onClick={handleCreateBill}
-            className="px-4 py-2 bg-green-600 text-white rounded-xl flex items-center justify-center gap-2 hover:bg-green-700 font-medium transition-all shadow-md shadow-green-500/10"
-          >
-            <FaPlus />
-            Create Bill
-          </button>
-
-          <button
-            type="button"
-            onClick={handleAddPayment}
-            className="px-4 py-2 bg-gray-800 text-white rounded-xl flex items-center justify-center gap-2 hover:bg-gray-900 font-medium transition-all shadow-md shadow-gray-800/10"
-          >
-            <FaMoneyBillWave />
-            Spend Money
-          </button>
-        </div>
-      </div>
+            <button
+              type="button"
+              onClick={handleAddPayment}
+              className="gl-btn gl-btn-primary"
+            >
+              <FaMoneyBillWave className="mr-1.5" />
+              Spend Money
+            </button>
+          </div>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">

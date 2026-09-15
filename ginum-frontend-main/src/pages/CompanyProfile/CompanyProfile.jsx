@@ -14,6 +14,7 @@ import {
   FaSpinner
 } from "react-icons/fa";
 import { apiUrl } from "../../utils/api";
+import PageHeader from "../../components/common/PageHeader";
 
 const CompanyProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -197,14 +198,12 @@ const CompanyProfile = () => {
     <div className="p-6 sm:p-8 bg-gray-55 min-h-screen space-y-8 max-w-7xl mx-auto">
       
       {/* Title */}
-      <div>
-        <h1 className="gl-heading flex items-center gap-2">
-          <FaUser className="text-blue-600 text-2xl" />
-          My Profile
-        </h1>
-        <p className="text-sm text-gray-500 mt-1.5">
-          Manage your personal details, role definitions, and account password
-        </p>
+      <div className="mb-4">
+        <PageHeader
+          title="My Profile"
+          subtitle="Manage your personal details, role definitions, and account password"
+          icon={FaUser}
+        />
       </div>
 
       {/* Main Layout Grid */}

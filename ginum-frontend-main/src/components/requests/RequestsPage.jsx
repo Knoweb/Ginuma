@@ -15,6 +15,7 @@ import {
 import { FaSpinner } from "react-icons/fa";
 import { apiUrl } from "../../utils/api";
 import Alert from "../Alert/Alert";
+import PageHeader from "../common/PageHeader";
 
 const RequestsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -211,10 +212,11 @@ const RequestsPage = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto min-h-screen">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="gl-heading">Requests</h1>
-        <p className="gl-subheading mt-1">Manage and track internal requests</p>
-      </div>
+      <PageHeader
+        title="Requests"
+        subtitle="Manage and track internal requests"
+        icon={FiFileText}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
