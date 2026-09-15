@@ -196,29 +196,32 @@ function AllSales() {
           icon={FiFileText}
           actions={
             <>
-              <div className="relative flex-grow">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaSearch className="text-slate-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search sales orders..."
-                  className="gl-input pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
               <button
                 type="button"
                 onClick={fetchSalesOrders}
-                className="gl-btn gl-btn-secondary"
+                className="gl-btn gl-btn-secondary flex-none w-auto"
               >
                 <FaSyncAlt className="mr-1.5 text-indigo-500" /> Refresh
               </button>
             </>
           }
         />
+
+        {/* Toolbar */}
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="relative flex-1 min-w-0 max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FaSearch className="text-slate-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search sales orders..."
+              className="gl-input pl-10 w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
 
         {filteredSalesOrders.length === 0 ? (
           <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">

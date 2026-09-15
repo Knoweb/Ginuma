@@ -77,7 +77,7 @@ const FinanceStats = ({ revenue, expenses, profit, prevRevenue, prevExpenses, pr
   return (
     <div className="mb-6">
       <h2 className="gl-section-title mb-4">Financial Overview (Last 30 Days)</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <StatCard title="Total Revenue" value={revenue} previous={prevRevenue} color="text-indigo-600" delay={0} icon="📈" />
         <StatCard title="Total Expenses" value={expenses} previous={prevExpenses} color="text-rose-500" delay={150} icon="📉" />
         <StatCard title="Net Profit" value={profit} previous={prevProfit} color="text-emerald-500" delay={300} icon="💎" />
@@ -443,7 +443,7 @@ const DashboardPage = () => {
         </RevealOnScroll>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <RevealOnScroll className="gl-card p-6 flex flex-col items-center" delay={0}>
           <h3 className="gl-section-title mb-4">Top Revenue Sources</h3>
           <div className="h-80 w-full max-w-md">
