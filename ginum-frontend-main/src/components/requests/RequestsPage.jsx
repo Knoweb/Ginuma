@@ -272,32 +272,33 @@ const RequestsPage = () => {
               className="pl-10 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-colors"
             />
           </div>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiFilter className="text-gray-400" />
+          <div className="list-toolbar-actions">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiFilter className="text-gray-400" />
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="pl-10 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent appearance-none cursor-pointer pr-8"
+              >
+                <option value="All">All Status</option>
+                <option value="PENDING">Pending</option>
+                <option value="IN_REVIEW">In Review</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="pl-10 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent appearance-none cursor-pointer pr-8"
+
+            <button 
+              onClick={openCreateModal}
+              className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm"
             >
-              <option value="All">All Status</option>
-              <option value="PENDING">Pending</option>
-              <option value="IN_REVIEW">In Review</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-            </select>
+              <FiPlus size={16} />
+              New Request
+            </button>
           </div>
         </div>
-
-        <button 
-          onClick={openCreateModal}
-          className="bg-sky-600 hover:bg-sky-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm w-full md:w-auto md:flex-none"
-        >
-          <FiPlus size={16} />
-          New Request
-        </button>
-      </div>
 
       {/* Table / List */}
       <div className="bg-white rounded-b-xl shadow-sm overflow-hidden min-h-[400px]">

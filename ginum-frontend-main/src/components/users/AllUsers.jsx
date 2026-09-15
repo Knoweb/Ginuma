@@ -273,7 +273,7 @@ function AllUsers() {
           />
         </div>
 
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:w-auto lg:flex-none">
+        <div className="list-toolbar-actions">
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
@@ -294,7 +294,7 @@ function AllUsers() {
           </select>
           <button
             onClick={() => navigate("/users/new")}
-            className="gl-btn gl-btn-primary w-full md:w-auto md:flex-none"
+            className="gl-btn gl-btn-primary"
           >
             <FiUserPlus className="mr-1.5" /> Assign User Access
           </button>
