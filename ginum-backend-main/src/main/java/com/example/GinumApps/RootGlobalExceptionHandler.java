@@ -1,5 +1,7 @@
 package com.example.GinumApps;
 
+import lombok.extern.slf4j.Slf4j;
+
 import com.example.GinumApps.exception.CompanyExistsException;
 import com.example.GinumApps.exception.DuplicateEntityException;
 import com.example.GinumApps.exception.ResourceNotFoundException;
@@ -15,6 +17,7 @@ import java.io.IOException;
 import java.util.ConcurrentModificationException;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice("rootGlobalExceptionHandler")
 public class RootGlobalExceptionHandler {
 
@@ -70,5 +73,12 @@ public class RootGlobalExceptionHandler {
                 .collect(Collectors.joining(", "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
-}
 
+    // Catch-all to prevent stack trace leaks for unhandled exceptions
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGenericException(Exception ex) {
+        log.error("Unhandled exception caught in RootGlobalExceptionHandler: ", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An unexpected error occurred. Please contact support if the issue persists.");
+    }
+}

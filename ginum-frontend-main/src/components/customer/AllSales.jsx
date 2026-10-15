@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaSearch,
   FaSyncAlt,
   FaEye,
   FaTimes,
   FaSpinner,
+  FaFileInvoiceDollar,
 } from "react-icons/fa";
+import { FiFileText, FiPlus, FiSearch } from "react-icons/fi";
 
 import { apiUrl as API_BASE_URL } from "../../utils/api";
 import PageHeader from "../common/PageHeader";
-import { FiFileText } from "react-icons/fi";
 
 function AllSales() {
+  const navigate = useNavigate();
   const [salesOrders, setSalesOrders] = useState([]);
   const [filteredSalesOrders, setFilteredSalesOrders] = useState([]);
 
@@ -22,8 +25,21 @@ function AllSales() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
 
-  const getCompanyId = () => sessionStorage.getItem("companyId");
-  const getToken = () => sessionStorage.getItem("auth_token");
+  const getCompanyId = () => {
+    return (
+      sessionStorage.getItem("companyId") ||
+      localStorage.getItem("companyId")
+    );
+  };
+
+  const getToken = () => {
+    return (
+      sessionStorage.getItem("auth_token") ||
+      localStorage.getItem("auth_token") ||
+      sessionStorage.getItem("token") ||
+      localStorage.getItem("token")
+    );
+  };
 
   const getAuthHeaders = () => {
     const token = getToken();
@@ -128,9 +144,9 @@ function AllSales() {
   };
 
   const getPaymentStatus = (order) => {
-    const total = Number(order.total || 0);
-    const paid = Number(order.amountPaid || 0);
-    const balance = Number(order.balanceDue || 0);
+    const total = Number(order.total ?? order.totalAmount ?? 0);
+    const paid = Number(order.amountPaid ?? order.paidAmount ?? 0);
+    const balance = Number(order.balanceDue ?? 0);
 
     if (total > 0 && balance === 0) {
       return {
@@ -191,19 +207,19 @@ function AllSales() {
     <>
       <div className="p-6 lg:p-8 flex flex-col gap-6">
         <PageHeader
-          title="All Sales Orders"
+          title="Sales"
           subtitle="View and manage company sales orders"
           icon={FiFileText}
           actions={
-            <>
+            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
               <div className="relative flex-grow">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaSearch className="text-slate-400" />
+                  <FiSearch className="text-gray-400" />
                 </div>
                 <input
                   type="text"
                   placeholder="Search sales orders..."
-                  className="gl-input pl-10"
+                  className="gl-input pl-10 w-full"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -216,21 +232,47 @@ function AllSales() {
               >
                 <FaSyncAlt className="mr-1.5 text-indigo-500" /> Refresh
               </button>
-            </>
+
+              <button
+                type="button"
+                onClick={() => navigate("/customer/sales/new")}
+                className="gl-btn gl-btn-primary"
+              >
+                <FiPlus className="mr-1.5" /> Create Sale
+              </button>
+            </div>
           }
         />
 
         {filteredSalesOrders.length === 0 ? (
           <div className="gl-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
-            <div className="h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-4 shadow-sm border border-indigo-100/50">
+            <div className="h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 mb-4 shadow-sm border border-indigo-100/50 mx-auto">
               <FaFileInvoiceDollar size={30} />
             </div>
 
-            <p className="text-slate-500 font-medium text-lg">
+            <p className="text-gray-600 text-lg">
               {salesOrders.length === 0
                 ? "No sales orders found."
                 : "No matching sales orders found."}
             </p>
+
+            {salesOrders.length === 0 ? (
+              <button
+                type="button"
+                onClick={() => navigate("/customer/sales/new")}
+                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg inline-flex items-center gap-2 transition-colors"
+              >
+                <FiPlus /> Create New Sale
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="mt-4 gl-btn gl-btn-secondary inline-flex items-center gap-2"
+              >
+                Clear Search
+              </button>
+            )}
           </div>
         ) : (
           <div className="gl-table-container">
@@ -280,11 +322,11 @@ function AllSales() {
                         </td>
 
                         <td className="text-right font-extrabold text-slate-800">
-                          Rs. {formatAmount(order.totalAmount)}
+                          Rs. {formatAmount(order.total ?? order.totalAmount)}
                         </td>
 
                         <td className="text-right font-bold text-emerald-600">
-                          Rs. {formatAmount(order.paidAmount)}
+                          Rs. {formatAmount(order.amountPaid ?? order.paidAmount)}
                         </td>
 
                         <td className="text-right font-bold text-rose-500">
@@ -294,11 +336,11 @@ function AllSales() {
                         <td className="text-center">
                           <span
                             className={`gl-badge ${
-                              status.status === "Paid"
+                              status.label === "Paid"
                                 ? "gl-badge-success"
-                                : status.status === "Partial"
+                                : status.label === "Partial"
                                 ? "gl-badge-warning"
-                                : status.status === "Unpaid"
+                                : status.label === "Unpaid"
                                 ? "gl-badge-error"
                                 : "gl-badge-info"
                             }`}

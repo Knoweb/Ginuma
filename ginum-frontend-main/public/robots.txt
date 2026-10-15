@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /config/
+Disallow: /private/
+Disallow: /reports/
+
+# Allow normal web crawling but protect sensitive application routes
+Allow: /
