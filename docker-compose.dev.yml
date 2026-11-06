@@ -1,0 +1,16 @@
+version: '3.8'
+
+# Development override to expose ports locally when running docker compose
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+services:
+  database:
+    ports:
+      - "3306:3306"
+
+  backend:
+    ports:
+      - "8081:8081"
+
+  frontend:
+    ports:
+      - "3000:80"

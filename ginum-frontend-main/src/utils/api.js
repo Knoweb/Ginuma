@@ -1,8 +1,13 @@
 import axios from "axios";
 
-// Export base API URL
-// In development, use VITE_API_URL or localhost. In production, use empty string to hit the Nginx reverse proxy.
-export const apiUrl = import.meta.env.DEV ? (import.meta.env.VITE_API_URL || 'http://localhost:8081') : '';
+// Export base API URL:
+// - In development (import.meta.env.DEV): use VITE_API_URL or default to 'http://localhost:8081'.
+// - In production: use same-origin relative paths ('') so all API calls route securely through HTTPS (/api/...).
+const rawApiUrl = import.meta.env.DEV
+  ? (import.meta.env.VITE_API_URL || 'http://localhost:8081')
+  : (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost') ? import.meta.env.VITE_API_URL : '');
+
+export const apiUrl = rawApiUrl.replace(/\/+$/, '');
 
 // Create an Axios instance
 const api = axios.create({

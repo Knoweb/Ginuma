@@ -27,19 +27,20 @@ jobs:
           docker save ginuma-app-backend:latest | gzip > backend.tar.gz
           docker save ginuma-app-frontend:latest | gzip > frontend.tar.gz
 
-      # ── Copy the pre-built tars + compose/env files to the VPS ──
+      # ── Copy the pre-built tars + HTTPS compose/Caddyfile artifacts to VPS ──
+      # NOTE: .env is deliberately omitted from source to protect production server .env
       - name: Copy artifacts to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
-          source: "backend.tar.gz,frontend.tar.gz,docker-compose.yml,.env"
+          source: "backend.tar.gz,frontend.tar.gz,docker-compose.yml,docker-compose.https.yml,Caddyfile"
           target: "/root/ginuma-app"
           strip_components: 0
           rm: false
 
-      # ── Load images and restart containers — NO build on VPS ──
+      # ── Load images and restart containers — HTTPS reverse proxy with Caddy ──
       - name: Load images and restart containers on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -55,11 +56,13 @@ jobs:
             docker load < backend.tar.gz
             docker load < frontend.tar.gz
 
-            # Restart containers using the loaded images (no --build flag)
+            # Pull Caddy reverse proxy image if needed
+            docker compose pull caddy || true
+
+            # Restart containers preserving named volumes (db_data, caddy_data, caddy_config)
             docker compose down || true
             docker compose up -d
 
             # Clean up tars and dangling images to save disk space
             rm -f backend.tar.gz frontend.tar.gz
             docker image prune -f
-
