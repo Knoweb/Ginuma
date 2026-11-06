@@ -11,7 +11,7 @@ services:
 
   backend:
     environment:
-      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-root_password}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-${DB_PASSWORD:-root_password}}
       DEMO_SEED_TOKEN: ${DEMO_SEED_TOKEN:-dev-demo-seed-token}
     ports:
       - "8081:8081"
