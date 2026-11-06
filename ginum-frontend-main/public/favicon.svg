@@ -1,14 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 157.151 87.292" width="157.151" height="87.292" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" fill="none">
+  <style>
+    :root {
+      --g-c1: #0A1E3B;
+      --g-c2: #0077E6;
+      --g-c3: #00B4D8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --g-c1: #00B4D8;
+        --g-c2: #38BDF8;
+        --g-c3: #FFFFFF;
+      }
+    }
+  </style>
   <defs>
-    <linearGradient id="ginumMarkGradient" x1="0%" y1="100%" x2="50%" y2="0%">
-      <stop offset="0%" stop-color="#1A335A" />
-      <stop offset="100%" stop-color="#90C8EC" />
+    <linearGradient id="ginumFaviconGrad" x1="0%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="var(--g-c1, #0A1E3B)" />
+      <stop offset="55%" stop-color="var(--g-c2, #0077E6)" />
+      <stop offset="100%" stop-color="var(--g-c3, #00B4D8)" />
     </linearGradient>
   </defs>
-  <g id="ginum-mark" fill="url(#ginumMarkGradient)">
+  <!-- GINUM Official Brand Mark (ascending-bars arrow symbol) -->
+  <g id="ginum-mark" transform="translate(20, 68) scale(1.374474)" fill="url(#ginumFaviconGrad)">
+    <!-- Slanted Bar 1 (left) -->
     <path d="M 17.445 52.697 L 0.000 87.292 L 17.445 87.292 L 34.890 52.697 L 17.445 52.697 Z" />
+    <!-- Slanted Bar 2 (center) -->
     <path d="M 52.187 35.252 L 26.019 87.292 L 43.465 87.292 L 69.632 35.252 L 52.187 35.252 Z" />
+    <!-- Slanted Bar 3 (right transition) -->
     <path d="M 104.375 52.549 L 113.245 35.178 L 104.375 17.807 L 86.930 17.807 L 52.040 87.291 L 69.485 87.291 L 95.652 35.178 L 104.375 52.549 Z" />
+    <!-- Arrowhead Peak (top right) -->
     <path d="M 150.615 0.000 L 122.320 17.806 L 130.944 17.806 L 104.618 69.994 L 96.287 52.549 L 87.476 69.994 L 95.881 87.291 L 113.667 87.291 L 148.618 17.806 L 157.151 17.806 L 150.615 0.000 Z" />
   </g>
 </svg>
