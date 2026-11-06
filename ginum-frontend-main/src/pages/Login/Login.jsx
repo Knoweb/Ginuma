@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaShieldAlt, FaArrowRight, FaUser } from "react-icons/fa";
 import axios from "axios";
 import { apiUrl } from "../../utils/api";
+import BrandLogo from "../../components/common/BrandLogo";
 import "./Login.css";
 
 /* ────────────────────────────────────────────
@@ -268,7 +269,9 @@ const MockAppWindow = () => (
   <div className="gl-mock-app">
     {/* Sidebar */}
     <div className="gl-mock-sidebar">
-      <div className="gl-mock-logo">GINUM</div>
+      <div className="gl-mock-logo" style={{ paddingLeft: '0.25rem', marginBottom: '1.5rem' }}>
+        <BrandLogo variant="full" size="xs" alt="GINUM" />
+      </div>
       <div className="gl-mock-nav">
         <div className="gl-mock-nav-item active"><span className="gl-skeleton-icon" /> Dashboard</div>
         <div className="gl-mock-nav-item"><span className="gl-skeleton-icon" /> Transactions</div>
@@ -430,7 +433,7 @@ const FinanceShowcase = () => {
    MAIN LOGIN COMPONENT
 ──────────────────────────────────────────── */
 const Login = () => {
-  usePageTitle("Login — Ginum");
+  usePageTitle("Sign In");
 
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
@@ -504,7 +507,7 @@ const Login = () => {
       <aside className="gl-left">
         {/* Brand */}
         <div className="gl-logo-wrap">
-          <img src="/ginum_logo.png" alt="Ginum Logo" className="gl-logo" />
+          <BrandLogo variant="full" size="lg" alt="GINUM" />
           <span className="gl-platform-label">Financial Intelligence</span>
         </div>
 

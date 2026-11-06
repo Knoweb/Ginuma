@@ -10,6 +10,7 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import api from "../../utils/api";
+import BrandLogo from "../common/BrandLogo";
 
 const SuperAdminSideBar = ({ isCollapsed }) => {
   const [openCompany, setOpenCompany] = useState(false);
@@ -38,10 +39,10 @@ const SuperAdminSideBar = ({ isCollapsed }) => {
       >
         {/* Logo */}
         <div className="flex items-center justify-center mb-6">
-          <img
-            src="/ginum_logo.png"
-            alt="Ginum Logo"
-            className={`${isCollapsed ? "w-10" : "w-full"} h-auto`}
+          <BrandLogo
+            variant={isCollapsed ? "mark" : "full"}
+            size={isCollapsed ? "sm" : "md"}
+            alt="GINUM Logo"
           />
         </div>
 

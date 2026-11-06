@@ -4,9 +4,9 @@ import { useEffect } from "react";
 const usePageTitle = (title) => {
   // useEffect hook to update the document title whenever the `title` prop changes
   useEffect(() => {
-    // Set the document title to the provided title with a suffix " | Ginum"
-    // If no title is provided, set the document title to the default "Ginum"
-    document.title = title ? `${title} | Ginum` : "Ginum";
+    // Set the document title to the provided title with a suffix " | GINUM"
+    // If no title is provided, set the document title to the default "GINUM | Business & Accounting Platform"
+    document.title = title ? `${title} | GINUM` : "GINUM | Business & Accounting Platform";
   }, [title]); // Dependency array ensures this effect runs only when `title` changes
 };
 

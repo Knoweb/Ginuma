@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import axios from "axios";
 import { apiUrl } from "../../utils/api";
 import { FaCheckCircle, FaExclamationTriangle, FaEnvelope, FaSpinner, FaArrowRight } from "react-icons/fa";
+import BrandLogo from "../../components/common/BrandLogo";
 
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
@@ -56,12 +57,12 @@ const VerifyEmailPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 p-4 text-white">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#0c1a2e] via-[#1A335A] to-[#0c1a2e] p-4 text-white">
       <div className="w-full max-w-lg rounded-2xl bg-white/10 p-8 backdrop-blur-xl border border-white/20 shadow-2xl transition-all duration-300">
         
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src="ginum_logo.png" alt="Ginuma Logo" className="h-14 object-contain brightness-0 invert" />
+          <BrandLogo variant="white" size="lg" alt="GINUM" />
         </div>
 
         {/* Verifying State */}
@@ -88,7 +89,7 @@ const VerifyEmailPage = () => {
             <div className="pt-4">
               <Link
                 to="/login"
-                className="inline-flex items-center justify-center gap-2 w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 px-6 bg-[#90C8EC] hover:bg-[#a8d7f7] text-[#1A335A] font-bold rounded-xl shadow-lg hover:shadow-cyan-500/20 transition-all duration-200"
               >
                 Go to Sign In <FaArrowRight />
               </Link>
@@ -111,7 +112,7 @@ const VerifyEmailPage = () => {
             {/* Resend Form */}
             <div className="bg-white/5 rounded-xl p-5 border border-white/10 text-left space-y-3">
               <h3 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                <FaEnvelope className="text-blue-400" /> Resend Verification Email
+                <FaEnvelope className="text-[#90C8EC]" /> Resend Verification Email
               </h3>
               
               {resendMessage && (
@@ -127,12 +128,12 @@ const VerifyEmailPage = () => {
                   placeholder="Enter your registered email"
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg bg-slate-950/60 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 text-sm"
+                  className="w-full px-4 py-2.5 rounded-lg bg-slate-950/60 border border-white/20 text-white placeholder-slate-400 focus:outline-none focus:border-[#90C8EC] text-sm"
                 />
                 <button
                   type="submit"
                   disabled={resending}
-                  className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 bg-[#90C8EC] hover:bg-[#a8d7f7] disabled:opacity-50 text-[#1A335A] text-sm font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
                 >
                   {resending ? <FaSpinner className="animate-spin" /> : "Send Link"}
                 </button>
@@ -140,7 +141,7 @@ const VerifyEmailPage = () => {
             </div>
 
             <div className="pt-2">
-              <Link to="/login" className="text-sm text-blue-400 hover:underline">
+              <Link to="/login" className="text-sm text-[#90C8EC] hover:underline">
                 Back to Sign In
               </Link>
             </div>
