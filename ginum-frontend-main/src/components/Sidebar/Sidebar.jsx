@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { navItems } from "../../config/navigation";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useState, useEffect, useRef } from "react";
+import BrandLogo from "../common/BrandLogo";
 
 const Sidebar = ({ isVisible, onClose }) => {
   const location = useLocation();
@@ -104,10 +105,8 @@ const Sidebar = ({ isVisible, onClose }) => {
             } lg:translate-x-0 max-h-screen overflow-y-auto z-50`}
     >
       <div className="sticky top-0 bg-white/80 backdrop-blur-md z-10 py-5 border-b border-slate-100 mb-2">
-        <a href="/">
-          <div className="flex items-center justify-center">
-            <img src="/ginum_logo.png" alt="Ginum" className="w-101 h-12" />
-          </div>
+        <a href="/" className="flex items-center justify-center px-4">
+          <BrandLogo variant="full" size="md" alt="GINUM" />
         </a>
       </div>
 

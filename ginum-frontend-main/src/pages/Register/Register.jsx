@@ -16,6 +16,8 @@ import axios from "axios";
 import { apiUrl } from "../../utils/api";
 import api from "../../utils/api";
 import { useNavigate } from "react-router-dom";
+import usePageTitle from "../../hooks/usePageTitle";
+import BrandLogo from "../../components/common/BrandLogo";
 import "./Register.css";
 
 const COMPANY_CATEGORIES = [
@@ -33,6 +35,7 @@ const COMPANY_CATEGORIES = [
 ];
 
 const Register = () => {
+  usePageTitle("Register");
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [currencies, setCurrencies] = useState([]);
@@ -339,12 +342,14 @@ const Register = () => {
     <div className="reg-layout">
       {/* LEFT SIDEBAR (STEPPER & BRAND) */}
       <div className="reg-sidebar">
-        <img src="/ginum_logo.png" alt="Ginum" className="reg-logo" style={{ alignSelf: 'flex-start' }} />
+        <div style={{ alignSelf: 'flex-start', marginBottom: '2.5rem' }}>
+          <BrandLogo variant="full" size="md" alt="GINUM" />
+        </div>
         <h1 style={{ fontSize: '1.85rem', fontWeight: 800, lineHeight: 1.2, marginBottom: '0.75rem', letterSpacing: '-0.02em' }}>
           Create Your Enterprise Account
         </h1>
         <p style={{ fontSize: '0.875rem', color: '#64748b', lineHeight: 1.5 }}>
-          Set up your organization profile and administrative access to get started with Ginum.
+          Set up your organization profile and administrative access to get started with GINUM.
         </p>
 
         <div className="reg-steps">
@@ -546,7 +551,7 @@ const Register = () => {
               <div style={{ animation: 'slideUpFade 0.4s ease forwards' }}>
                 <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '1.5rem', marginBottom: '2rem' }}>
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>Administrator Credentials</h3>
-                  <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.25rem' }}>Set up the master admin email and password for logging into Ginuma ERP.</p>
+                  <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.25rem' }}>Set up the master admin email and password for logging into the GINUM platform.</p>
                 </div>
 
                 <div style={{ marginBottom: '1.5rem' }}>

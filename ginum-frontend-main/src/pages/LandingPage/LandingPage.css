@@ -3,31 +3,36 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  /* Colors - Light Theme */
+  /* Colors - Light Theme & Official GINUM Brand */
   --lp-bg: #F8FAFC;
   --lp-bg-glass: rgba(255, 255, 255, 0.7);
   --lp-slate-dark: #0f172a;
   --lp-slate-card: #ffffff;
-  --lp-primary: #4F46E5;
-  --lp-purple: #7C3AED;
+  --lp-primary: #1A335A;
+  --lp-primary-hover: #12223c;
+  --lp-purple: #90C8EC;
+  --lp-blue: #90C8EC;
   --lp-emerald: #10B981;
   --lp-amber: #F59E0B;
   --lp-text-main: #0F172A;
   --lp-text-muted: #475569;
   
+  --lp-font-heading: 'Arvo', serif;
+  --lp-font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
   /* Layout */
   --navbar-height: 90px;
   
   /* Antigravity Shadows */
-  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
-  --shadow-float: 0 10px 30px rgba(15, 23, 42, 0.08);
-  --shadow-ambient: 0 20px 40px rgba(15, 23, 42, 0.06), 0 0 80px rgba(79, 70, 229, 0.05);
-  --shadow-hover: 0 15px 40px rgba(15, 23, 42, 0.12), 0 0 100px rgba(79, 70, 229, 0.1);
-  --shadow-neon: 0 10px 30px rgba(79, 70, 229, 0.3);
+  --shadow-sm: 0 2px 8px rgba(26, 51, 90, 0.04);
+  --shadow-float: 0 10px 30px rgba(26, 51, 90, 0.08);
+  --shadow-ambient: 0 20px 40px rgba(26, 51, 90, 0.06), 0 0 80px rgba(144, 200, 236, 0.08);
+  --shadow-hover: 0 15px 40px rgba(26, 51, 90, 0.12), 0 0 100px rgba(144, 200, 236, 0.12);
+  --shadow-neon: 0 8px 24px rgba(26, 51, 90, 0.22);
 }
 
 .landing-page {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--lp-font-body);
   color: var(--lp-text-main);
   line-height: 1.6;
   background-color: var(--lp-bg);
@@ -40,9 +45,20 @@
   flex-direction: column;
 }
 
+.landing-page h1,
+.landing-page h2,
+.landing-page h3,
+.landing-page h4,
+.lp-section-title,
+.lp-hero-title,
+.lp-why-text h2,
+.lp-cta-content h2 {
+  font-family: var(--lp-font-heading);
+}
+
 /* Base utilities */
 .lp-gradient-text {
-  background: linear-gradient(90deg, var(--lp-primary) 0%, var(--lp-purple) 100%);
+  background: linear-gradient(135deg, #1A335A 0%, #2b5490 60%, #90C8EC 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -182,7 +198,7 @@
 }
 
 .lp-login-btn {
-  background: linear-gradient(135deg, var(--lp-primary), var(--lp-purple));
+  background: var(--lp-primary);
   color: white;
   padding: 0.6rem 1.8rem;
   border-radius: 9999px;
@@ -190,13 +206,14 @@
   font-weight: 600;
   font-size: 0.95rem;
   transition: all 0.3s ease;
-  box-shadow: var(--shadow-neon);
+  box-shadow: 0 4px 14px rgba(26, 51, 90, 0.2);
   border: 1px solid rgba(255,255,255,0.2);
   display: inline-block;
 }
 
 .lp-login-btn:hover {
-  box-shadow: 0 8px 25px rgba(124,58,237,0.5);
+  background: var(--lp-primary-hover);
+  box-shadow: 0 8px 25px rgba(26, 51, 90, 0.35);
   transform: translateY(-2px);
 }
 
@@ -253,14 +270,14 @@
 }
 
 .lp-login-btn-mobile {
-  background: linear-gradient(135deg, var(--lp-primary), var(--lp-purple));
+  background: var(--lp-primary);
   color: white !important;
   padding: 0.8rem;
   border-radius: 9999px;
   text-align: center;
   font-weight: 600;
   margin-top: 0.5rem;
-  box-shadow: var(--shadow-neon);
+  box-shadow: 0 4px 14px rgba(26, 51, 90, 0.2);
 }
 
 @media (max-width: 1023px) {
@@ -293,8 +310,19 @@
   z-index: -1;
   overflow: hidden;
   background-image: 
-    radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(124, 58, 237, 0.05) 0%, transparent 50%);
+    radial-gradient(circle at 15% 50%, rgba(26, 51, 90, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(144, 200, 236, 0.08) 0%, transparent 50%);
+}
+
+.lp-hero-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: url('/ginum-pattern.svg');
+  background-repeat: repeat;
+  background-size: 150px 200px;
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .lp-hero-grid {
@@ -325,7 +353,7 @@
 .lp-hero-orb-2 {
   width: 500px;
   height: 500px;
-  background: var(--lp-cyan);
+  background: var(--lp-purple);
   bottom: -150px;
   right: 10%;
 }
@@ -340,9 +368,9 @@
   display: inline-flex;
   align-items: center;
   padding: 0.4rem 1.2rem;
-  background: var(--lp-bg-glass);
+  background: rgba(26, 51, 90, 0.05);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(26, 51, 90, 0.12);
   border-radius: 9999px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -377,7 +405,7 @@
 }
 
 .lp-btn-primary {
-  background: linear-gradient(135deg, var(--lp-primary), var(--lp-purple));
+  background: var(--lp-primary);
   color: white;
   padding: 0.8rem 2rem;
   border-radius: 9999px;
@@ -385,15 +413,16 @@
   font-weight: 600;
   font-size: 1rem;
   transition: all 0.3s ease;
-  box-shadow: var(--shadow-neon);
+  box-shadow: 0 4px 16px rgba(26, 51, 90, 0.25);
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
 }
 
 .lp-btn-primary:hover {
+  background: var(--lp-primary-hover);
   transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 10px 30px rgba(26, 51, 90, 0.35);
 }
 
 .lp-btn-secondary {
@@ -863,15 +892,16 @@
   top: -14px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, var(--lp-primary), var(--lp-purple));
-  color: white;
+  background: var(--lp-primary);
+  color: var(--lp-purple);
+  border: 1px solid rgba(144, 200, 236, 0.4);
   padding: 0.4rem 1.2rem;
   border-radius: 9999px;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
-  box-shadow: var(--shadow-neon);
+  box-shadow: 0 4px 14px rgba(26, 51, 90, 0.25);
 }
 
 .lp-plan-header {
@@ -926,7 +956,7 @@
 }
 
 .lp-plan-card.recommended .lp-plan-features li svg {
-  color: var(--lp-purple);
+  color: var(--lp-primary);
 }
 
 .lp-plan-btn {
@@ -953,15 +983,16 @@
 }
 
 .lp-plan-card.recommended .lp-plan-btn {
-  background: linear-gradient(135deg, var(--lp-primary), var(--lp-purple));
+  background: var(--lp-primary);
   color: white;
-  box-shadow: var(--shadow-neon);
+  box-shadow: 0 4px 16px rgba(26, 51, 90, 0.25);
   border: none;
 }
 
 .lp-plan-card.recommended .lp-plan-btn:hover {
+  background: var(--lp-primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.4);
+  box-shadow: 0 10px 25px rgba(26, 51, 90, 0.35);
 }
 
 /* Why GINUM */
@@ -1042,7 +1073,7 @@
 
 /* CTA Section */
 .lp-cta {
-  background: linear-gradient(135deg, #1e1b4b, #0f172a);
+  background: linear-gradient(135deg, #0c1a2e 0%, #1A335A 100%);
   padding: 6rem 5%;
   position: relative;
   overflow: hidden;
@@ -1050,6 +1081,17 @@
   margin: 0;
   display: flex;
   justify-content: center;
+}
+
+.lp-cta-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: url('/ginum-pattern.svg');
+  background-repeat: repeat;
+  background-size: 150px 200px;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .lp-cta-blob {
@@ -1063,17 +1105,19 @@
 .lp-cta-blob-1 {
   width: 400px;
   height: 400px;
-  background: #a855f7;
+  background: #90C8EC;
   top: -100px;
   left: 10%;
+  opacity: 0.12;
 }
 
 .lp-cta-blob-2 {
   width: 500px;
   height: 500px;
-  background: #22d3ee;
+  background: #1A335A;
   bottom: -150px;
   right: 5%;
+  opacity: 0.25;
 }
 
 .lp-cta-container {
@@ -1114,21 +1158,22 @@
 }
 
 .lp-cta-btn-primary {
-  background: linear-gradient(135deg, var(--lp-primary), var(--lp-purple));
-  color: white;
+  background: #90C8EC;
+  color: #1A335A;
+  font-weight: 700;
   padding: 0.8rem 2rem;
   border-radius: 9999px;
   text-decoration: none;
-  font-weight: 600;
   font-size: 0.95rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 24px rgba(124, 58, 237, 0.6);
+  box-shadow: 0 4px 18px rgba(144, 200, 236, 0.35);
   transition: all 0.3s ease;
   border: none;
 }
 
 .lp-cta-btn-primary:hover {
+  background: #a8d7f7;
   transform: translateY(-2px) scale(1.02);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 32px rgba(124, 58, 237, 0.8);
+  box-shadow: 0 8px 25px rgba(144, 200, 236, 0.5);
 }
 
 .lp-cta-btn-secondary {

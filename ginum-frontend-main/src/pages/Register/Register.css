@@ -5,7 +5,7 @@
   min-height: 100vh;
   display: flex;
   background-color: #f8fafc;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   color: #0f172a;
 }
 
@@ -22,16 +22,19 @@
   flex-shrink: 0;
 }
 
+.reg-sidebar h1 {
+  font-family: 'Arvo', serif;
+}
+
 /* Subtle background accent in sidebar */
 .reg-sidebar::after {
   content: '';
   position: absolute;
-  top: -150px;
-  left: -150px;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
-  border-radius: 50%;
+  inset: 0;
+  background-image: url('/ginum-pattern.svg');
+  background-repeat: repeat;
+  background-size: 150px 200px;
+  opacity: 0.035;
   pointer-events: none;
 }
 
@@ -104,10 +107,10 @@
 
 /* Active Step */
 .reg-step-item.active .reg-step-icon {
-  background: #4f46e5;
-  border-color: #4f46e5;
+  background: #1A335A;
+  border-color: #1A335A;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(79,70,229,0.25);
+  box-shadow: 0 4px 12px rgba(26,51,90,0.25);
   transform: scale(1.05);
 }
 .reg-step-item.active .reg-step-title {
@@ -210,8 +213,8 @@
 .reg-input:focus {
   outline: none;
   background: #ffffff;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+  border-color: #1A335A;
+  box-shadow: 0 0 0 4px rgba(144,200,236,0.4);
 }
 
 /* Upload Dropzone */
@@ -240,14 +243,14 @@
 .reg-btn-primary {
   height: 52px;
   padding: 0 2rem;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  background: #1A335A;
   color: #ffffff;
   font-weight: 600;
   font-size: 0.95rem;
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(79,70,229,0.25);
+  box-shadow: 0 4px 14px rgba(26,51,90,0.2);
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
@@ -256,8 +259,9 @@
 }
 
 .reg-btn-primary:hover:not(:disabled) {
+  background: #12223c;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(79,70,229,0.3);
+  box-shadow: 0 6px 20px rgba(26,51,90,0.35);
 }
 
 .reg-btn-primary:active:not(:disabled) {

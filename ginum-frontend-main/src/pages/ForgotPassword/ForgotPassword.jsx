@@ -4,6 +4,7 @@ import usePageTitle from "../../hooks/usePageTitle";
 import { FaUser, FaLock, FaKey, FaArrowLeft } from "react-icons/fa";
 import axios from "axios";
 import { apiUrl } from "../../utils/api";
+import BrandLogo from "../../components/common/BrandLogo";
 import "./ForgotPassword.css";
 // We reuse the showcase styles from Login.css for visual consistency
 import "../Login/Login.css";
@@ -58,7 +59,9 @@ const Sparkline = ({ values, color, height = 40, width = 120 }) => {
 const MockAppWindow = () => (
   <div className="gl-mock-app">
     <div className="gl-mock-sidebar">
-      <div className="gl-mock-logo">GINUM</div>
+      <div className="gl-mock-logo" style={{ paddingLeft: '0.25rem', marginBottom: '1.5rem' }}>
+        <BrandLogo variant="full" size="xs" alt="GINUM" />
+      </div>
       <div className="gl-mock-nav">
         <div className="gl-mock-nav-item active"><span className="gl-skeleton-icon" /> Dashboard</div>
         <div className="gl-mock-nav-item"><span className="gl-skeleton-icon" /> Transactions</div>
@@ -201,7 +204,7 @@ const FinanceShowcase = () => {
 };
 
 const ForgotPassword = () => {
-  usePageTitle("Forgot Password — Ginum");
+  usePageTitle("Reset Password");
 
   const [step, setStep] = useState(1); // 1 = Request Reset, 2 = Verify & Set New Password
   const [username, setUsername] = useState("");
@@ -261,7 +264,7 @@ const ForgotPassword = () => {
       {/* ══ LEFT PANEL — FORM ══ */}
       <aside className="gl-left">
         <div className="gl-logo-wrap">
-          <img src="/ginum_logo.png" alt="Ginum Logo" className="gl-logo" />
+          <BrandLogo variant="full" size="lg" alt="GINUM" />
           <span className="gl-platform-label">Financial Intelligence</span>
         </div>
 

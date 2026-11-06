@@ -6,6 +6,7 @@ import {
   FolderOpen, Scale, Box, Globe, Grid, Facebook, Twitter, Linkedin, Bell, Menu, X,
   Lock, Network
 } from 'lucide-react';
+import BrandLogo from '../../components/common/BrandLogo';
 import './LandingPage.css';
 
 const LandingPage = () => {
@@ -88,9 +89,8 @@ const LandingPage = () => {
       {/* 1. Navbar */}
       <div className={`lp-navbar-wrapper ${scrolled ? 'scrolled' : ''}`}>
         <nav className="lp-navbar-container">
-          <Link to="/" className="lp-logo">
-            <div className="lp-logo-icon">G</div>
-            GINUM
+          <Link to="/" className="lp-logo" aria-label="GINUM Home">
+            <BrandLogo variant="full" size="md" alt="GINUM" />
           </Link>
 
           <div className="lp-nav-links desktop-only">
@@ -121,8 +121,8 @@ const LandingPage = () => {
             <Link to="/login" className="lp-login-btn">Login</Link>
           </div>
 
-          <button className="lp-mobile-menu-btn mobile-only" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={24} color="white" /> : <Menu size={24} color="white" />}
+          <button className="lp-mobile-menu-btn mobile-only" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle Navigation">
+            {mobileMenuOpen ? <X size={24} color="#1A335A" /> : <Menu size={24} color="#1A335A" />}
           </button>
         </nav>
 
@@ -138,6 +138,7 @@ const LandingPage = () => {
       {/* 2. Hero Section */}
       <section className="lp-hero reveal">
         <div className="lp-hero-bg">
+          <div className="lp-hero-pattern"></div>
           <div className="lp-hero-grid"></div>
           <div className="lp-hero-orb lp-hero-orb-1"></div>
           <div className="lp-hero-orb lp-hero-orb-2"></div>
@@ -182,7 +183,9 @@ const LandingPage = () => {
 
           <div className="lp-dashboard-mockup">
             <div className="lp-mockup-sidebar">
-              <div className="lp-mockup-logo-small">G</div>
+              <div className="lp-mockup-logo-small flex items-center justify-center p-1">
+                <BrandLogo variant="mark" size="xs" alt="GINUM" />
+              </div>
               <Calculator className="lp-mockup-nav-icon active" />
               <LineChart className="lp-mockup-nav-icon" />
               <Package className="lp-mockup-nav-icon" />
@@ -489,6 +492,7 @@ const LandingPage = () => {
 
       {/* 6. Final CTA Section */}
       <section className="lp-cta reveal">
+        <div className="lp-cta-pattern"></div>
         <div className="lp-cta-blob lp-cta-blob-1"></div>
         <div className="lp-cta-blob lp-cta-blob-2"></div>
         <div className="lp-cta-container">
@@ -532,9 +536,8 @@ const LandingPage = () => {
       <footer id="footer" className="lp-footer">
         <div className="lp-footer-content">
           <div className="lp-footer-brand">
-            <Link to="/" className="lp-footer-logo">
-              <div className="lp-footer-logo-icon">G</div>
-              GINUM
+            <Link to="/" className="lp-footer-logo" aria-label="GINUM Home">
+              <BrandLogo variant="full" size="md" alt="GINUM" />
             </Link>
             <p>Smart Business & Accounting Platform for Growing Businesses.</p>
           </div>
