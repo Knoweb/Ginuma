@@ -27,19 +27,20 @@ jobs:
           docker save ginuma-app-backend:latest | gzip > backend.tar.gz
           docker save ginuma-app-frontend:latest | gzip > frontend.tar.gz
 
-      # ── Copy the pre-built tars + compose/env files to the VPS ──
+      # ── Copy the pre-built tars + HTTPS compose/Caddyfile artifacts to VPS ──
+      # NOTE: .env is deliberately omitted from source to protect production server .env
       - name: Copy artifacts to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USERNAME }}
           key: ${{ secrets.DO_SSH_KEY }}
-          source: "backend.tar.gz,frontend.tar.gz,docker-compose.yml,.env"
+          source: "backend.tar.gz,frontend.tar.gz,docker-compose.yml,docker-compose.https.yml,Caddyfile"
           target: "/root/ginuma-app"
           strip_components: 0
           rm: false
 
-      # ── Load images and restart containers — NO build on VPS ──
+      # ── Load images and restart containers — HTTPS reverse proxy with Caddy ──
       - name: Load images and restart containers on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -51,15 +52,52 @@ jobs:
             cd /root/ginuma-app
             set -e
 
-            # Load the pre-built images (no compile, no vite build — very low RAM)
+            # 1. Validate Docker Compose config and Caddyfile on VPS before touching any containers
+            docker compose -p ginuma-app config > /dev/null
+            docker run --rm -v /root/ginuma-app/Caddyfile:/etc/caddy/Caddyfile:ro caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile
+
+            # 2. Tag existing running images as backup BEFORE overwriting (enables image rollback)
+            if docker image inspect ginuma-app-frontend:latest >/dev/null 2>&1; then
+              docker tag ginuma-app-frontend:latest ginuma-app-frontend:pre-https-backup || true
+            fi
+            if docker image inspect ginuma-app-backend:latest >/dev/null 2>&1; then
+              docker tag ginuma-app-backend:latest ginuma-app-backend:pre-https-backup || true
+            fi
+
+            # 3. Load the pre-built images
             docker load < backend.tar.gz
             docker load < frontend.tar.gz
 
-            # Restart containers using the loaded images (no --build flag)
-            docker compose down || true
-            docker compose up -d
+            # 4. Pull Caddy image if needed
+            docker compose -p ginuma-app pull caddy || true
 
-            # Clean up tars and dangling images to save disk space
+            # 5. Ordered service recreation for safe port 80 transition and volume preservation:
+            # 5a. Recreate database only if needed; preserve named volume ginuma-app_db_data
+            docker compose -p ginuma-app up -d --no-deps database
+            echo "Verifying database health..."
+            for i in $(seq 1 30); do
+              DB_STATUS=$(docker inspect -f '{{.State.Health.Status}}' ginum-database 2>/dev/null || true)
+              if [ "$DB_STATUS" = "healthy" ]; then
+                echo "Database is healthy."
+                break
+              fi
+              sleep 2
+            done
+
+            # 5b. Recreate backend service with verified environment variables
+            docker compose -p ginuma-app up -d --no-deps backend
+            sleep 5
+
+            # 5c. Recreate frontend service to remove host port 80 binding (releasing port 80)
+            docker compose -p ginuma-app up -d --no-deps frontend
+            echo "Port 80 released by frontend."
+
+            # 5d. Start Caddy only after port 80 has been released
+            docker compose -p ginuma-app up -d caddy
+
+            # 6. Verify running services and published ports
+            docker compose -p ginuma-app ps
+
+            # 7. Clean up tars and dangling images
             rm -f backend.tar.gz frontend.tar.gz
             docker image prune -f
-

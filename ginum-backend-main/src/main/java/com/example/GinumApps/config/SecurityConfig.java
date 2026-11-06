@@ -106,7 +106,13 @@ public class SecurityConfig {
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedOriginPatterns(Arrays.asList(
+                "https://ginumapps.com",
+                "https://www.ginumapps.com",
+                "http://ginumapps.com",
+                "http://localhost:*",
+                "http://127.0.0.1:*"
+        ));
 
         config.setAllowedMethods(
                 Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")

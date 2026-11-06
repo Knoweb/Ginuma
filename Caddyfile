@@ -1,0 +1,16 @@
+ginumapps.com {
+	encode zstd gzip
+
+	@api path /api /api/*
+	handle @api {
+		reverse_proxy backend:8081
+	}
+
+	handle {
+		reverse_proxy frontend:80
+	}
+}
+
+www.ginumapps.com {
+	redir https://ginumapps.com{uri} permanent
+}
