@@ -133,27 +133,10 @@
 }
 
 .lp-logo {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--lp-text-main);
   text-decoration: none;
-  letter-spacing: -0.5px;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-}
-
-.lp-logo-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--lp-primary), var(--lp-purple));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 800;
-  font-size: 1.1rem;
+  line-height: 1;
 }
 
 .lp-nav-links {
@@ -502,9 +485,11 @@
 
 .lp-mockup-logo-small {
   width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, var(--lp-primary), var(--lp-purple));
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
   margin-bottom: 1rem;
 }
 
@@ -1325,27 +1310,11 @@
 }
 
 .lp-footer-logo {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: white;
   text-decoration: none;
   margin-bottom: 1rem;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-.lp-footer-logo-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 800;
-  font-size: 0.9rem;
+  line-height: 1;
 }
 
 .lp-footer-brand p {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import PropTypes from 'prop-types';
 
 /**
@@ -18,8 +18,13 @@ export const BrandLogo = ({
   className = '',
   style = {},
   alt = 'GINUM',
-  idPrefix = 'ginum-logo'
+  idPrefix
 }) => {
+  const autoId = useId();
+  const cleanAutoId = autoId.replace(/[^a-zA-Z0-9-_]/g, '');
+  const prefix = idPrefix || 'ginum-logo';
+  const gradientId = `${prefix}-${cleanAutoId}-grad`;
+
   const sizeClasses = {
     xs: 'h-6',
     sm: 'h-8',
@@ -30,18 +35,16 @@ export const BrandLogo = ({
     auto: 'h-auto'
   };
 
-  const chosenHeight = sizeClasses[size] || sizeClasses.md;
+  const chosenHeight = size ? sizeClasses[size] || sizeClasses.md : '';
   const isMarkOnly = variant === 'mark' || variant === 'mark-only' || variant === 'mark-white';
   const isWhite = variant === 'white' || variant === 'mark-white';
   const isNavy = variant === 'navy';
-
-  const gradientId = `${idPrefix}-gradient`;
 
   if (isMarkOnly) {
     return (
       <svg
         viewBox={MARK_VIEWBOX}
-        className={`w-auto inline-block ${chosenHeight} ${className}`}
+        className={`w-auto inline-block ${chosenHeight} ${className}`.trim()}
         style={{ aspectRatio: '157.15 / 87.29', ...style }}
         role="img"
         aria-label={alt}
@@ -69,7 +72,7 @@ export const BrandLogo = ({
   return (
     <svg
       viewBox={FULL_VIEWBOX}
-      className={`w-auto inline-block ${chosenHeight} ${className}`}
+      className={`w-auto inline-block ${chosenHeight} ${className}`.trim()}
       style={{ aspectRatio: '486.01 / 87.29', ...style }}
       role="img"
       aria-label={alt}

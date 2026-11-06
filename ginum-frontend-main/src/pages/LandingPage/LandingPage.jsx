@@ -183,7 +183,7 @@ const LandingPage = () => {
 
           <div className="lp-dashboard-mockup">
             <div className="lp-mockup-sidebar">
-              <div className="lp-mockup-logo-small flex items-center justify-center p-1">
+              <div className="lp-mockup-logo-small">
                 <BrandLogo variant="mark" size="xs" alt="GINUM" />
               </div>
               <Calculator className="lp-mockup-nav-icon active" />
@@ -537,7 +537,7 @@ const LandingPage = () => {
         <div className="lp-footer-content">
           <div className="lp-footer-brand">
             <Link to="/" className="lp-footer-logo" aria-label="GINUM Home">
-              <BrandLogo variant="full" size="md" alt="GINUM" />
+              <BrandLogo variant="white" size="md" alt="GINUM" />
             </Link>
             <p>Smart Business & Accounting Platform for Growing Businesses.</p>
           </div>
