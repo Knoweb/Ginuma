@@ -1,17 +1,21 @@
 version: '3.8'
 
-# Development override to expose ports locally when running docker compose
+# Development override to expose ports locally and provide local development defaults
 # Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 services:
   database:
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root_password}
     ports:
       - "3306:3306"
 
   backend:
+    environment:
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-root_password}
+      DEMO_SEED_TOKEN: ${DEMO_SEED_TOKEN:-dev-demo-seed-token}
     ports:
       - "8081:8081"
 
   frontend:
     ports:
       - "3000:80"
-

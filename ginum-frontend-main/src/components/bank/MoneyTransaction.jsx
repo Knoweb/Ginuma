@@ -35,13 +35,13 @@
 
 //     try {
 //       const [supRes, custRes, empRes] = await Promise.all([
-//         fetch(`${apiUrl || "http://localhost:8081"}/api/suppliers/companies/${companyId}`, {
+//         fetch(`${apiUrl}/api/suppliers/companies/${companyId}`, {
 //           headers: { Authorization: `Bearer ${token}` }
 //         }),
-//         fetch(`${apiUrl || "http://localhost:8081"}/api/customers/companies/${companyId}`, {
+//         fetch(`${apiUrl}/api/customers/companies/${companyId}`, {
 //           headers: { Authorization: `Bearer ${token}` }
 //         }),
-//         fetch(`${apiUrl || "http://localhost:8081"}/api/employees/${companyId}`, {
+//         fetch(`${apiUrl}/api/employees/${companyId}`, {
 //           headers: { Authorization: `Bearer ${token}` }
 //         })
 //       ]);
@@ -238,7 +238,7 @@
 //       if (!companyId || !token) return;
 
 //       try {
-//         const response = await fetch(`${apiUrl || 'http://localhost:8081'}/api/companies/${companyId}/projects`, {
+//         const response = await fetch(`${apiUrl}/api/companies/${companyId}/projects`, {
 //           method: "GET",
 //           headers: {
 //             "Authorization": `Bearer ${token}`,
@@ -271,7 +271,7 @@
 //       if (!companyId || !token) return;
 
 //       try {
-//         const response = await fetch(`${apiUrl || 'http://localhost:8081'}/api/companies/${companyId}/accounts`, {
+//         const response = await fetch(`${apiUrl}/api/companies/${companyId}/accounts`, {
 //           method: "GET",
 //           headers: {
 //             "Authorization": `Bearer ${token}`,

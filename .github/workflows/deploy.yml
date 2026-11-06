@@ -52,17 +52,24 @@ jobs:
             cd /root/ginuma-app
             set -e
 
-            # Load the pre-built images (no compile, no vite build — very low RAM)
+            # 1. Validate Docker Compose config on the VPS before touching any containers
+            docker compose -p ginuma-app config > /dev/null
+
+            # 2. Load the pre-built images
             docker load < backend.tar.gz
             docker load < frontend.tar.gz
 
-            # Pull Caddy reverse proxy image if needed
-            docker compose pull caddy || true
+            # 3. Pull Caddy image if needed
+            docker compose -p ginuma-app pull caddy || true
 
-            # Restart containers preserving named volumes (db_data, caddy_data, caddy_config)
-            docker compose down || true
-            docker compose up -d
+            # 4. Target recreation of application services without full-stack downtime
+            # Only recreates containers whose images or configurations changed.
+            # MySQL database and Caddy are NOT restarted if unchanged.
+            docker compose -p ginuma-app up -d --remove-orphans
 
-            # Clean up tars and dangling images to save disk space
+            # 5. Verify containers are running
+            docker compose -p ginuma-app ps
+
+            # 6. Clean up tars and dangling images to save disk space
             rm -f backend.tar.gz frontend.tar.gz
             docker image prune -f

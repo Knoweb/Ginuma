@@ -2,12 +2,11 @@ import axios from "axios";
 
 // Export base API URL:
 // - In development (import.meta.env.DEV): use VITE_API_URL or default to 'http://localhost:8081'.
-// - In production: use same-origin relative paths ('') so all API calls route securely through HTTPS (/api/...).
-const rawApiUrl = import.meta.env.DEV
-  ? (import.meta.env.VITE_API_URL || 'http://localhost:8081')
-  : (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('localhost') ? import.meta.env.VITE_API_URL : '');
-
-export const apiUrl = rawApiUrl.replace(/\/+$/, '');
+// - In production: ALWAYS use empty string ('') so all API calls resolve to same-origin relative paths (/api/...)
+//   under HTTPS, completely independent of any VITE_API_URL in build or VPS environments.
+export const apiUrl = import.meta.env.DEV
+  ? (import.meta.env.VITE_API_URL || 'http://localhost:8081').replace(/\/+$/, '')
+  : '';
 
 // Create an Axios instance
 const api = axios.create({
